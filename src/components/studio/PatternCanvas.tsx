@@ -6,9 +6,15 @@ import {
   useImperativeHandle,
   useRef,
 } from "react";
-import { Canvas, FabricImage, PencilBrush } from "fabric";
+import { Canvas, FabricImage, PencilBrush, Polygon } from "fabric";
 import type { PanelJson, PatternPanel } from "@/lib/dashboard/types";
 import { PANEL_LABELS } from "@/lib/dashboard/types";
+import type { StudioGarmentId } from "@/lib/studio/garments";
+import {
+  getGarmentPanelShape,
+  outlineToCanvasPoints,
+  strokeOutline,
+} from "@/lib/studio/panelShapeUtils";
 
 export type StudioTool = "select" | "pen" | "eraser";
 
@@ -20,6 +26,7 @@ export type PatternCanvasHandle = {
 
 type Props = {
   panel: PatternPanel;
+  garmentId: StudioGarmentId;
   json: PanelJson;
   tool: StudioTool;
   penColor: string;
@@ -45,81 +52,120 @@ function artworkPayload(
   return { objects };
 }
 
-function guideDataUrl(panel: PatternPanel) {
+function guideDataUrl(garmentId: StudioGarmentId, panel: PatternPanel) {
+  const shape = getGarmentPanelShape(garmentId, panel);
   const guide = document.createElement("canvas");
   guide.width = SIZE;
   guide.height = SIZE;
   const ctx = guide.getContext("2d");
   if (!ctx) return "";
   ctx.clearRect(0, 0, SIZE, SIZE);
-  ctx.strokeStyle = "rgba(214,255,60,0.4)";
+
+  const pts = outlineToCanvasPoints(shape.outline, SIZE);
+  // Soft fill so the panel piece reads as a sewing pattern
+  strokeOutline(ctx, pts);
+  ctx.fillStyle = "rgba(214,255,60,0.07)";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(214,255,60,0.55)";
   ctx.lineWidth = 2;
   ctx.setLineDash([6, 5]);
+  ctx.stroke();
+  ctx.setLineDash([]);
 
-  if (panel === "front" || panel === "back") {
+  // Inner grain hint
+  ctx.save();
+  strokeOutline(ctx, pts);
+  ctx.clip();
+  ctx.strokeStyle = "rgba(243,240,232,0.06)";
+  ctx.lineWidth = 1;
+  for (let y = 24; y < SIZE; y += 18) {
     ctx.beginPath();
-    ctx.moveTo(96, 72);
-    ctx.lineTo(160, 48);
-    ctx.quadraticCurveTo(256, 28, 352, 48);
-    ctx.lineTo(416, 72);
-    ctx.lineTo(400, 460);
-    ctx.lineTo(112, 460);
-    ctx.closePath();
-    ctx.stroke();
-  } else if (panel === "collar") {
-    ctx.beginPath();
-    ctx.moveTo(80, 200);
-    ctx.quadraticCurveTo(256, 120, 432, 200);
-    ctx.lineTo(400, 300);
-    ctx.quadraticCurveTo(256, 240, 112, 300);
-    ctx.closePath();
-    ctx.stroke();
-  } else {
-    const flip = panel === "sleeveR";
-    ctx.beginPath();
-    if (!flip) {
-      ctx.moveTo(80, 120);
-      ctx.lineTo(280, 80);
-      ctx.lineTo(340, 400);
-      ctx.lineTo(120, 420);
-    } else {
-      ctx.moveTo(432, 120);
-      ctx.lineTo(232, 80);
-      ctx.lineTo(172, 400);
-      ctx.lineTo(392, 420);
-    }
-    ctx.closePath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(SIZE, y);
     ctx.stroke();
   }
+  ctx.restore();
 
-  ctx.setLineDash([]);
   ctx.fillStyle = "rgba(243,240,232,0.55)";
   ctx.font = "12px sans-serif";
   ctx.fillText(PANEL_LABELS[panel], 16, 28);
   return guide.toDataURL("image/png");
 }
 
-/** Export artwork only (transparent) so it composites onto tee colour. */
-function exportPrint(canvas: Canvas): string {
+function clipPolygon(garmentId: StudioGarmentId, panel: PatternPanel) {
+  const shape = getGarmentPanelShape(garmentId, panel);
+  const pts = outlineToCanvasPoints(shape.outline, SIZE).map((p) => ({
+    x: p.x,
+    y: p.y,
+  }));
+  return new Polygon(pts, {
+    absolutePositioned: true,
+    selectable: false,
+    evented: false,
+    fill: "#ffffff",
+    strokeWidth: 0,
+    objectCaching: false,
+  });
+}
+
+/** Export artwork only (transparent), masked to the panel silhouette. */
+function exportPrint(
+  canvas: Canvas,
+  garmentId: StudioGarmentId,
+  panel: PatternPanel,
+): string {
   const prevBg = canvas.backgroundColor;
   const prevBgImage = canvas.backgroundImage;
+  const prevClip = canvas.clipPath;
   canvas.backgroundColor = "";
   canvas.backgroundImage = undefined;
+  canvas.clipPath = undefined;
   canvas.requestRenderAll();
-  const dataUrl = canvas.toDataURL({
-    format: "png",
-    multiplier: 1,
-    enableRetinaScaling: false,
-  });
+
+  const art = document.createElement("canvas");
+  art.width = SIZE;
+  art.height = SIZE;
+  const actx = art.getContext("2d");
+  const el = canvas.lowerCanvasEl;
+  if (actx && el) {
+    actx.clearRect(0, 0, SIZE, SIZE);
+    actx.drawImage(el, 0, 0, SIZE, SIZE);
+  }
+
   canvas.backgroundColor = prevBg;
   canvas.backgroundImage = prevBgImage;
+  canvas.clipPath = prevClip;
   canvas.requestRenderAll();
-  return dataUrl;
+
+  if (!actx || !el) {
+    return canvas.toDataURL({
+      format: "png",
+      multiplier: 1,
+      enableRetinaScaling: false,
+    });
+  }
+
+  const shape = getGarmentPanelShape(garmentId, panel);
+  const out = document.createElement("canvas");
+  out.width = SIZE;
+  out.height = SIZE;
+  const ctx = out.getContext("2d");
+  if (!ctx) return art.toDataURL("image/png");
+
+  const pts = outlineToCanvasPoints(shape.outline, SIZE);
+  ctx.clearRect(0, 0, SIZE, SIZE);
+  strokeOutline(ctx, pts);
+  ctx.fillStyle = "#ffffff";
+  ctx.fill();
+  ctx.globalCompositeOperation = "source-in";
+  ctx.drawImage(art, 0, 0);
+  ctx.globalCompositeOperation = "source-over";
+  return out.toDataURL("image/png");
 }
 
 export const PatternCanvas = forwardRef<PatternCanvasHandle, Props>(
   function PatternCanvas(
-    { panel, json, tool, penColor, penWidth, onChange, className },
+    { panel, garmentId, json, tool, penColor, penWidth, onChange, className },
     ref,
   ) {
     const wrapRef = useRef<HTMLDivElement>(null);
@@ -131,9 +177,11 @@ export const PatternCanvas = forwardRef<PatternCanvasHandle, Props>(
     const toolRef = useRef(tool);
     const penColorRef = useRef(penColor);
     const penWidthRef = useRef(penWidth);
+    const garmentRef = useRef(garmentId);
     toolRef.current = tool;
     penColorRef.current = penColor;
     penWidthRef.current = penWidth;
+    garmentRef.current = garmentId;
 
     function applyTool(canvas: Canvas) {
       const t = toolRef.current;
@@ -143,8 +191,6 @@ export const PatternCanvas = forwardRef<PatternCanvasHandle, Props>(
         canvas.freeDrawingBrush = new PencilBrush(canvas);
       }
       const brush = canvas.freeDrawingBrush as PencilBrush;
-      // Eraser paints editor bg; stripped from transparent tee export less ideal —
-      // use destination-out so strokes punch holes in artwork.
       (
         brush as PencilBrush & { globalCompositeOperation?: GlobalCompositeOperation }
       ).globalCompositeOperation =
@@ -175,8 +221,7 @@ export const PatternCanvas = forwardRef<PatternCanvasHandle, Props>(
       if (skipEmit.current || !isCanvasAlive(canvas)) return;
       const objects = canvas.getObjects();
       const data = canvas.toJSON() as Record<string, unknown>;
-      const printDataUrl = exportPrint(canvas);
-      // Persist artwork objects only — not guide backgroundImage / editor bg.
+      const printDataUrl = exportPrint(canvas, garmentRef.current, panel);
       const panelJson: PanelJson = objects.length
         ? { version: data.version, objects: data.objects }
         : null;
@@ -190,7 +235,7 @@ export const PatternCanvas = forwardRef<PatternCanvasHandle, Props>(
         const img = await FabricImage.fromURL(url, {
           crossOrigin: "anonymous",
         });
-        const max = SIZE * 0.6;
+        const max = SIZE * 0.55;
         const scale = Math.min(max / (img.width || 1), max / (img.height || 1));
         img.set({
           left: SIZE / 2,
@@ -217,7 +262,7 @@ export const PatternCanvas = forwardRef<PatternCanvasHandle, Props>(
       exportPrintDataUrl() {
         const canvas = fabricRef.current;
         if (!canvas) return "";
-        return exportPrint(canvas);
+        return exportPrint(canvas, garmentRef.current, panel);
       },
     }));
 
@@ -239,6 +284,7 @@ export const PatternCanvas = forwardRef<PatternCanvasHandle, Props>(
       });
       fabricRef.current = canvas;
       canvas.freeDrawingBrush = new PencilBrush(canvas);
+      canvas.clipPath = clipPolygon(garmentId, panel);
       applyTool(canvas);
       syncCssSize(canvas);
 
@@ -260,7 +306,6 @@ export const PatternCanvas = forwardRef<PatternCanvasHandle, Props>(
             await canvas.loadFromJSON(payload, undefined, { signal });
           }
         } catch {
-          // Abort, dispose race, or stale/invalid Fabric JSON — keep empty artwork.
           if (!isCanvasAlive(canvas) || signal.aborted) return;
           try {
             canvas.getObjects().forEach((o) => canvas.remove(o));
@@ -273,13 +318,14 @@ export const PatternCanvas = forwardRef<PatternCanvasHandle, Props>(
         if (!isCanvasAlive(canvas) || signal.aborted) return;
 
         try {
-          const img = await FabricImage.fromURL(guideDataUrl(panel), {
+          const img = await FabricImage.fromURL(guideDataUrl(garmentId, panel), {
             signal,
           });
           if (!isCanvasAlive(canvas) || signal.aborted) return;
           img.set({ selectable: false, evented: false });
           canvas.backgroundColor = EDITOR_BG;
           canvas.backgroundImage = img;
+          canvas.clipPath = clipPolygon(garmentId, panel);
           canvas.requestRenderAll();
         } catch {
           if (!isCanvasAlive(canvas) || signal.aborted) return;
@@ -300,7 +346,7 @@ export const PatternCanvas = forwardRef<PatternCanvasHandle, Props>(
         void canvas.dispose();
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [panel]);
+    }, [panel, garmentId]);
 
     useEffect(() => {
       const canvas = fabricRef.current;

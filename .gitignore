@@ -46,3 +46,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local extract / CLO source packs (too large for GitHub)
+.tmp/
+**/baggy-shirt/
+*.rar
+*.zprj
+
+# Giant runtime binaries (>50MB) — keep locally / CDN; do not push
+public/models/walking-tshirt.glb

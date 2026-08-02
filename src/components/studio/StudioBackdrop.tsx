@@ -12,19 +12,16 @@ function CurvedPerspectiveGrid() {
 
   const verticals = Array.from({ length: cols + 1 }, (_, i) => {
     const t = i / cols;
-    // Spread wide at the bottom, pinch toward vanishing point at top
     const bottomX = -25 + t * 150;
     return { x1: vpX, y1: vpY, x2: bottomX, y2: 118 };
   });
 
-  // Horizontal “curve” bands — arcs that get wider / lower
   const arcs = Array.from({ length: rows }, (_, i) => {
     const t = (i + 1) / rows;
-    // Ease so more space near the bottom (big cells)
     const ease = t ** 1.35;
     const y = vpY + ease * (105 - vpY);
     const halfWidth = 8 + ease * 72;
-    const bend = 2 + ease * 14; // curve depth — bows downward
+    const bend = 2 + ease * 14;
     const x1 = vpX - halfWidth;
     const x2 = vpX + halfWidth;
     const c1x = vpX - halfWidth * 0.55;
@@ -81,10 +78,77 @@ function CurvedPerspectiveGrid() {
         </g>
       </svg>
 
-      {/* Soft vignette so the tee reads clearly in the center */}
+      {/* Soft ground contact + vignette */}
       <div
         aria-hidden
-        className="absolute inset-0 bg-[radial-gradient(ellipse_45%_55%_at_50%_42%,transparent_0%,rgba(7,8,7,0.35)_70%,rgba(7,8,7,0.75)_100%)]"
+        className="absolute inset-x-0 bottom-0 h-[42%] bg-[radial-gradient(ellipse_70%_55%_at_50%_100%,rgba(0,0,0,0.55),transparent_70%)]"
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-[radial-gradient(ellipse_45%_55%_at_50%_42%,transparent_0%,rgba(7,8,7,0.35)_70%,rgba(7,8,7,0.78)_100%)]"
+      />
+    </div>
+  );
+}
+
+function DepthStudio({
+  background,
+}: {
+  background: Exclude<StudioBackground, "grid">;
+}) {
+  const bg = STUDIO_BG[background];
+  const isDark = background === "ink";
+
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0" style={{ background: bg.css }} />
+
+      {/* Horizon / wall-floor break */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-[46%] h-px opacity-40"
+        style={{
+          background: isDark
+            ? "linear-gradient(90deg, transparent, rgba(214,255,60,0.12), transparent)"
+            : "linear-gradient(90deg, transparent, rgba(7,8,7,0.08), transparent)",
+        }}
+      />
+
+      {/* Perspective floor plane hint */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-[-10%] bottom-0 h-[48%] origin-bottom"
+        style={{
+          background: bg.floor,
+          transform: "perspective(900px) rotateX(52deg)",
+          transformOrigin: "50% 100%",
+        }}
+      />
+
+      {/* Soft key light bloom behind tee */}
+      <div
+        aria-hidden
+        className={
+          isDark
+            ? "absolute left-1/2 top-[34%] h-[48%] w-[42%] -translate-x-1/2 rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(214,255,60,0.07),transparent_68%)]"
+            : "absolute left-1/2 top-[34%] h-[48%] w-[42%] -translate-x-1/2 rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.55),transparent_68%)]"
+        }
+      />
+
+      {/* Ambient occlusion / vignette */}
+      <div
+        aria-hidden
+        className={
+          isDark
+            ? "absolute inset-0 bg-[radial-gradient(ellipse_50%_58%_at_50%_40%,transparent_0%,rgba(7,8,7,0.25)_62%,rgba(7,8,7,0.72)_100%)]"
+            : "absolute inset-0 bg-[radial-gradient(ellipse_52%_60%_at_50%_40%,transparent_0%,rgba(40,36,28,0.08)_58%,rgba(40,36,28,0.28)_100%)]"
+        }
+      />
+
+      {/* Corner falloff */}
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-[linear-gradient(135deg,rgba(0,0,0,0.18),transparent_35%,transparent_65%,rgba(0,0,0,0.14))]"
       />
     </div>
   );
@@ -99,8 +163,5 @@ export function StudioBackdrop({
     return <CurvedPerspectiveGrid />;
   }
 
-  const bg = STUDIO_BG[background];
-  return (
-    <div className="absolute inset-0" style={{ background: bg.css }} />
-  );
+  return <DepthStudio background={background} />;
 }

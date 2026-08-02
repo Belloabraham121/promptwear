@@ -327,10 +327,10 @@ export function StudioWorkspace({ design: initial }: Props) {
               </button>
             ))}
           </div>
-          {!garment.fullPanelSupport ? (
+          {garment.id === "oversized" ? (
             <p className="max-w-[16rem] text-right text-[0.58rem] leading-snug text-[#c8c4b8]/90">
-              Oversized: collar is separate; front/back/sleeves share one body UV
-              (CLO export). Use Classic for full panel editing.
+              Oversized: panel shapes from CLO UV islands (front, back, sleeves,
+              rib collar).
             </p>
           ) : null}
         </div>
@@ -488,9 +488,10 @@ export function StudioWorkspace({ design: initial }: Props) {
               </div>
 
               <PatternCanvas
-                key={design.activePanel}
+                key={`${design.garmentId ?? "classic"}-${design.activePanel}`}
                 ref={patternRef}
                 panel={design.activePanel}
+                garmentId={design.garmentId ?? "classic"}
                 json={design.panels[design.activePanel]}
                 tool={tool}
                 penColor={penColor}

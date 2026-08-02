@@ -1,5 +1,9 @@
 import type { PatternPanel } from "@/lib/dashboard/types";
 import type { UvRect } from "@/lib/studio/atlas";
+import {
+  CLASSIC_PANEL_SHAPES,
+  OVERSIZED_PANEL_SHAPES,
+} from "@/lib/studio/generated/panelShapes";
 
 export type StudioGarmentId = "classic" | "oversized";
 
@@ -14,31 +18,17 @@ export type StudioGarment = {
   panelUV: Record<PatternPanel, UvRect>;
 };
 
-/** Classic low-poly tee — best for per-panel editing */
-const CLASSIC_UV: Record<PatternPanel, UvRect> = {
-  front: { u0: 0.5117, v0: 0.4677, u1: 0.9378, v1: 0.923 },
-  back: { u0: 0.0367, v0: 0.4666, u1: 0.4605, v1: 0.9535 },
-  sleeveL: { u0: 0.4821, v0: 0.036, u1: 0.6517, v1: 0.4256 },
-  sleeveR: { u0: 0.6548, v0: 0.0363, u1: 0.8997, v1: 0.3551 },
-  collar: { u0: 0.0284, v0: 0.1936, u1: 0.4098, v1: 0.4319 },
-};
-
-/**
- * CLO Male oversized — collar (Ribana) is separate; body front/back share
- * the same jersey UV space (not unified pattern packing).
- */
-const OVERSIZED_BODY: UvRect = {
-  u0: 0.0894,
-  v0: 0.028,
-  u1: 0.9001,
-  v1: 0.5102,
-};
-const OVERSIZED_COLLAR: UvRect = {
-  u0: 0.0932,
-  v0: 0.4044,
-  u1: 0.3792,
-  v1: 0.4466,
-};
+function uvFromShapes(
+  shapes: typeof CLASSIC_PANEL_SHAPES,
+): Record<PatternPanel, UvRect> {
+  return {
+    front: shapes.front.uvRect,
+    back: shapes.back.uvRect,
+    sleeveL: shapes.sleeveL.uvRect,
+    sleeveR: shapes.sleeveR.uvRect,
+    collar: shapes.collar.uvRect,
+  };
+}
 
 export const STUDIO_GARMENTS: Record<StudioGarmentId, StudioGarment> = {
   classic: {
@@ -48,22 +38,18 @@ export const STUDIO_GARMENTS: Record<StudioGarmentId, StudioGarment> = {
     modelPath: "/models/studio/tshirt.glb?v=2",
     normalPath: "/models/studio/textures/normal.png",
     fullPanelSupport: true,
-    panelUV: CLASSIC_UV,
+    panelUV: uvFromShapes(CLASSIC_PANEL_SHAPES),
   },
   oversized: {
     id: "oversized",
     label: "Oversized",
-    hint: "CLO fit — collar separate; body panels share UV",
-    modelPath: "/models/studio/oversized/tshirt.glb?v=1",
-    normalPath: "/models/studio/oversized/normal.jpg",
-    fullPanelSupport: false,
-    panelUV: {
-      front: OVERSIZED_BODY,
-      back: OVERSIZED_BODY,
-      sleeveL: OVERSIZED_BODY,
-      sleeveR: OVERSIZED_BODY,
-      collar: OVERSIZED_COLLAR,
-    },
+    hint: "CLO baggy fit — distinct front/back/sleeve islands + rib collar",
+    modelPath: "/models/studio/oversized/tshirt.glb?v=3",
+    // No normalMap: tiling jersey NRMs on unified CLO UVs read as black triangle noise.
+    // Cloth folds come from the mesh; albedo is the studio color atlas.
+    normalPath: undefined,
+    fullPanelSupport: true,
+    panelUV: uvFromShapes(OVERSIZED_PANEL_SHAPES),
   },
 };
 

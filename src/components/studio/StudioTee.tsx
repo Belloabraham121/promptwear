@@ -17,6 +17,11 @@ import {
   getStudioGarment,
   type StudioGarmentId,
 } from "@/lib/studio/garments";
+import {
+  getGarmentPanelShape,
+  outlineToAtlasPoints,
+  strokeOutline,
+} from "@/lib/studio/panelShapeUtils";
 
 type OrbitLike = {
   object: THREE.Camera;
@@ -58,6 +63,23 @@ function drawContained(
   ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
 }
 
+function prepareGeometry(geometry: THREE.BufferGeometry, useNormalMap: boolean) {
+  // Keep authored CLO/mesh normals — recomputing on dense cloth creates faceting.
+  if (!geometry.getAttribute("normal")) {
+    geometry.computeVertexNormals();
+  }
+  if (useNormalMap && geometry.getAttribute("uv")) {
+    // Indexed geometry is required for stable tangents; skip if missing.
+    if (geometry.getIndex()) {
+      try {
+        geometry.computeTangents();
+      } catch {
+        // Fall through without tangents — material will drop normalMap below.
+      }
+    }
+  }
+}
+
 function TeeMesh({
   garmentId,
   color,
@@ -66,8 +88,9 @@ function TeeMesh({
 }: TeeMeshProps) {
   const garment = getStudioGarment(garmentId);
   const { scene } = useGLTF(garment.modelPath);
+  const normalPath = garment.normalPath;
   const normalMap = useTexture(
-    garment.normalPath ?? "/models/studio/textures/normal.png",
+    normalPath ?? "/models/studio/textures/normal.png",
   );
   const atlasRef = useRef<{
     canvas: HTMLCanvasElement;
@@ -93,9 +116,19 @@ function TeeMesh({
   }, [cloned]);
 
   useLayoutEffect(() => {
-    normalMap.colorSpace = THREE.NoColorSpace;
-    normalMap.flipY = false;
-    normalMap.needsUpdate = true;
+    // Oversized CLO mesh uses a unified UV atlas. A tiling fabric NRM on those
+    // UVs reads as dense triangular noise; only apply a true atlas normal, and
+    // keep strength low. Classic keeps its packed-island normal map.
+    const useNormalMap = garmentId === "classic" || !!garment.normalPath;
+    const oversized = garmentId === "oversized";
+
+    if (useNormalMap) {
+      normalMap.colorSpace = THREE.NoColorSpace;
+      normalMap.flipY = false;
+      normalMap.wrapS = THREE.ClampToEdgeWrapping;
+      normalMap.wrapT = THREE.ClampToEdgeWrapping;
+      normalMap.needsUpdate = true;
+    }
 
     const canvas = document.createElement("canvas");
     canvas.width = ATLAS_SIZE;
@@ -116,17 +149,25 @@ function TeeMesh({
       if (!mesh.isMesh) return;
       mesh.castShadow = true;
       mesh.receiveShadow = true;
-      const geometry = mesh.geometry;
-      if (!geometry.getAttribute("normal")) geometry.computeVertexNormals();
+
+      const geometry = mesh.geometry as THREE.BufferGeometry;
+      prepareGeometry(geometry, useNormalMap && !oversized);
+
+      // Oversized: solid albedo + soft shading only. Geometry already carries
+      // cloth folds; atlas/flat normals + DoubleSide produced black fragments.
+      const hasTangents = !!geometry.getAttribute("tangent");
+      const applyNormal =
+        useNormalMap && !oversized && hasTangents ? normalMap : null;
 
       const mat = new THREE.MeshStandardMaterial({
         color: "#ffffff",
         map: texture,
-        normalMap,
-        normalScale: new THREE.Vector2(0.55, 0.55),
-        roughness: 0.88,
+        normalMap: applyNormal,
+        normalScale: new THREE.Vector2(0.45, 0.45),
+        roughness: oversized ? 0.78 : 0.88,
         metalness: 0.02,
-        side: THREE.DoubleSide,
+        // FrontSide avoids backface dark triangles on thin CLO shells
+        side: THREE.FrontSide,
       });
       mesh.material = mat;
       mats.push(mat);
@@ -143,7 +184,7 @@ function TeeMesh({
         m.dispose();
       });
     };
-  }, [cloned, normalMap]);
+  }, [cloned, normalMap, garmentId, garment.normalPath]);
 
   useEffect(() => {
     const gen = ++loadGen.current;
@@ -200,7 +241,6 @@ function TeeMesh({
     ctx.fillStyle = color;
     ctx.fillRect(0, 0, size, size);
 
-    // Paint collar last so it wins on shared texels (oversized)
     const order: PatternPanel[] = [
       "front",
       "back",
@@ -211,11 +251,11 @@ function TeeMesh({
     for (const panel of order) {
       const img = imagesRef.current[panel];
       if (!img) continue;
-      const rect = garment.panelUV[panel];
-      const { x, y, w, h } = uvRectToPixels(rect, size);
+      const shape = getGarmentPanelShape(garmentId, panel);
+      const { x, y, w, h } = uvRectToPixels(shape.uvRect, size);
+      const poly = outlineToAtlasPoints(shape, size);
       ctx.save();
-      ctx.beginPath();
-      ctx.rect(x, y, w, h);
+      strokeOutline(ctx, poly);
       ctx.clip();
       drawContained(ctx, img, x, y, w, h);
       ctx.restore();
@@ -226,7 +266,6 @@ function TeeMesh({
     pendingBake.current = false;
   });
 
-  // Stage placement: raised above chat, nudged right of the tools panel
   const { center, scale } = frame;
   return (
     <group position={[0.55, 0.42, 0]} scale={scale}>
@@ -281,9 +320,10 @@ export function StudioTeeViewport({
           gl.domElement.style.touchAction = "none";
         }}
       >
-        <ambientLight intensity={0.75} />
-        <directionalLight position={[3, 4, 2]} intensity={1.2} />
-        <directionalLight position={[-2, 1.5, -2]} intensity={0.45} />
+        <ambientLight intensity={0.7} />
+        <hemisphereLight color="#f3f0e8" groundColor="#1a1f1a" intensity={0.4} />
+        <directionalLight position={[3.2, 4.2, 2.4]} intensity={1.05} />
+        <directionalLight position={[-2.4, 1.8, -2.2]} intensity={0.35} />
         <Suspense fallback={null}>
           <TeeMesh
             key={garmentId}
