@@ -55,3 +55,6 @@ next-env.d.ts
 
 # Giant runtime binaries (>50MB) — keep locally / CDN; do not push
 public/models/walking-tshirt.glb
+
+# Unused / experimental atlas normals (not referenced by garments)
+public/models/studio/oversized/atlas-normal.jpg
