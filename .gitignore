@@ -58,3 +58,4 @@ public/models/walking-tshirt.glb
 
 # Unused / experimental atlas normals (not referenced by garments)
 public/models/studio/oversized/atlas-normal.jpg
+public/oversized-material-test.html
