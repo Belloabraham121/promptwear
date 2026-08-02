@@ -40,6 +40,11 @@ import {
   PATTERN_PANELS,
 } from "@/lib/dashboard/types";
 import { STUDIO_BG } from "@/lib/studio/atlas";
+import {
+  STUDIO_GARMENT_LIST,
+  getStudioGarment,
+  type StudioGarmentId,
+} from "@/lib/studio/garments";
 import { cn } from "@/lib/utils";
 
 const TEE_COLORS = [
@@ -63,7 +68,6 @@ export function StudioWorkspace({ design: initial }: Props) {
   const [tool, setTool] = useState<StudioTool>("pen");
   const [penColor, setPenColor] = useState("#d6ff3c");
   const [penWidth, setPenWidth] = useState(6);
-  const [printUrl, setPrintUrl] = useState<string | null>(null);
   const [printRevision, setPrintRevision] = useState(0);
   const [panelPrints, setPanelPrints] = useState<
     Partial<Record<PatternPanel, string>>
@@ -97,6 +101,7 @@ export function StudioWorkspace({ design: initial }: Props) {
         status: next.status,
         color: next.color,
         background: next.background,
+        garmentId: next.garmentId,
         activePanel: next.activePanel,
         prompt: next.prompt,
         method: next.method,
@@ -116,7 +121,6 @@ export function StudioWorkspace({ design: initial }: Props) {
   function onPanelChange(json: PanelJson, printDataUrl: string) {
     const panel = design.activePanel;
     setPanelPrints((prev) => ({ ...prev, [panel]: printDataUrl }));
-    setPrintUrl(printDataUrl);
     setPrintRevision((n) => n + 1);
 
     const panels = { ...design.panels, [panel]: json };
@@ -165,11 +169,6 @@ export function StudioWorkspace({ design: initial }: Props) {
   async function switchPanel(panel: PatternPanel) {
     if (panel === design.activePanel) return;
     await persistNow({ activePanel: panel });
-    const cached = panelPrints[panel];
-    if (cached) {
-      setPrintUrl(cached);
-      setPrintRevision((n) => n + 1);
-    }
   }
 
   async function onChatSubmit(e: React.FormEvent) {
@@ -198,6 +197,14 @@ export function StudioWorkspace({ design: initial }: Props) {
     () => DESIGN_STATUS_LABELS[design.status],
     [design.status],
   );
+
+  const garment = getStudioGarment(design.garmentId);
+
+  async function setGarment(id: StudioGarmentId) {
+    if (id === design.garmentId) return;
+    await persistNow({ garmentId: id });
+    setPrintRevision((n) => n + 1);
+  }
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
@@ -256,15 +263,16 @@ export function StudioWorkspace({ design: initial }: Props) {
       {/* Full-bleed stage */}
       <div className="relative min-h-0 flex-1">
         <StudioBackdrop background={design.background} />
-        <StudioTeeViewport
-          color={design.color}
-          printUrl={printUrl}
-          printRevision={printRevision}
-          controlsRef={controlsRef}
-          className="absolute inset-0"
-        />
+          <StudioTeeViewport
+            garmentId={design.garmentId ?? "classic"}
+            color={design.color}
+            panelPrints={panelPrints}
+            printRevision={printRevision}
+            controlsRef={controlsRef}
+            className="absolute inset-0"
+          />
 
-        <div className="absolute right-3 top-3 z-10 flex flex-col gap-1.5">
+          <div className="absolute right-3 top-3 z-10 flex flex-col gap-1.5">
           <button
             type="button"
             aria-label="Zoom in"
@@ -283,22 +291,48 @@ export function StudioWorkspace({ design: initial }: Props) {
           </button>
         </div>
 
-        <div className="absolute right-14 top-3 z-10 flex flex-wrap justify-end gap-1.5">
-          {(Object.keys(STUDIO_BG) as StudioBackground[]).map((key) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => void persistNow({ background: key })}
-              className={cn(
-                "px-2 py-1 text-[0.6rem] uppercase tracking-[0.12em]",
-                design.background === key
-                  ? "bg-[#d6ff3c] text-[#070807]"
-                  : "bg-black/40 text-[#f3f0e8] backdrop-blur",
-              )}
-            >
-              {STUDIO_BG[key].label}
-            </button>
-          ))}
+        <div className="absolute right-14 top-3 z-10 flex max-w-[min(100%-5rem,22rem)] flex-col items-end gap-2">
+          <div className="flex flex-wrap justify-end gap-1.5">
+            {STUDIO_GARMENT_LIST.map((g) => (
+              <button
+                key={g.id}
+                type="button"
+                title={g.hint}
+                onClick={() => void setGarment(g.id)}
+                className={cn(
+                  "px-2.5 py-1 text-[0.6rem] uppercase tracking-[0.12em]",
+                  (design.garmentId ?? "classic") === g.id
+                    ? "bg-[#d6ff3c] font-semibold text-[#070807]"
+                    : "bg-black/45 text-[#f3f0e8] backdrop-blur hover:bg-black/60",
+                )}
+              >
+                {g.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap justify-end gap-1.5">
+            {(Object.keys(STUDIO_BG) as StudioBackground[]).map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => void persistNow({ background: key })}
+                className={cn(
+                  "px-2 py-1 text-[0.6rem] uppercase tracking-[0.12em]",
+                  design.background === key
+                    ? "bg-[#d6ff3c] text-[#070807]"
+                    : "bg-black/40 text-[#f3f0e8] backdrop-blur",
+                )}
+              >
+                {STUDIO_BG[key].label}
+              </button>
+            ))}
+          </div>
+          {!garment.fullPanelSupport ? (
+            <p className="max-w-[16rem] text-right text-[0.58rem] leading-snug text-[#c8c4b8]/90">
+              Oversized: collar is separate; front/back/sleeves share one body UV
+              (CLO export). Use Classic for full panel editing.
+            </p>
+          ) : null}
         </div>
 
         {/* Floating tools (does not shrink the stage) */}

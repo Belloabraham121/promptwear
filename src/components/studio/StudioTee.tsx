@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, useGLTF } from "@react-three/drei";
+import { OrbitControls, useGLTF, useTexture } from "@react-three/drei";
 import {
   Suspense,
   useEffect,
@@ -10,7 +10,13 @@ import {
   useRef,
 } from "react";
 import * as THREE from "three";
-import { ATLAS_SIZE, PRINT_UV } from "@/lib/studio/atlas";
+import type { PatternPanel } from "@/lib/dashboard/types";
+import { PATTERN_PANELS } from "@/lib/dashboard/types";
+import { ATLAS_SIZE, uvRectToPixels } from "@/lib/studio/atlas";
+import {
+  getStudioGarment,
+  type StudioGarmentId,
+} from "@/lib/studio/garments";
 
 type OrbitLike = {
   object: THREE.Camera;
@@ -20,99 +26,77 @@ type OrbitLike = {
   maxDistance: number;
 };
 
-const MODEL_PATH = "/models/walking-tshirt.glb?v=studio1";
-
-type TorsoFrame = {
-  xMin: number;
-  yMin: number;
-  xSpan: number;
-  ySpan: number;
-};
-
-function measureTorsoFrame(geometry: THREE.BufferGeometry): TorsoFrame {
-  const pos = geometry.getAttribute("position");
-  const nrm = geometry.getAttribute("normal");
-
-  let neckY = -Infinity;
-  for (let i = 0; i < pos.count; i += 1) {
-    const x = pos.getX(i);
-    const y = pos.getY(i);
-    const z = pos.getZ(i);
-    const nz = nrm ? nrm.getZ(i) : 1;
-    if (Math.abs(x) > 0.18) continue;
-    if (z < 0.15 || nz < 0.2) continue;
-    if (y > neckY) neckY = y;
-  }
-  if (!Number.isFinite(neckY)) neckY = 1.2;
-
-  let xMin = Infinity;
-  let xMax = -Infinity;
-  let yMin = Infinity;
-  let yMax = -Infinity;
-  let n = 0;
-
-  for (let i = 0; i < pos.count; i += 1) {
-    const x = pos.getX(i);
-    const y = pos.getY(i);
-    const z = pos.getZ(i);
-    const nz = nrm ? nrm.getZ(i) : 1;
-    if (Math.abs(x) > 0.55) continue;
-    if (y < neckY - 1.05 || y > neckY - 0.08) continue;
-    if (z < 0.08 || nz < 0.3) continue;
-    if (x < xMin) xMin = x;
-    if (x > xMax) xMax = x;
-    if (y < yMin) yMin = y;
-    if (y > yMax) yMax = y;
-    n += 1;
-  }
-
-  if (n < 40) {
-    xMin = -0.5;
-    xMax = 0.5;
-    yMin = neckY - 1.0;
-    yMax = neckY - 0.1;
-  }
-
-  return {
-    xMin,
-    yMin,
-    xSpan: Math.max(xMax - xMin, 1e-5),
-    ySpan: Math.max(yMax - yMin, 1e-5),
-  };
-}
-
-function bindChestUVs(geometry: THREE.BufferGeometry, frame: TorsoFrame) {
-  const pos = geometry.getAttribute("position");
-  const uvs = new Float32Array(pos.count * 2);
-  for (let i = 0; i < pos.count; i += 1) {
-    uvs[i * 2] = (pos.getX(i) - frame.xMin) / frame.xSpan;
-    uvs[i * 2 + 1] = (pos.getY(i) - frame.yMin) / frame.ySpan;
-  }
-  geometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
-  geometry.attributes.uv.needsUpdate = true;
-}
+export type PanelPrintMap = Partial<Record<PatternPanel, string | null>>;
 
 type TeeMeshProps = {
+  garmentId: StudioGarmentId;
   color: string;
-  printUrl: string | null;
+  panelPrints: PanelPrintMap;
   printRevision: number;
 };
 
-function TeeMesh({ color, printUrl, printRevision }: TeeMeshProps) {
-  const { scene } = useGLTF(MODEL_PATH);
-  const root = useRef<THREE.Group>(null);
+function drawContained(
+  ctx: CanvasRenderingContext2D,
+  img: CanvasImageSource,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+) {
+  const iw =
+    "naturalWidth" in img
+      ? (img as HTMLImageElement).naturalWidth
+      : (img as ImageBitmap).width;
+  const ih =
+    "naturalHeight" in img
+      ? (img as HTMLImageElement).naturalHeight
+      : (img as ImageBitmap).height;
+  if (!iw || !ih) return;
+  const scale = Math.min(w / iw, h / ih);
+  const dw = iw * scale;
+  const dh = ih * scale;
+  ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+}
+
+function TeeMesh({
+  garmentId,
+  color,
+  panelPrints,
+  printRevision,
+}: TeeMeshProps) {
+  const garment = getStudioGarment(garmentId);
+  const { scene } = useGLTF(garment.modelPath);
+  const normalMap = useTexture(
+    garment.normalPath ?? "/models/studio/textures/normal.png",
+  );
   const atlasRef = useRef<{
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
     texture: THREE.CanvasTexture;
   } | null>(null);
-  const printImg = useRef<HTMLImageElement | null>(null);
+  const imagesRef = useRef<Partial<Record<PatternPanel, HTMLImageElement>>>({});
   const bakeKey = useRef("");
   const pendingBake = useRef(true);
+  const loadGen = useRef(0);
 
   const cloned = useMemo(() => scene.clone(true), [scene]);
 
+  const frame = useMemo(() => {
+    const box = new THREE.Box3().setFromObject(cloned);
+    const size = new THREE.Vector3();
+    const center = new THREE.Vector3();
+    box.getSize(size);
+    box.getCenter(center);
+    const targetH = 1.65;
+    const scale = size.y > 1e-5 ? targetH / size.y : 1;
+    return { center, scale };
+  }, [cloned]);
+
   useLayoutEffect(() => {
+    normalMap.colorSpace = THREE.NoColorSpace;
+    normalMap.flipY = false;
+    normalMap.needsUpdate = true;
+
     const canvas = document.createElement("canvas");
     canvas.width = ATLAS_SIZE;
     canvas.height = ATLAS_SIZE;
@@ -132,15 +116,16 @@ function TeeMesh({ color, printUrl, printRevision }: TeeMeshProps) {
       if (!mesh.isMesh) return;
       mesh.castShadow = true;
       mesh.receiveShadow = true;
-      const geometry = mesh.geometry.clone();
+      const geometry = mesh.geometry;
       if (!geometry.getAttribute("normal")) geometry.computeVertexNormals();
-      bindChestUVs(geometry, measureTorsoFrame(geometry));
-      mesh.geometry = geometry;
+
       const mat = new THREE.MeshStandardMaterial({
         color: "#ffffff",
         map: texture,
-        roughness: 0.9,
-        metalness: 0.015,
+        normalMap,
+        normalScale: new THREE.Vector2(0.55, 0.55),
+        roughness: 0.88,
+        metalness: 0.02,
         side: THREE.DoubleSide,
       });
       mesh.material = mat;
@@ -154,63 +139,86 @@ function TeeMesh({ color, printUrl, printRevision }: TeeMeshProps) {
       atlasRef.current = null;
       mats.forEach((m) => {
         m.map = null;
+        m.normalMap = null;
         m.dispose();
       });
     };
-  }, [cloned]);
+  }, [cloned, normalMap]);
 
   useEffect(() => {
+    const gen = ++loadGen.current;
     pendingBake.current = true;
-    if (!printUrl) {
-      printImg.current = null;
-      return;
-    }
-    const img = new Image();
-    img.decoding = "async";
-    img.onload = () => {
-      printImg.current = img;
+    const next: Partial<Record<PatternPanel, HTMLImageElement>> = {};
+
+    const jobs = PATTERN_PANELS.map(
+      (panel) =>
+        new Promise<void>((resolve) => {
+          const url = panelPrints[panel];
+          if (!url) {
+            resolve();
+            return;
+          }
+          const img = new Image();
+          img.decoding = "async";
+          img.onload = () => {
+            if (gen !== loadGen.current) {
+              resolve();
+              return;
+            }
+            next[panel] = img;
+            resolve();
+          };
+          img.onerror = () => resolve();
+          img.src = url;
+        }),
+    );
+
+    void Promise.all(jobs).then(() => {
+      if (gen !== loadGen.current) return;
+      imagesRef.current = next;
       pendingBake.current = true;
-    };
-    img.onerror = () => {
-      printImg.current = null;
-      pendingBake.current = true;
-    };
-    img.src = printUrl;
-  }, [printUrl, printRevision]);
+    });
+  }, [panelPrints, printRevision]);
 
   useFrame(() => {
     const atlas = atlasRef.current;
     if (!atlas) return;
 
-    const key = `${color}|${printRevision}|${printUrl ?? ""}|${printImg.current ? 1 : 0}`;
+    const loaded = PATTERN_PANELS.map((p) =>
+      imagesRef.current[p] ? p : "",
+    ).join("|");
+    const key = `${garmentId}|${color}|${printRevision}|${loaded}`;
     if (!pendingBake.current && key === bakeKey.current) return;
-    if (printUrl && !printImg.current) return;
+
+    const waiting = PATTERN_PANELS.some(
+      (p) => panelPrints[p] && !imagesRef.current[p],
+    );
+    if (waiting) return;
 
     const { ctx, texture } = atlas;
     const size = ATLAS_SIZE;
     ctx.fillStyle = color;
     ctx.fillRect(0, 0, size, size);
 
-    const img = printImg.current;
-    if (img) {
-      const x = PRINT_UV.u0 * size;
-      const y = PRINT_UV.v0 * size;
-      const w = (PRINT_UV.u1 - PRINT_UV.u0) * size;
-      const h = (PRINT_UV.v1 - PRINT_UV.v0) * size;
-      const iw = img.naturalWidth || img.width;
-      const ih = img.naturalHeight || img.height;
-      if (iw > 0 && ih > 0) {
-        // Cover the chest stamp area so artwork reads large on the tee
-        const scale = Math.max(w / iw, h / ih);
-        const dw = iw * scale;
-        const dh = ih * scale;
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(x, y, w, h);
-        ctx.clip();
-        ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
-        ctx.restore();
-      }
+    // Paint collar last so it wins on shared texels (oversized)
+    const order: PatternPanel[] = [
+      "front",
+      "back",
+      "sleeveL",
+      "sleeveR",
+      "collar",
+    ];
+    for (const panel of order) {
+      const img = imagesRef.current[panel];
+      if (!img) continue;
+      const rect = garment.panelUV[panel];
+      const { x, y, w, h } = uvRectToPixels(rect, size);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x, y, w, h);
+      ctx.clip();
+      drawContained(ctx, img, x, y, w, h);
+      ctx.restore();
     }
 
     texture.needsUpdate = true;
@@ -218,9 +226,13 @@ function TeeMesh({ color, printUrl, printRevision }: TeeMeshProps) {
     pendingBake.current = false;
   });
 
+  // Stage placement: raised above chat, nudged right of the tools panel
+  const { center, scale } = frame;
   return (
-    <group ref={root} position={[0, -0.2, 0]} scale={1.05}>
-      <primitive object={cloned} />
+    <group position={[0.55, 0.42, 0]} scale={scale}>
+      <group position={[-center.x, -center.y, -center.z]}>
+        <primitive object={cloned} />
+      </group>
     </group>
   );
 }
@@ -237,17 +249,20 @@ function ZoomBinder({
   return null;
 }
 
-useGLTF.preload(MODEL_PATH);
+useGLTF.preload(getStudioGarment("classic").modelPath);
+useGLTF.preload(getStudioGarment("oversized").modelPath);
 
 export function StudioTeeViewport({
+  garmentId,
   color,
-  printUrl,
+  panelPrints,
   printRevision,
   className,
   controlsRef,
 }: {
+  garmentId: StudioGarmentId;
   color: string;
-  printUrl: string | null;
+  panelPrints: PanelPrintMap;
   printRevision: number;
   className?: string;
   controlsRef?: React.MutableRefObject<OrbitLike | null>;
@@ -258,7 +273,7 @@ export function StudioTeeViewport({
   return (
     <div className={className}>
       <Canvas
-        camera={{ position: [0, 0.4, 2.8], fov: 38 }}
+        camera={{ position: [0.55, 0.55, 2.85], fov: 34 }}
         gl={{ antialias: true, alpha: true }}
         dpr={[1, 1.75]}
         style={{ touchAction: "none" }}
@@ -266,13 +281,15 @@ export function StudioTeeViewport({
           gl.domElement.style.touchAction = "none";
         }}
       >
-        <ambientLight intensity={0.7} />
-        <directionalLight position={[3, 4, 2]} intensity={1.15} />
-        <directionalLight position={[-2, 1, -2]} intensity={0.4} />
+        <ambientLight intensity={0.75} />
+        <directionalLight position={[3, 4, 2]} intensity={1.2} />
+        <directionalLight position={[-2, 1.5, -2]} intensity={0.45} />
         <Suspense fallback={null}>
           <TeeMesh
+            key={garmentId}
+            garmentId={garmentId}
             color={color}
-            printUrl={printUrl}
+            panelPrints={panelPrints}
             printRevision={printRevision}
           />
         </Suspense>
@@ -282,11 +299,11 @@ export function StudioTeeViewport({
           enableZoom
           enableRotate
           zoomSpeed={1.1}
-          minDistance={0.9}
-          maxDistance={9}
-          minPolarAngle={0.15}
-          maxPolarAngle={Math.PI - 0.15}
-          target={[0, 0.35, 0]}
+          minDistance={1.1}
+          maxDistance={8}
+          minPolarAngle={0.2}
+          maxPolarAngle={Math.PI * 0.72}
+          target={[0.55, 0.42, 0]}
         />
         <ZoomBinder controlsRef={ref} />
       </Canvas>
@@ -304,8 +321,8 @@ export function zoomStudioTee(
   const offset = new THREE.Vector3().subVectors(cam.position, target);
   const next = offset.clone().multiplyScalar(direction === "in" ? 0.82 : 1.22);
   const dist = next.length();
-  const min = controls.minDistance || 0.9;
-  const max = controls.maxDistance || 9;
+  const min = controls.minDistance || 1.1;
+  const max = controls.maxDistance || 8;
   if (dist < min || dist > max) return;
   cam.position.copy(target).add(next);
   controls.update();

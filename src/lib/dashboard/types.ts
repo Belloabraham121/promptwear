@@ -1,6 +1,11 @@
 export type DesignMethod = "prompt" | "draw" | "hybrid";
 
-export type PatternPanel = "front" | "back" | "sleeveL" | "sleeveR";
+export type PatternPanel =
+  | "front"
+  | "back"
+  | "sleeveL"
+  | "sleeveR"
+  | "collar";
 
 export type StudioBackground = "ink" | "bone" | "white" | "grid";
 
@@ -17,6 +22,8 @@ export type Design = {
   color: string;
   background: StudioBackground;
   status: DesignStatus;
+  /** Studio garment mesh — classic (full panels) or oversized (CLO) */
+  garmentId: "classic" | "oversized";
   activePanel: PatternPanel;
   panels: Record<PatternPanel, PanelJson>;
   /** IndexedDB asset id for PNG/JPEG thumbnail */
@@ -75,6 +82,7 @@ export const PATTERN_PANELS: PatternPanel[] = [
   "back",
   "sleeveL",
   "sleeveR",
+  "collar",
 ];
 
 export const PANEL_LABELS: Record<PatternPanel, string> = {
@@ -82,6 +90,7 @@ export const PANEL_LABELS: Record<PatternPanel, string> = {
   back: "Back",
   sleeveL: "Left sleeve",
   sleeveR: "Right sleeve",
+  collar: "Collar",
 };
 
 export const EMPTY_PANELS = (): Record<PatternPanel, PanelJson> => ({
@@ -89,6 +98,7 @@ export const EMPTY_PANELS = (): Record<PatternPanel, PanelJson> => ({
   back: null,
   sleeveL: null,
   sleeveR: null,
+  collar: null,
 });
 
 export const QUALITY_LABELS: Record<GarmentQuality, string> = {

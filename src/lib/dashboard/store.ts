@@ -45,8 +45,12 @@ function normalizeDesign(raw: Partial<Design> & { id: string }): Design {
     color: raw.color ?? "#d6ff3c",
     background: (raw.background as StudioBackground) ?? "ink",
     status: raw.status ?? "draft",
+    garmentId:
+      raw.garmentId === "oversized" || raw.garmentId === "classic"
+        ? raw.garmentId
+        : "classic",
     activePanel: raw.activePanel ?? "front",
-    panels: raw.panels ?? EMPTY_PANELS(),
+    panels: { ...EMPTY_PANELS(), ...(raw.panels ?? {}) },
     thumbnailAssetId: raw.thumbnailAssetId,
     chat: raw.chat ?? [],
     createdAt: raw.createdAt ?? ts,

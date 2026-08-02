@@ -29,6 +29,21 @@ type Props = {
 };
 
 const SIZE = 512;
+const EDITOR_BG = "#1a1f1a";
+
+function isCanvasAlive(canvas: Canvas) {
+  return !canvas.disposed;
+}
+
+/** Artwork-only payload for Fabric 7 — skip editor chrome that loadFromJSON would clear/restore. */
+function artworkPayload(
+  json: PanelJson,
+): { objects: unknown[] } | null {
+  if (!json || typeof json !== "object") return null;
+  const objects = (json as { objects?: unknown }).objects;
+  if (!Array.isArray(objects) || objects.length === 0) return null;
+  return { objects };
+}
 
 function guideDataUrl(panel: PatternPanel) {
   const guide = document.createElement("canvas");
@@ -49,6 +64,14 @@ function guideDataUrl(panel: PatternPanel) {
     ctx.lineTo(416, 72);
     ctx.lineTo(400, 460);
     ctx.lineTo(112, 460);
+    ctx.closePath();
+    ctx.stroke();
+  } else if (panel === "collar") {
+    ctx.beginPath();
+    ctx.moveTo(80, 200);
+    ctx.quadraticCurveTo(256, 120, 432, 200);
+    ctx.lineTo(400, 300);
+    ctx.quadraticCurveTo(256, 240, 112, 300);
     ctx.closePath();
     ctx.stroke();
   } else {
@@ -149,14 +172,15 @@ export const PatternCanvas = forwardRef<PatternCanvasHandle, Props>(
     }
 
     function emit(canvas: Canvas) {
-      if (skipEmit.current) return;
+      if (skipEmit.current || !isCanvasAlive(canvas)) return;
       const objects = canvas.getObjects();
-      const data = canvas.toJSON();
+      const data = canvas.toJSON() as Record<string, unknown>;
       const printDataUrl = exportPrint(canvas);
-      onChangeRef.current(
-        objects.length ? (data as PanelJson) : null,
-        printDataUrl,
-      );
+      // Persist artwork objects only — not guide backgroundImage / editor bg.
+      const panelJson: PanelJson = objects.length
+        ? { version: data.version, objects: data.objects }
+        : null;
+      onChangeRef.current(panelJson, printDataUrl);
     }
 
     useImperativeHandle(ref, () => ({
@@ -201,10 +225,13 @@ export const PatternCanvas = forwardRef<PatternCanvasHandle, Props>(
       const el = hostRef.current;
       if (!el) return undefined;
 
+      const ac = new AbortController();
+      const { signal } = ac;
+
       const canvas = new Canvas(el, {
         width: SIZE,
         height: SIZE,
-        backgroundColor: "#1a1f1a",
+        backgroundColor: EDITOR_BG,
         preserveObjectStacking: true,
         selection: false,
         isDrawingMode: true,
@@ -215,35 +242,62 @@ export const PatternCanvas = forwardRef<PatternCanvasHandle, Props>(
       applyTool(canvas);
       syncCssSize(canvas);
 
-      void FabricImage.fromURL(guideDataUrl(panel)).then((img) => {
-        img.set({ selectable: false, evented: false });
-        canvas.backgroundImage = img;
-        canvas.requestRenderAll();
-      });
-
       const bump = () => emit(canvas);
       canvas.on("path:created", bump);
       canvas.on("object:modified", bump);
       canvas.on("object:removed", bump);
 
-      const ro = new ResizeObserver(() => syncCssSize(canvas));
+      const ro = new ResizeObserver(() => {
+        if (isCanvasAlive(canvas)) syncCssSize(canvas);
+      });
       if (wrapRef.current) ro.observe(wrapRef.current);
 
       skipEmit.current = true;
       void (async () => {
-        if (json) {
-          await canvas.loadFromJSON(json);
-          canvas.requestRenderAll();
+        try {
+          const payload = artworkPayload(json);
+          if (payload && isCanvasAlive(canvas) && !signal.aborted) {
+            await canvas.loadFromJSON(payload, undefined, { signal });
+          }
+        } catch {
+          // Abort, dispose race, or stale/invalid Fabric JSON — keep empty artwork.
+          if (!isCanvasAlive(canvas) || signal.aborted) return;
+          try {
+            canvas.getObjects().forEach((o) => canvas.remove(o));
+            canvas.discardActiveObject();
+          } catch {
+            return;
+          }
         }
+
+        if (!isCanvasAlive(canvas) || signal.aborted) return;
+
+        try {
+          const img = await FabricImage.fromURL(guideDataUrl(panel), {
+            signal,
+          });
+          if (!isCanvasAlive(canvas) || signal.aborted) return;
+          img.set({ selectable: false, evented: false });
+          canvas.backgroundColor = EDITOR_BG;
+          canvas.backgroundImage = img;
+          canvas.requestRenderAll();
+        } catch {
+          if (!isCanvasAlive(canvas) || signal.aborted) return;
+          canvas.backgroundColor = EDITOR_BG;
+        }
+
+        if (!isCanvasAlive(canvas) || signal.aborted) return;
         skipEmit.current = false;
         applyTool(canvas);
         emit(canvas);
       })();
 
       return () => {
+        ac.abort();
+        skipEmit.current = true;
         ro.disconnect();
-        canvas.dispose();
         fabricRef.current = null;
+        void canvas.dispose();
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [panel]);
