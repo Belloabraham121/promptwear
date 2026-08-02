@@ -14,6 +14,7 @@ import {
 import { useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { AudienceArt } from "./AudienceArt";
 
 const ShirtScene = dynamic(
   () => import("./ShirtScene").then((mod) => mod.ShirtScene),
@@ -71,18 +72,44 @@ const methods = [
   },
 ];
 
+const audiences = [
+  {
+    number: "01",
+    label: "Campus",
+    title: "Crews that want the same fit.",
+    body: "Department drops, hostel runs, friend groups matching without the group-chat design drama.",
+  },
+  {
+    number: "02",
+    label: "Events",
+    title: "Merch that shows up with the night.",
+    body: "Concert kits, launch nights, tour drops—print for the room without waiting on an agency.",
+  },
+  {
+    number: "03",
+    label: "Brands",
+    title: "First collection energy.",
+    body: "Starting a tee brand or testing a drop? Ship sample-to-batch without the design invoice.",
+  },
+];
+
 export function LandingPage() {
   const root = useRef<HTMLDivElement>(null);
   const howSection = useRef<HTMLElement>(null);
   const howPin = useRef<HTMLDivElement>(null);
+  const audienceSection = useRef<HTMLElement>(null);
   const sceneProgress = useRef(0);
   const [activeStep, setActiveStep] = useState(0);
+  const [activeAudience, setActiveAudience] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [audienceStacked, setAudienceStacked] = useState(false);
 
   useLayoutEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const narrow = window.matchMedia("(max-width: 767px)");
     setReducedMotion(media.matches);
+    setAudienceStacked(media.matches || narrow.matches);
 
     gsap.registerPlugin(ScrollTrigger);
     const ctx = gsap.context(() => {
@@ -130,6 +157,21 @@ export function LandingPage() {
         });
       }
 
+      if (audienceSection.current && !media.matches && !narrow.matches) {
+        ScrollTrigger.create({
+          trigger: audienceSection.current,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 0.4,
+          onUpdate: (self) => {
+            const next = Math.min(2, Math.floor(self.progress * 3));
+            setActiveAudience((current) =>
+              current === next ? current : next,
+            );
+          },
+        });
+      }
+
       gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((element) => {
         gsap.from(element, {
           y: media.matches ? 0 : 56,
@@ -144,15 +186,20 @@ export function LandingPage() {
       });
     }, root);
 
-    const onChange = () => setReducedMotion(media.matches);
-    media.addEventListener("change", onChange);
+    const onMotion = () => setReducedMotion(media.matches);
+    const onNarrow = () =>
+      setAudienceStacked(media.matches || narrow.matches);
+    media.addEventListener("change", onMotion);
+    narrow.addEventListener("change", onNarrow);
     return () => {
-      media.removeEventListener("change", onChange);
+      media.removeEventListener("change", onMotion);
+      narrow.removeEventListener("change", onNarrow);
       ctx.revert();
     };
   }, []);
 
   const step = steps[activeStep] ?? steps[0];
+  const audience = audiences[activeAudience] ?? audiences[0];
 
   return (
     <div ref={root} className="site-shell">
@@ -394,44 +441,87 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section className="audience-section">
-          <div className="audience-copy" data-reveal>
-            <p className="audience-kicker">Who it&apos;s for</p>
-            <h2>
-              Campus creatives.
-              <br />
-              Event organisers.
-              <br />
-              Brands just getting started.
-            </h2>
-            <p className="audience-body">
-              Matching fits for friends. Merch without the design invoice. One
-              piece or one hundred—same workflow.
-            </p>
-            <ul className="audience-list">
-              <li>
-                <span>Campus</span>
-                Crew tees, department drops, hostel runs.
-              </li>
-              <li>
-                <span>Events</span>
-                Concert merch, launch nights, tour kits.
-              </li>
-              <li>
-                <span>Brands</span>
-                First collection energy, no agency invoice.
-              </li>
-            </ul>
+        <section
+          ref={audienceSection}
+          className={`audience-section ${audienceStacked ? "is-stacked" : ""}`}
+          aria-label="Who it's for"
+        >
+          <div className="audience-pin">
+            <div className="audience-copy">
+              <p className="audience-kicker">Who it&apos;s for</p>
+              <div className="audience-labels">
+                {audiences.map((item, index) => (
+                  <button
+                    key={item.label}
+                    type="button"
+                    className={activeAudience === index ? "is-active" : ""}
+                    aria-pressed={activeAudience === index}
+                    onClick={() => {
+                      setActiveAudience(index);
+                      const section = audienceSection.current;
+                      if (!section || audienceStacked) return;
+                      const top =
+                        section.getBoundingClientRect().top + window.scrollY;
+                      const span = Math.max(1, section.offsetHeight - window.innerHeight);
+                      // Land mid-beat so ScrollTrigger stays on this audience
+                      const progress = (index + 0.5) / audiences.length;
+                      window.scrollTo({ top: top + span * progress });
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              {audienceStacked ? (
+                <div className="audience-static">
+                  {audiences.map((item) => (
+                    <article key={item.number} className="audience-beat is-active">
+                      <span className="audience-number">{item.number}</span>
+                      <h2>{item.title}</h2>
+                      <p className="audience-body">{item.body}</p>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="audience-beats">
+                  {audiences.map((item, index) => (
+                    <article
+                      key={item.number}
+                      className={`audience-beat ${activeAudience === index ? "is-active" : ""}`}
+                      aria-hidden={activeAudience !== index}
+                    >
+                      <span className="audience-number">{item.number}</span>
+                      <h2>{item.title}</h2>
+                      <p className="audience-body">{item.body}</p>
+                    </article>
+                  ))}
+                </div>
+              )}
+
+              {!audienceStacked ? (
+                <div className="audience-progress" aria-hidden="true">
+                  {audiences.map((item, index) => (
+                    <span
+                      key={item.number}
+                      className={activeAudience >= index ? "is-filled" : ""}
+                    />
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="audience-visual" aria-live="polite">
+              <AudienceArt
+                active={activeAudience}
+                reducedMotion={reducedMotion}
+                stacked={audienceStacked}
+              />
+              {!audienceStacked ? (
+                <p className="audience-caption">{audience.label}</p>
+              ) : null}
+            </div>
           </div>
-          <figure className="audience-visual" data-reveal>
-            <img
-              src="/images/audience-merch.jpg"
-              alt="Friends in matching tees looking out together"
-              width={1400}
-              height={788}
-            />
-            <figcaption>Built for crews that want the same fit.</figcaption>
-          </figure>
         </section>
 
         <section id="pricing" className="proof-section">

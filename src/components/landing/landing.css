@@ -271,13 +271,14 @@
   align-items: center;
 }
 
-.button-primary {
+.button-primary,
+.site-shell a.button-primary {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
   padding: 0.9rem 1.25rem;
   background: var(--pw-lime);
-  color: var(--pw-ink);
+  color: #070807;
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -288,9 +289,16 @@
     background 0.25s ease;
 }
 
-.button-primary:hover {
+.button-primary svg,
+.site-shell a.button-primary svg {
+  color: #070807;
+}
+
+.button-primary:hover,
+.site-shell a.button-primary:hover {
   transform: translateY(-1px);
   background: color-mix(in oklab, var(--pw-lime) 88%, white);
+  color: #070807;
 }
 
 .button-large {
@@ -608,21 +616,48 @@
   color: var(--pw-lime);
 }
 
-/* ——— Audience ——— */
+/* ——— Audience (scroll story) ——— */
 
 .audience-section {
-  display: grid;
-  gap: clamp(2rem, 5vw, 3.5rem);
-  align-items: end;
-  padding: clamp(4.5rem, 10vh, 7rem) 0 clamp(4.5rem, 10vh, 7rem)
-    clamp(1.1rem, 3vw, 2.4rem);
+  position: relative;
+  height: 260vh;
   border-top: 1px solid var(--pw-line);
+}
+
+.audience-section.is-stacked {
+  height: auto;
+}
+
+.audience-section.is-stacked .audience-pin {
+  position: relative;
+  height: auto;
+  min-height: auto;
+  padding-bottom: 3.5rem;
+}
+
+.audience-pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  align-items: center;
+  padding: 5.5rem clamp(1.1rem, 3vw, 2.4rem) 2rem;
   overflow: clip;
+  background:
+    radial-gradient(
+      ellipse 55% 50% at 85% 45%,
+      color-mix(in oklab, var(--pw-lime) 10%, transparent),
+      transparent 70%
+    ),
+    var(--pw-ink);
 }
 
 .audience-copy {
-  max-width: 34rem;
-  padding-right: clamp(0rem, 2vw, 1rem);
+  position: relative;
+  z-index: 1;
+  max-width: 28rem;
 }
 
 .audience-kicker {
@@ -633,10 +668,80 @@
   color: var(--pw-lime);
 }
 
-.audience-copy h2 {
+.audience-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.audience-labels button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-family: var(--pw-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--pw-bone) 40%, transparent);
+  cursor: pointer;
+  transition: color 0.35s ease;
+}
+
+.audience-labels button.is-active {
+  color: var(--pw-lime);
+}
+
+.audience-beats {
+  position: relative;
+  min-height: 11rem;
+}
+
+.audience-beat {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateY(18px);
+  pointer-events: none;
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s ease;
+}
+
+.audience-beat.is-active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.audience-static {
+  display: grid;
+  gap: 1.75rem;
+}
+
+.audience-static .audience-beat {
+  position: relative;
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.audience-number {
+  display: block;
+  margin-bottom: 0.65rem;
+  font-family: var(--pw-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: color-mix(in oklab, var(--pw-bone) 45%, transparent);
+}
+
+.audience-beat h2 {
   margin: 0;
   font-family: var(--pw-display);
-  font-size: clamp(2rem, 5vw, 3.6rem);
+  font-size: clamp(1.85rem, 4.5vw, 3rem);
   font-weight: 700;
   letter-spacing: -0.045em;
   line-height: 1.05;
@@ -644,79 +749,196 @@
 }
 
 .audience-body {
-  margin: 1.25rem 0 0;
-  max-width: 36ch;
+  margin: 1rem 0 0;
+  max-width: 34ch;
   color: var(--pw-bone-dim);
   line-height: 1.55;
 }
 
-.audience-list {
-  list-style: none;
-  margin: 2rem 0 0;
-  padding: 0;
-  display: grid;
-  gap: 0.95rem;
-  max-width: 28rem;
+.audience-progress {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 1.75rem;
 }
 
-.audience-list li {
-  display: grid;
-  grid-template-columns: 5.5rem 1fr;
-  gap: 0.85rem;
-  align-items: baseline;
-  font-size: 0.92rem;
-  line-height: 1.45;
-  color: var(--pw-bone-dim);
+.audience-progress span {
+  display: block;
+  width: 2.25rem;
+  height: 2px;
+  background: color-mix(in oklab, var(--pw-bone) 22%, transparent);
+  transition: background 0.35s ease;
 }
 
-.audience-list span {
-  font-family: var(--pw-display);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--pw-bone);
+.audience-progress span.is-filled {
+  background: var(--pw-lime);
 }
 
 .audience-visual {
   position: relative;
   margin: 0;
-  min-height: clamp(18rem, 48vw, 28rem);
-  background: #121411;
+  min-height: clamp(16rem, 42vw, 22rem);
+  border: 1px solid color-mix(in oklab, var(--pw-bone) 12%, transparent);
+  background:
+    linear-gradient(
+      160deg,
+      #141714 0%,
+      #0c0e0c 55%,
+      color-mix(in oklab, var(--pw-lime) 8%, #0c0e0c) 100%
+    );
+  overflow: hidden;
 }
 
-.audience-visual img {
-  display: block;
+.audience-art-stage {
+  position: relative;
   width: 100%;
   height: 100%;
   min-height: inherit;
-  object-fit: cover;
-  object-position: center 40%;
-  filter: saturate(0.88) contrast(1.05);
 }
 
-.audience-visual::after {
-  content: "";
+.audience-art-panel {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    90deg,
-    color-mix(in oklab, var(--pw-ink) 55%, transparent) 0%,
-    transparent 38%
-  );
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transform: scale(0.96) translateY(12px);
+  transition:
+    opacity 0.5s ease,
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
 }
 
-.audience-visual figcaption {
+.audience-art-panel.is-active {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.audience-svg {
+  width: min(100%, 28rem);
+  height: auto;
+  max-height: min(52vh, 22rem);
+}
+
+.audience-caption {
   position: absolute;
   left: 1rem;
-  bottom: 1rem;
-  z-index: 1;
+  bottom: 0.85rem;
+  z-index: 2;
   margin: 0;
   font-size: 0.68rem;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: color-mix(in oklab, var(--pw-bone) 82%, transparent);
+  color: color-mix(in oklab, var(--pw-bone) 70%, transparent);
+}
+
+/* Flat vector motion */
+.audience-art-stage:not(.is-static) .art-float {
+  animation: audience-float 4.2s ease-in-out infinite;
+}
+
+.audience-art-stage:not(.is-static) .art-bag {
+  animation-delay: 0.2s;
+}
+
+.audience-art-stage:not(.is-static) .art-book {
+  animation-delay: 0.9s;
+}
+
+.audience-art-stage:not(.is-static) .art-ticket {
+  animation-delay: 0.4s;
+}
+
+.audience-art-stage:not(.is-static) .art-tag {
+  animation-delay: 0.6s;
+}
+
+.audience-art-stage:not(.is-static) .art-f1 {
+  animation: audience-bob 3.6s ease-in-out infinite;
+}
+
+.audience-art-stage:not(.is-static) .art-f2 {
+  animation: audience-bob 3.6s ease-in-out infinite 0.35s;
+}
+
+.audience-art-stage:not(.is-static) .art-hang {
+  transform-origin: top center;
+  animation: audience-sway 3.8s ease-in-out infinite;
+}
+
+.audience-art-stage:not(.is-static) .art-h2 {
+  animation-delay: 0.25s;
+}
+
+.audience-art-stage:not(.is-static) .art-h3 {
+  animation-delay: 0.5s;
+}
+
+.audience-art-stage:not(.is-static) .art-pulse {
+  animation: audience-pulse 2.4s ease-in-out infinite;
+}
+
+.audience-art-stage:not(.is-static) .art-pulse-delay {
+  animation-delay: 0.7s;
+}
+
+@keyframes audience-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes audience-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes audience-sway {
+  0%,
+  100% {
+    transform: rotate(-1.4deg);
+  }
+  50% {
+    transform: rotate(1.8deg);
+  }
+}
+
+@keyframes audience-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.08);
+  }
+}
+
+.audience-art-stage.is-stacked {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  min-height: auto;
+}
+
+.audience-art-stage.is-stacked .audience-art-panel {
+  position: relative;
+  inset: auto;
+  opacity: 1;
+  transform: none;
+}
+
+.audience-art-stage.is-stacked .audience-svg {
+  max-height: 11rem;
 }
 
 /* ——— Proof / pricing ——— */
@@ -926,13 +1148,20 @@
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .audience-section {
-    grid-template-columns: minmax(18rem, 0.92fr) minmax(20rem, 1.15fr);
+  .audience-pin {
+    grid-template-columns: minmax(16rem, 0.9fr) minmax(20rem, 1.15fr);
+    gap: clamp(1.5rem, 4vw, 3rem);
     padding-right: 0;
   }
 
   .audience-visual {
-    min-height: clamp(26rem, 70vh, 38rem);
+    min-height: min(72vh, 34rem);
+    align-self: stretch;
+  }
+
+  .audience-svg {
+    max-height: min(62vh, 28rem);
+    width: min(100%, 32rem);
   }
 
   .site-footer {
@@ -974,14 +1203,36 @@
   }
 
   .audience-section {
-    padding-right: clamp(1.1rem, 3vw, 2.4rem);
+    height: auto;
   }
 
-  .audience-visual::after {
-    background: linear-gradient(
-      180deg,
-      transparent 45%,
-      color-mix(in oklab, var(--pw-ink) 70%, transparent) 100%
-    );
+  .audience-pin {
+    position: relative;
+    height: auto;
+    min-height: auto;
+    padding-bottom: 3rem;
+  }
+
+  .audience-beats {
+    min-height: 0;
+  }
+
+  .audience-beat {
+    position: relative;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .audience-beat + .audience-beat {
+    margin-top: 1.75rem;
+  }
+
+  .audience-visual {
+    min-height: 18rem;
+  }
+
+  .audience-caption {
+    display: none;
   }
 }
