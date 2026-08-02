@@ -15,6 +15,8 @@ import * as THREE from "three";
 type SceneProps = {
   progress: MutableRefObject<number>;
   onReady?: () => void;
+  /** Shift the tee into frame on narrow viewports */
+  mobile?: boolean;
 };
 
 const MODEL_PATH = "/models/walking-tshirt.glb?v=chest11";
@@ -108,49 +110,6 @@ function bindChestUVs(geometry: THREE.BufferGeometry, frame: TorsoFrame) {
   geometry.attributes.uv.needsUpdate = true;
 }
 
-function PromptAura({ progress }: SceneProps) {
-  const points = useRef<THREE.Points>(null);
-  const positions = useMemo(() => {
-    const count = 72;
-    const arr = new Float32Array(count * 3);
-    for (let i = 0; i < count; i += 1) {
-      const a = (i / count) * Math.PI * 2;
-      const r = 0.45 + (i % 5) * 0.1;
-      arr[i * 3] = Math.cos(a) * r;
-      arr[i * 3 + 1] = 0.35 + Math.sin(a * 1.7) * 0.55;
-      arr[i * 3 + 2] = 0.55 + Math.sin(a) * 0.12;
-    }
-    return arr;
-  }, []);
-
-  useFrame((state) => {
-    const p = progress.current;
-    const intensity =
-      p < 0.2 ? 1 : p < 0.38 ? 1 - (p - 0.2) / 0.18 : 0;
-    if (!points.current) return;
-    points.current.rotation.z = state.clock.elapsedTime * 0.18;
-    const mat = points.current.material as THREE.PointsMaterial;
-    mat.opacity = intensity * 0.9;
-    points.current.visible = intensity > 0.02;
-  });
-
-  return (
-    <points ref={points} position={[0, 0.25, 0.35]}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-      </bufferGeometry>
-      <pointsMaterial
-        color="#d6ff3c"
-        size={0.05}
-        transparent
-        opacity={0.85}
-        depthWrite={false}
-        sizeAttenuation
-      />
-    </points>
-  );
-}
-
 function drawContainedImage(
   ctx: CanvasRenderingContext2D,
   img: CanvasImageSource,
@@ -193,7 +152,7 @@ function drawContainedImage(
   ctx.restore();
 }
 
-function WalkingShirt({ progress, onReady }: SceneProps) {
+function WalkingShirt({ progress, onReady, mobile = false }: SceneProps) {
   const root = useRef<THREE.Group>(null);
   const materialsRef = useRef<THREE.MeshStandardMaterial[]>([]);
   const atlasRef = useRef<{
@@ -447,30 +406,32 @@ function WalkingShirt({ progress, onReady }: SceneProps) {
   return (
     <group
       ref={root}
-      position={[1.45, -0.15, 0]}
-      rotation={[0.03, 0.08, 0]}
-      scale={1.15}
+      position={mobile ? [-0.55, 0, 0] : [1.45, -0.15, 0]}
+      rotation={[0.03, mobile ? 0 : 0.08, 0]}
+      scale={mobile ? 1.4 : 1.15}
     >
       <primitive object={scene} />
-      <PromptAura progress={progress} />
     </group>
   );
 }
 
-function ShirtFallback() {
+function ShirtFallback({ mobile = false }: { mobile?: boolean }) {
   return (
-    <mesh position={[1.4, 0, 0]}>
+    <mesh position={mobile ? [-0.45, 0, 0] : [1.4, 0, 0]}>
       <boxGeometry args={[1.6, 2.1, 0.35]} />
       <meshStandardMaterial color="#2a2c29" roughness={0.9} />
     </mesh>
   );
 }
 
-export function ShirtScene({ progress, onReady }: SceneProps) {
+export function ShirtScene({ progress, onReady, mobile = false }: SceneProps) {
   return (
     <Canvas
       dpr={[1, 1.5]}
-      camera={{ position: [0.55, 0.55, 6.8], fov: 34 }}
+      camera={{
+        position: mobile ? [0.35, 0.4, 6.2] : [0.55, 0.55, 6.8],
+        fov: mobile ? 38 : 34,
+      }}
       gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
       onCreated={({ gl }) => {
         gl.setClearColor("#070807", 1);
@@ -488,8 +449,12 @@ export function ShirtScene({ progress, onReady }: SceneProps) {
         color="#d6ff3c"
       />
       <hemisphereLight args={["#f5f0e6", "#1a1c18", 0.55]} />
-      <Suspense fallback={<ShirtFallback />}>
-        <WalkingShirt progress={progress} onReady={onReady} />
+      <Suspense fallback={<ShirtFallback mobile={mobile} />}>
+        <WalkingShirt
+          progress={progress}
+          onReady={onReady}
+          mobile={mobile}
+        />
       </Suspense>
     </Canvas>
   );

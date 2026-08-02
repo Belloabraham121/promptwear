@@ -1,9 +1,16 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+
+const audienceSvgClass =
+  "h-auto w-[min(100%,28rem)] max-h-[min(52vh,22rem)] md:w-[min(100%,32rem)] md:max-h-[min(62vh,28rem)]";
+
 type AudienceArtProps = {
   active: number;
   reducedMotion?: boolean;
   stacked?: boolean;
+  /** Render a single audience illustration (for text-then-art cards). */
+  only?: number;
 };
 
 /** Classic flat tee: collar + sleeves + torso (not a trapezoid box). */
@@ -156,7 +163,7 @@ function Person({
 function CampusArt() {
   return (
     <svg
-      className="audience-svg"
+      className={audienceSvgClass}
       viewBox="0 0 480 420"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -230,7 +237,7 @@ function CampusArt() {
 function EventsArt() {
   return (
     <svg
-      className="audience-svg"
+      className={audienceSvgClass}
       viewBox="0 0 480 420"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -334,7 +341,7 @@ function EventsArt() {
 function BrandsArt() {
   return (
     <svg
-      className="audience-svg"
+      className={audienceSvgClass}
       viewBox="0 0 480 420"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -404,21 +411,44 @@ export function AudienceArt({
   active,
   reducedMotion = false,
   stacked = false,
+  only,
 }: AudienceArtProps) {
+  const single = typeof only === "number";
+  const indices = single
+    ? [Math.min(Math.max(only, 0), arts.length - 1)]
+    : arts.map((_, index) => index);
+
   return (
     <div
-      className={`audience-art-stage ${reducedMotion ? "is-static" : ""} ${stacked ? "is-stacked" : ""}`}
-      data-active={active}
+      className={cn(
+        "audience-art-stage relative h-full w-full min-h-[inherit]",
+        reducedMotion && "is-static",
+        (stacked || single) && "is-stacked min-h-0 p-3",
+        stacked && !single && "grid gap-3",
+      )}
+      data-active={single ? only : active}
     >
-      {arts.map((Art, index) => (
-        <div
-          key={index}
-          className={`audience-art-panel ${stacked || active === index ? "is-active" : ""}`}
-          aria-hidden={!stacked && active !== index}
-        >
-          <Art />
-        </div>
-      ))}
+      {indices.map((index) => {
+        const Art = arts[index];
+        return (
+          <div
+            key={index}
+            className={cn(
+              "audience-art-panel grid place-items-center pointer-events-none transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+              stacked || single
+                ? "relative inset-auto opacity-100 translate-y-0 scale-100 is-active"
+                : "absolute inset-0 opacity-0 translate-y-3 scale-[0.96]",
+              !stacked &&
+                !single &&
+                active === index &&
+                "is-active opacity-100 translate-y-0 scale-100",
+            )}
+            aria-hidden={!single && !stacked && active !== index}
+          >
+            <Art />
+          </div>
+        );
+      })}
     </div>
   );
 }

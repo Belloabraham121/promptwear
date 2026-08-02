@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Instrument_Sans, Syne } from "next/font/google";
 import "./globals.css";
 
@@ -18,6 +18,12 @@ export const metadata: Metadata = {
   title: "Promptwear — Wear what you imagine",
   description:
     "Turn your ideas into one-of-one custom apparel with AI, freehand drawing, or both. Designed by you, made in Nigeria.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#070807",
 };
 
 export default function RootLayout({

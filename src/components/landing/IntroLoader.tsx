@@ -210,7 +210,7 @@ export function IntroLoader({
           aria-hidden="true"
         />
 
-        <h1 className="relative font-[family-name:var(--font-display)] text-[clamp(2.4rem,8vw,5.5rem)] font-extrabold lowercase tracking-[-0.06em] text-[#f3f0e8]">
+        <h1 className="relative max-w-full px-4 text-center font-[family-name:var(--font-display)] text-[clamp(2rem,11vw,5.5rem)] font-extrabold lowercase tracking-[-0.06em] text-[#f3f0e8]">
           {"promptwear".split("").map((letter, i) => (
             <span
               key={`${letter}-${i}`}

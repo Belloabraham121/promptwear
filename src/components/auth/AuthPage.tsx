@@ -7,6 +7,19 @@ import { FormEvent, useState } from "react";
 
 type Mode = "signin" | "signup";
 
+async function seedDashboardUser(user: {
+  name: string;
+  email: string;
+  guest: boolean;
+}) {
+  try {
+    const { putUser } = await import("@/lib/db/client");
+    await putUser(user);
+  } catch {
+    // Ignore storage errors — dashboard will use defaults.
+  }
+}
+
 function GoogleIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
@@ -68,6 +81,11 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: Mode }) {
     try {
       // Hook up your auth provider (Clerk, Supabase, Auth.js, etc.) here.
       await new Promise((resolve) => setTimeout(resolve, 700));
+      await seedDashboardUser({
+        name: isSignup ? name.trim() : email.trim().split("@")[0] || "Creator",
+        email: email.trim(),
+        guest: false,
+      });
       router.push("/dashboard");
     } catch {
       setError("Something went wrong. Try again in a moment.");
@@ -81,6 +99,11 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: Mode }) {
     try {
       // Hook up Google OAuth here.
       await new Promise((resolve) => setTimeout(resolve, 700));
+      await seedDashboardUser({
+        name: "Google creator",
+        email: "google@promptwear.ng",
+        guest: false,
+      });
       router.push("/dashboard");
     } catch {
       setError("Google sign-in failed. Try email instead.");

@@ -1,0 +1,112 @@
+/* Landing motion only — layout lives in Tailwind */
+
+@keyframes pw-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes audience-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes audience-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes audience-sway {
+  0%,
+  100% {
+    transform: rotate(-1.4deg);
+  }
+  50% {
+    transform: rotate(1.8deg);
+  }
+}
+
+@keyframes audience-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.08);
+  }
+}
+
+.pw-marquee-track {
+  animation: pw-marquee 28s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pw-marquee-track {
+    animation: none;
+  }
+}
+
+.audience-art-stage:not(.is-static) .art-float {
+  animation: audience-float 4.2s ease-in-out infinite;
+}
+
+.audience-art-stage:not(.is-static) .art-bag {
+  animation-delay: 0.2s;
+}
+
+.audience-art-stage:not(.is-static) .art-book {
+  animation-delay: 0.9s;
+}
+
+.audience-art-stage:not(.is-static) .art-ticket {
+  animation-delay: 0.4s;
+}
+
+.audience-art-stage:not(.is-static) .art-tag {
+  animation-delay: 0.6s;
+}
+
+.audience-art-stage:not(.is-static) .art-f1 {
+  animation: audience-bob 3.6s ease-in-out infinite;
+}
+
+.audience-art-stage:not(.is-static) .art-f2 {
+  animation: audience-bob 3.6s ease-in-out infinite 0.35s;
+}
+
+.audience-art-stage:not(.is-static) .art-hang {
+  transform-origin: top center;
+  animation: audience-sway 3.8s ease-in-out infinite;
+}
+
+.audience-art-stage:not(.is-static) .art-h2 {
+  animation-delay: 0.25s;
+}
+
+.audience-art-stage:not(.is-static) .art-h3 {
+  animation-delay: 0.5s;
+}
+
+.audience-art-stage:not(.is-static) .art-pulse {
+  animation: audience-pulse 2.4s ease-in-out infinite;
+}
+
+.audience-art-stage:not(.is-static) .art-pulse-delay {
+  animation-delay: 0.7s;
+}
+
+.audience-art-stage.is-stacked svg {
+  max-height: 11rem;
+}
