@@ -4,9 +4,9 @@ import dynamic from "next/dynamic";
 import {
   ArrowDown,
   ArrowUpRight,
-  Check,
   Menu,
   PenTool,
+  Plus,
   Shirt,
   Sparkles,
   X,
@@ -115,6 +115,19 @@ export function LandingPage() {
             setActiveStep((current) => (current === next ? current : next));
           },
         });
+
+        // Tuck the 3D under the next page as How It Works finishes
+        gsap.to("[data-scene-layer]", {
+          opacity: 0,
+          yPercent: 12,
+          ease: "none",
+          scrollTrigger: {
+            trigger: howSection.current,
+            start: "bottom 90%",
+            end: "bottom top",
+            scrub: 0.4,
+          },
+        });
       }
 
       gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((element) => {
@@ -191,13 +204,11 @@ export function LandingPage() {
 
       <main>
         <div className="story-world">
-          <div className="scene-layer" aria-hidden="true">
+          <div className="scene-layer" data-scene-layer aria-hidden="true">
             <div className="scene-glow" />
             <ShirtScene progress={sceneProgress} />
             <div className="scene-caption">
-              <span>
-                {String(activeStep + 1).padStart(2, "0")} / 03
-              </span>
+              <span>{String(activeStep + 1).padStart(2, "0")} / 03</span>
               <span>{step.caption}</span>
             </div>
           </div>
@@ -214,8 +225,8 @@ export function LandingPage() {
                   If you can imagine it, you can wear it.
                 </p>
                 <p className="hero-support" data-hero-fade>
-                  Describe it. Draw it. Or combine both. Custom tees from idea to
-                  door in seven days.
+                  Describe it. Draw it. Or combine both. Custom tees from idea
+                  to door in seven days.
                 </p>
                 <div className="hero-actions" data-hero-fade>
                   <a href="/dashboard" className="button-primary">
@@ -243,7 +254,10 @@ export function LandingPage() {
                   {steps.map((item) => {
                     const Icon = item.icon;
                     return (
-                      <article key={item.number} className="step-copy is-active">
+                      <article
+                        key={item.number}
+                        className="step-copy is-active"
+                      >
                         <div className="step-meta">
                           <span>{item.number}</span>
                           <Icon size={16} />
@@ -290,6 +304,8 @@ export function LandingPage() {
           </section>
         </div>
 
+        {/* Solid stack that slides up and covers the sticky 3D as How It Works ends */}
+        <div className="site-cover">
         <div className="marquee-wrap" aria-hidden="true">
           <div className="marquee-track">
             {[
@@ -379,20 +395,43 @@ export function LandingPage() {
         </section>
 
         <section className="audience-section">
-          <p className="audience-kicker" data-reveal>
-            Who it&apos;s for
-          </p>
-          <h2 data-reveal>
-            Campus creatives.
-            <br />
-            Event organisers.
-            <br />
-            Brands just getting started.
-          </h2>
-          <p className="audience-body" data-reveal>
-            Matching fits for friends. Merch without the design invoice. One
-            piece or one hundred—same workflow.
-          </p>
+          <div className="audience-copy" data-reveal>
+            <p className="audience-kicker">Who it&apos;s for</p>
+            <h2>
+              Campus creatives.
+              <br />
+              Event organisers.
+              <br />
+              Brands just getting started.
+            </h2>
+            <p className="audience-body">
+              Matching fits for friends. Merch without the design invoice. One
+              piece or one hundred—same workflow.
+            </p>
+            <ul className="audience-list">
+              <li>
+                <span>Campus</span>
+                Crew tees, department drops, hostel runs.
+              </li>
+              <li>
+                <span>Events</span>
+                Concert merch, launch nights, tour kits.
+              </li>
+              <li>
+                <span>Brands</span>
+                First collection energy, no agency invoice.
+              </li>
+            </ul>
+          </div>
+          <figure className="audience-visual" data-reveal>
+            <img
+              src="/images/audience-merch.jpg"
+              alt="Friends in matching tees looking out together"
+              width={1400}
+              height={788}
+            />
+            <figcaption>Built for crews that want the same fit.</figcaption>
+          </figure>
         </section>
 
         <section id="pricing" className="proof-section">
@@ -458,16 +497,17 @@ export function LandingPage() {
           </div>
           <div className="cta-benefits">
             <span>
-              <Check size={14} strokeWidth={2.5} /> No design skills needed
+              <Plus size={14} strokeWidth={2.5} /> No design skills needed
             </span>
             <span>
-              <Check size={14} strokeWidth={2.5} /> Guest checkout
+              <Plus size={14} strokeWidth={2.5} /> Guest checkout
             </span>
             <span>
-              <Check size={14} strokeWidth={2.5} /> One piece minimum
+              <Plus size={14} strokeWidth={2.5} /> One piece minimum
             </span>
           </div>
         </section>
+        </div>
       </main>
 
       <footer className="site-footer">

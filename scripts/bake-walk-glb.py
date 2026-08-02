@@ -70,6 +70,21 @@ tmp.from_pydata(
     [p.vertices[:] for p in high_mesh0.polygons],
 )
 tmp.update()
+
+# Keep original garment UVs so prints can bake onto the fabric in-engine
+if high_mesh0.uv_layers:
+    src_uv = high_mesh0.uv_layers.active.data
+    dst_uv = tmp.uv_layers.new(name="UVMap")
+    if len(src_uv) == len(dst_uv.data):
+        for i, loop_uv in enumerate(dst_uv.data):
+            loop_uv.uv = src_uv[i].uv.copy()
+        print(f"copied UVs ({len(src_uv)} loops)")
+    else:
+        print(f"UV loop mismatch src={len(src_uv)} dst={len(dst_uv.data)} — smart projecting")
+        # Fallback applied after object creation below
+else:
+    print("no source UVs — will smart project")
+
 eval_high.to_mesh_clear()
 
 low = bpy.data.objects.new("tshirt_web", tmp)
@@ -77,6 +92,13 @@ bpy.context.collection.objects.link(low)
 bpy.ops.object.select_all(action="DESELECT")
 low.select_set(True)
 bpy.context.view_layer.objects.active = low
+
+if not low.data.uv_layers:
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.02)
+    bpy.ops.object.mode_set(mode="OBJECT")
+    print("smart-projected UVs")
 
 # Keep most of the silhouette — only light reduction for web
 dec = low.modifiers.new(name="DecimateWeb", type="DECIMATE")
@@ -213,6 +235,7 @@ bpy.ops.export_scene.gltf(
     export_morph=True,
     export_morph_animation=True,
     export_morph_normal=False,
+    export_texcoords=True,
     export_apply=False,
     export_skins=False,
     export_lights=False,
