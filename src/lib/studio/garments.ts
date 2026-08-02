@@ -44,7 +44,7 @@ export const STUDIO_GARMENTS: Record<StudioGarmentId, StudioGarment> = {
     id: "oversized",
     label: "Oversized",
     hint: "CLO baggy fit — distinct front/back/sleeve islands + rib collar",
-    modelPath: "/models/studio/oversized/tshirt.glb?v=3",
+    modelPath: "/models/studio/oversized/tshirt.glb?v=4",
     // No normalMap: tiling jersey NRMs on unified CLO UVs read as black triangle noise.
     // Cloth folds come from the mesh; albedo is the studio color atlas.
     normalPath: undefined,
