@@ -11,10 +11,11 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { AudienceArt } from "./AudienceArt";
+import { IntroLoader } from "./IntroLoader";
 
 const ShirtScene = dynamic(
   () => import("./ShirtScene").then((mod) => mod.ShirtScene),
@@ -104,7 +105,18 @@ export function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [audienceStacked, setAudienceStacked] = useState(false);
+  const [sceneReady, setSceneReady] = useState(false);
+  const [introDone, setIntroDone] = useState(false);
 
+  const handleSceneReady = useCallback(() => {
+    setSceneReady(true);
+  }, []);
+
+  const handleIntroComplete = useCallback(() => {
+    setIntroDone(true);
+  }, []);
+
+  // Scroll + reveal once the page is interactive; hero entrance waits for intro
   useLayoutEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const narrow = window.matchMedia("(max-width: 767px)");
@@ -113,23 +125,6 @@ export function LandingPage() {
 
     gsap.registerPlugin(ScrollTrigger);
     const ctx = gsap.context(() => {
-      if (!media.matches) {
-        gsap.from("[data-hero-line]", {
-          yPercent: 110,
-          duration: 1.2,
-          stagger: 0.08,
-          ease: "power4.out",
-        });
-        gsap.from("[data-hero-fade]", {
-          y: 24,
-          opacity: 0,
-          duration: 0.85,
-          stagger: 0.08,
-          delay: 0.45,
-          ease: "power3.out",
-        });
-      }
-
       if (howSection.current && !media.matches) {
         ScrollTrigger.create({
           trigger: howSection.current,
@@ -198,12 +193,61 @@ export function LandingPage() {
     };
   }, []);
 
+  useLayoutEffect(() => {
+    if (!introDone) return;
+
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const ctx = gsap.context(() => {
+      if (media.matches) {
+        gsap.set("[data-hero-line], [data-hero-fade], [data-nav-enter]", {
+          opacity: 1,
+          clearProps: "transform",
+        });
+        return;
+      }
+
+      gsap.from("[data-nav-enter]", {
+        y: -16,
+        opacity: 0,
+        duration: 0.7,
+        ease: "power3.out",
+      });
+      gsap.from("[data-hero-line]", {
+        yPercent: 110,
+        duration: 1.15,
+        stagger: 0.08,
+        ease: "power4.out",
+      });
+      gsap.from("[data-hero-fade]", {
+        y: 24,
+        opacity: 0,
+        duration: 0.85,
+        stagger: 0.08,
+        delay: 0.2,
+        ease: "power3.out",
+      });
+    }, root);
+
+    return () => ctx.revert();
+  }, [introDone]);
+
   const step = steps[activeStep] ?? steps[0];
   const audience = audiences[activeAudience] ?? audiences[0];
 
   return (
-    <div ref={root} className="site-shell">
-      <header className="site-nav">
+    <div
+      ref={root}
+      className={`site-shell ${introDone ? "is-intro-done" : "is-intro-active"}`}
+    >
+      {!introDone ? (
+        <IntroLoader
+          ready={sceneReady}
+          reducedMotion={reducedMotion}
+          onComplete={handleIntroComplete}
+        />
+      ) : null}
+
+      <header className="site-nav" data-nav-enter>
         <a href="#" className="wordmark" aria-label="Promptwear home">
           promptwear
         </a>
@@ -253,7 +297,10 @@ export function LandingPage() {
         <div className="story-world">
           <div className="scene-layer" data-scene-layer aria-hidden="true">
             <div className="scene-glow" />
-            <ShirtScene progress={sceneProgress} />
+            <ShirtScene
+              progress={sceneProgress}
+              onReady={handleSceneReady}
+            />
             <div className="scene-caption">
               <span>{String(activeStep + 1).padStart(2, "0")} / 03</span>
               <span>{step.caption}</span>

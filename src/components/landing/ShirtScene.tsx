@@ -14,6 +14,7 @@ import * as THREE from "three";
 
 type SceneProps = {
   progress: MutableRefObject<number>;
+  onReady?: () => void;
 };
 
 const MODEL_PATH = "/models/walking-tshirt.glb?v=chest11";
@@ -192,7 +193,7 @@ function drawContainedImage(
   ctx.restore();
 }
 
-function WalkingShirt({ progress }: SceneProps) {
+function WalkingShirt({ progress, onReady }: SceneProps) {
   const root = useRef<THREE.Group>(null);
   const materialsRef = useRef<THREE.MeshStandardMaterial[]>([]);
   const atlasRef = useRef<{
@@ -202,6 +203,7 @@ function WalkingShirt({ progress }: SceneProps) {
   } | null>(null);
   const printOpacity = useRef({ a: 0, b: 0, c: 0 });
   const walkAction = useRef<THREE.AnimationAction | null>(null);
+  const readySent = useRef(false);
   const currentColor = useMemo(() => new THREE.Color("#b0b1aa"), []);
   const targetColor = useMemo(() => new THREE.Color("#b0b1aa"), []);
   const lastBake = useRef({ a: -1, b: -1, c: -1, color: "", imgs: 0 });
@@ -209,6 +211,14 @@ function WalkingShirt({ progress }: SceneProps) {
   const { scene, animations } = useGLTF(MODEL_PATH, true);
   const { actions, names } = useAnimations(animations, root);
   const [sketch, polished, finalize] = useTexture([...PRINTS]);
+
+  useEffect(() => {
+    if (readySent.current) return;
+    readySent.current = true;
+    // Defer one frame so the first paint of the mesh can land
+    const id = window.requestAnimationFrame(() => onReady?.());
+    return () => window.cancelAnimationFrame(id);
+  }, [onReady, scene, sketch, polished, finalize]);
 
   useLayoutEffect(() => {
     for (const tex of [sketch, polished, finalize]) {
@@ -456,7 +466,7 @@ function ShirtFallback() {
   );
 }
 
-export function ShirtScene({ progress }: SceneProps) {
+export function ShirtScene({ progress, onReady }: SceneProps) {
   return (
     <Canvas
       dpr={[1, 1.5]}
@@ -479,7 +489,7 @@ export function ShirtScene({ progress }: SceneProps) {
       />
       <hemisphereLight args={["#f5f0e6", "#1a1c18", 0.55]} />
       <Suspense fallback={<ShirtFallback />}>
-        <WalkingShirt progress={progress} />
+        <WalkingShirt progress={progress} onReady={onReady} />
       </Suspense>
     </Canvas>
   );

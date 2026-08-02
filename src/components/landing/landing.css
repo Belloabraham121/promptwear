@@ -18,6 +18,19 @@
   overflow-x: clip;
 }
 
+/* Keep 3D loading under the intro; hide chrome until handoff */
+.site-shell.is-intro-active .site-nav,
+.site-shell.is-intro-active .hero-copy,
+.site-shell.is-intro-active .scene-caption,
+.site-shell.is-intro-active .mobile-menu {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.site-shell.is-intro-active .scene-layer {
+  opacity: 1;
+}
+
 .site-shell * {
   box-sizing: border-box;
 }
