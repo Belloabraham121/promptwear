@@ -3,7 +3,10 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useAnimations, useGLTF, useTexture } from "@react-three/drei";
 import {
+  Component,
+  type ErrorInfo,
   type MutableRefObject,
+  type ReactNode,
   Suspense,
   useEffect,
   useLayoutEffect,
@@ -19,7 +22,7 @@ type SceneProps = {
   mobile?: boolean;
 };
 
-const MODEL_PATH = "/models/walking-tshirt.glb?v=chest11";
+const MODEL_PATH = "/models/walking-tshirt.glb?v=chest12";
 
 const PRINTS = [
   "/prints/print-sketch.png",
@@ -424,7 +427,45 @@ function ShirtFallback({ mobile = false }: { mobile?: boolean }) {
   );
 }
 
+/** Keep a missing/broken GLB from taking down the whole landing page. */
+class ShirtErrorBoundary extends Component<
+  { children: ReactNode; onReady?: () => void; mobile?: boolean },
+  { failed: boolean }
+> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("[ShirtScene]", error, info.componentStack);
+  }
+
+  componentDidUpdate(
+    _: Readonly<{ onReady?: () => void }>,
+    prevState: Readonly<{ failed: boolean }>,
+  ) {
+    if (this.state.failed && !prevState.failed) {
+      this.props.onReady?.();
+    }
+  }
+
+  render() {
+    if (this.state.failed) {
+      return <ShirtFallback mobile={this.props.mobile} />;
+    }
+    return this.props.children;
+  }
+}
+
 export function ShirtScene({ progress, onReady, mobile = false }: SceneProps) {
+  useEffect(() => {
+    // Fail open if the model never becomes ready (404 / network / WebGL).
+    const timeout = window.setTimeout(() => onReady?.(), 8000);
+    return () => window.clearTimeout(timeout);
+  }, [onReady]);
+
   return (
     <Canvas
       dpr={[1, 1.5]}
@@ -449,15 +490,15 @@ export function ShirtScene({ progress, onReady, mobile = false }: SceneProps) {
         color="#d6ff3c"
       />
       <hemisphereLight args={["#f5f0e6", "#1a1c18", 0.55]} />
-      <Suspense fallback={<ShirtFallback mobile={mobile} />}>
-        <WalkingShirt
-          progress={progress}
-          onReady={onReady}
-          mobile={mobile}
-        />
-      </Suspense>
+      <ShirtErrorBoundary onReady={onReady} mobile={mobile}>
+        <Suspense fallback={<ShirtFallback mobile={mobile} />}>
+          <WalkingShirt
+            progress={progress}
+            onReady={onReady}
+            mobile={mobile}
+          />
+        </Suspense>
+      </ShirtErrorBoundary>
     </Canvas>
   );
 }
-
-useGLTF.preload(MODEL_PATH, true);

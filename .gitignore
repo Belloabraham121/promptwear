@@ -53,8 +53,7 @@ next-env.d.ts
 *.rar
 *.zprj
 
-# Giant runtime binaries (>50MB) — keep locally / CDN; do not push
-public/models/walking-tshirt.glb
+# Landing walking tee is Draco-compressed under 50MB and tracked in git
 
 # Unused / experimental atlas normals (not referenced by garments)
 public/models/studio/oversized/atlas-normal.jpg
