@@ -11,7 +11,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,8 @@ const ShirtScene = dynamic(
   () => import("./ShirtScene").then((mod) => mod.ShirtScene),
   { ssr: false },
 );
+
+const LANDING_TEE_URL = "/models/walking-tshirt.glb?v=chest13";
 
 const steps = [
   {
@@ -124,6 +126,7 @@ export function LandingPage() {
   const [isNarrow, setIsNarrow] = useState(false);
   const [sceneReady, setSceneReady] = useState(false);
   const [introDone, setIntroDone] = useState(false);
+  const audienceStacked = isNarrow || reducedMotion;
 
   const handleSceneReady = useCallback(() => {
     setSceneReady(true);
@@ -131,6 +134,24 @@ export function LandingPage() {
 
   const handleIntroComplete = useCallback(() => {
     setIntroDone(true);
+  }, []);
+
+  // Start downloading the tee during the intro, before the Canvas mounts work.
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "fetch";
+    link.href = LANDING_TEE_URL;
+    link.crossOrigin = "anonymous";
+    document.head.appendChild(link);
+
+    void import("./ShirtScene").then((mod) => {
+      mod.preloadLandingShirt();
+    });
+
+    return () => {
+      link.remove();
+    };
   }, []);
 
   useLayoutEffect(() => {
@@ -175,6 +196,21 @@ export function LandingPage() {
             start: "bottom 90%",
             end: "bottom top",
             scrub: 0.4,
+          },
+        });
+      }
+
+      if (audienceSection.current && !reducedMotion && !isNarrow) {
+        ScrollTrigger.create({
+          trigger: audienceSection.current,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 0.4,
+          onUpdate: (self) => {
+            const next = Math.min(2, Math.floor(self.progress * 3));
+            setActiveAudience((current) =>
+              current === next ? current : next,
+            );
           },
         });
       }
@@ -680,21 +716,34 @@ export function LandingPage() {
 
           <section
             ref={audienceSection}
-            className="relative border-t border-[color-mix(in_oklab,#f3f0e8_12%,transparent)]"
+            className={cn(
+              "relative border-t border-[color-mix(in_oklab,#f3f0e8_12%,transparent)]",
+              audienceStacked ? "h-auto" : "h-[260vh]",
+            )}
             aria-label="Who it's for"
           >
             <div
               className={cn(
-                "relative overflow-clip pt-[5.5rem] pb-14",
+                "grid grid-cols-1 items-center gap-5 overflow-clip pt-[5.5rem] pb-8",
                 padX,
                 "bg-[radial-gradient(ellipse_55%_50%_at_85%_45%,color-mix(in_oklab,#d6ff3c_10%,transparent),transparent_70%),#070807]",
+                audienceStacked
+                  ? "relative h-auto min-h-0 pb-14"
+                  : "sticky top-0 h-dvh",
+                !audienceStacked &&
+                  "md:grid-cols-[minmax(16rem,0.9fr)_minmax(20rem,1.15fr)] md:gap-[clamp(1.5rem,4vw,3rem)] md:pr-0",
               )}
             >
-              <div className="relative z-[1] w-full max-w-[40rem]">
+              <div
+                className={cn(
+                  "relative z-[1] w-full",
+                  audienceStacked ? "max-w-[40rem]" : "max-w-[28rem]",
+                )}
+              >
                 <p className="mb-4 text-[0.7rem] tracking-[0.16em] text-[#d6ff3c] uppercase">
                   Who it&apos;s for
                 </p>
-                <div className="mb-8 flex flex-wrap gap-x-4 gap-y-[0.55rem]">
+                <div className="mb-6 flex flex-wrap gap-x-4 gap-y-[0.55rem]">
                   {audiences.map((item, index) => (
                     <button
                       key={item.label}
@@ -708,9 +757,27 @@ export function LandingPage() {
                       aria-pressed={activeAudience === index}
                       onClick={() => {
                         setActiveAudience(index);
-                        document
-                          .getElementById(`audience-${item.label.toLowerCase()}`)
-                          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        if (audienceStacked) {
+                          document
+                            .getElementById(
+                              `audience-${item.label.toLowerCase()}`,
+                            )
+                            ?.scrollIntoView({
+                              behavior: "smooth",
+                              block: "start",
+                            });
+                          return;
+                        }
+                        const section = audienceSection.current;
+                        if (!section) return;
+                        const top =
+                          section.getBoundingClientRect().top + window.scrollY;
+                        const span = Math.max(
+                          1,
+                          section.offsetHeight - window.innerHeight,
+                        );
+                        const progress = (index + 0.5) / audiences.length;
+                        window.scrollTo({ top: top + span * progress });
                       }}
                     >
                       {item.label}
@@ -718,42 +785,107 @@ export function LandingPage() {
                   ))}
                 </div>
 
-                <div className="grid w-full gap-12 md:gap-14">
-                  {audiences.map((item, index) => (
-                    <article
-                      key={item.number}
-                      id={`audience-${item.label.toLowerCase()}`}
-                      className="grid w-full gap-5"
-                    >
-                      <div>
-                        <span className="mb-[0.65rem] block font-heading text-[0.72rem] font-bold tracking-[0.16em] text-[color-mix(in_oklab,#f3f0e8_45%,transparent)]">
-                          {item.number}
-                        </span>
-                        <h2 className="m-0 max-w-[14ch] font-heading text-[clamp(1.85rem,4.5vw,3rem)] font-bold leading-[1.05] tracking-[-0.045em]">
-                          {item.title}
-                        </h2>
-                        <p className="mt-4 mb-0 max-w-[34ch] leading-[1.55] text-[#c8c4b8]">
-                          {item.body}
-                        </p>
-                      </div>
-                      <div
-                        className={cn(
-                          "relative m-0 min-h-56 w-full overflow-hidden border border-[color-mix(in_oklab,#f3f0e8_12%,transparent)] md:min-h-72",
-                          "bg-[linear-gradient(160deg,#141714_0%,#0c0e0c_55%,color-mix(in_oklab,#d6ff3c_8%,#0c0e0c)_100%)]",
-                        )}
-                        aria-hidden="true"
+                {audienceStacked ? (
+                  <div className="grid w-full gap-10">
+                    {audiences.map((item, index) => (
+                      <article
+                        key={item.number}
+                        id={`audience-${item.label.toLowerCase()}`}
+                        className="grid w-full gap-4"
                       >
-                        <AudienceArt
-                          active={index}
-                          only={index}
-                          reducedMotion={reducedMotion}
-                          stacked
-                        />
-                      </div>
-                    </article>
-                  ))}
-                </div>
+                        <div>
+                          <span className="mb-[0.65rem] block font-heading text-[0.72rem] font-bold tracking-[0.16em] text-[color-mix(in_oklab,#f3f0e8_45%,transparent)]">
+                            {item.number}
+                          </span>
+                          <h2 className="m-0 max-w-[14ch] font-heading text-[clamp(1.85rem,4.5vw,3rem)] font-bold leading-[1.05] tracking-[-0.045em]">
+                            {item.title}
+                          </h2>
+                          <p className="mt-4 mb-0 max-w-[34ch] leading-[1.55] text-[#c8c4b8]">
+                            {item.body}
+                          </p>
+                        </div>
+                        <div
+                          className={cn(
+                            "relative m-0 min-h-56 w-full overflow-hidden border border-[color-mix(in_oklab,#f3f0e8_12%,transparent)]",
+                            "bg-[linear-gradient(160deg,#141714_0%,#0c0e0c_55%,color-mix(in_oklab,#d6ff3c_8%,#0c0e0c)_100%)]",
+                          )}
+                          aria-hidden="true"
+                        >
+                          <AudienceArt
+                            active={index}
+                            only={index}
+                            reducedMotion={reducedMotion}
+                            stacked
+                          />
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="relative min-h-44">
+                    {audiences.map((item, index) => {
+                      const active = activeAudience === index;
+                      return (
+                        <article
+                          key={item.number}
+                          className={cn(
+                            "absolute inset-0 transition-[opacity,transform] duration-[450ms] ease-in-out",
+                            active
+                              ? "translate-y-0 opacity-100 pointer-events-auto"
+                              : "translate-y-[18px] opacity-0 pointer-events-none",
+                          )}
+                          aria-hidden={!active}
+                        >
+                          <span className="mb-[0.65rem] block font-heading text-[0.72rem] font-bold tracking-[0.16em] text-[color-mix(in_oklab,#f3f0e8_45%,transparent)]">
+                            {item.number}
+                          </span>
+                          <h2 className="m-0 max-w-[14ch] font-heading text-[clamp(1.85rem,4.5vw,3rem)] font-bold leading-[1.05] tracking-[-0.045em]">
+                            {item.title}
+                          </h2>
+                          <p className="mt-4 mb-0 max-w-[34ch] leading-[1.55] text-[#c8c4b8]">
+                            {item.body}
+                          </p>
+                        </article>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {!audienceStacked ? (
+                  <div className="mt-7 flex gap-[0.4rem]" aria-hidden="true">
+                    {audiences.map((item, index) => (
+                      <span
+                        key={item.number}
+                        className={cn(
+                          "block h-0.5 w-9 transition-colors duration-[350ms]",
+                          activeAudience >= index
+                            ? "bg-[#d6ff3c]"
+                            : "bg-[color-mix(in_oklab,#f3f0e8_22%,transparent)]",
+                        )}
+                      />
+                    ))}
+                  </div>
+                ) : null}
               </div>
+
+              {!audienceStacked ? (
+                <div
+                  className={cn(
+                    "relative m-0 min-h-[clamp(16rem,42vw,22rem)] overflow-hidden border border-[color-mix(in_oklab,#f3f0e8_12%,transparent)]",
+                    "bg-[linear-gradient(160deg,#141714_0%,#0c0e0c_55%,color-mix(in_oklab,#d6ff3c_8%,#0c0e0c)_100%)]",
+                    "md:min-h-[min(72vh,34rem)] md:self-stretch",
+                  )}
+                  aria-live="polite"
+                >
+                  <AudienceArt
+                    active={activeAudience}
+                    reducedMotion={reducedMotion}
+                  />
+                  <p className="absolute bottom-[0.85rem] left-4 z-[2] m-0 text-[0.68rem] tracking-[0.14em] text-[color-mix(in_oklab,#f3f0e8_70%,transparent)] uppercase max-md:hidden">
+                    {audiences[activeAudience]?.label}
+                  </p>
+                </div>
+              ) : null}
             </div>
           </section>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useAnimations, useGLTF, useTexture } from "@react-three/drei";
+import { useAnimations, useGLTF } from "@react-three/drei";
 import {
   Component,
   type ErrorInfo,
@@ -22,7 +22,7 @@ type SceneProps = {
   mobile?: boolean;
 };
 
-const MODEL_PATH = "/models/walking-tshirt.glb?v=chest12";
+const MODEL_PATH = "/models/walking-tshirt.glb?v=chest13";
 
 const PRINTS = [
   "/prints/print-sketch.png",
@@ -32,7 +32,13 @@ const PRINTS = [
 
 /** Mid-chest stamp — tuned against the landing camera yaw. */
 const PRINT_UV = { u0: 0.18, v0: 0.02, u1: 0.82, v1: 0.6 };
-const ATLAS_SIZE = 2048;
+/** 1024 is enough for the landing stamp and much cheaper to bake. */
+const ATLAS_SIZE = 1024;
+
+/** Kick off the GLB download as early as the intro mounts. */
+export function preloadLandingShirt() {
+  useGLTF.preload(MODEL_PATH, true);
+}
 
 type TorsoFrame = {
   xMin: number;
@@ -163,6 +169,11 @@ function WalkingShirt({ progress, onReady, mobile = false }: SceneProps) {
     ctx: CanvasRenderingContext2D;
     texture: THREE.CanvasTexture;
   } | null>(null);
+  const printsRef = useRef<{
+    sketch: THREE.Texture | null;
+    polished: THREE.Texture | null;
+    finalize: THREE.Texture | null;
+  }>({ sketch: null, polished: null, finalize: null });
   const printOpacity = useRef({ a: 0, b: 0, c: 0 });
   const walkAction = useRef<THREE.AnimationAction | null>(null);
   const readySent = useRef(false);
@@ -172,7 +183,6 @@ function WalkingShirt({ progress, onReady, mobile = false }: SceneProps) {
 
   const { scene, animations } = useGLTF(MODEL_PATH, true);
   const { actions, names } = useAnimations(animations, root);
-  const [sketch, polished, finalize] = useTexture([...PRINTS]);
 
   useEffect(() => {
     if (readySent.current) return;
@@ -180,15 +190,40 @@ function WalkingShirt({ progress, onReady, mobile = false }: SceneProps) {
     // Defer one frame so the first paint of the mesh can land
     const id = window.requestAnimationFrame(() => onReady?.());
     return () => window.cancelAnimationFrame(id);
-  }, [onReady, scene, sketch, polished, finalize]);
+  }, [onReady, scene]);
+
+  // Load stamp prints after the tee is already visible (doesn't block intro).
+  useEffect(() => {
+    let cancelled = false;
+    const loader = new THREE.TextureLoader();
+    const keys = ["sketch", "polished", "finalize"] as const;
+    const loaded: THREE.Texture[] = [];
+
+    PRINTS.forEach((url, index) => {
+      loader.load(url, (tex) => {
+        if (cancelled) {
+          tex.dispose();
+          return;
+        }
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = 8;
+        tex.needsUpdate = true;
+        printsRef.current[keys[index]] = tex;
+        loaded.push(tex);
+        lastBake.current = { a: -1, b: -1, c: -1, color: "", imgs: 0 };
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      for (const tex of loaded) tex.dispose();
+      for (const key of keys) {
+        printsRef.current[key] = null;
+      }
+    };
+  }, []);
 
   useLayoutEffect(() => {
-    for (const tex of [sketch, polished, finalize]) {
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.anisotropy = 8;
-      tex.needsUpdate = true;
-    }
-
     const canvas = document.createElement("canvas");
     canvas.width = ATLAS_SIZE;
     canvas.height = ATLAS_SIZE;
@@ -248,7 +283,7 @@ function WalkingShirt({ progress, onReady, mobile = false }: SceneProps) {
         mat.dispose();
       });
     };
-  }, [scene, sketch, polished, finalize]);
+  }, [scene]);
 
   useEffect(() => {
     const preferred =
@@ -346,9 +381,15 @@ function WalkingShirt({ progress, onReady, mobile = false }: SceneProps) {
     const atlas = atlasRef.current;
     if (!atlas) return;
 
-    const imgA = sketch.image as CanvasImageSource | undefined;
-    const imgB = polished.image as CanvasImageSource | undefined;
-    const imgC = finalize.image as CanvasImageSource | undefined;
+    const imgA = printsRef.current.sketch?.image as
+      | CanvasImageSource
+      | undefined;
+    const imgB = printsRef.current.polished?.image as
+      | CanvasImageSource
+      | undefined;
+    const imgC = printsRef.current.finalize?.image as
+      | CanvasImageSource
+      | undefined;
     const readyCount =
       (imgA &&
       (("naturalWidth" in imgA && imgA.naturalWidth > 0) ||
@@ -501,4 +542,9 @@ export function ShirtScene({ progress, onReady, mobile = false }: SceneProps) {
       </ShirtErrorBoundary>
     </Canvas>
   );
+}
+
+// Warm the cache as soon as this module evaluates on the client.
+if (typeof window !== "undefined") {
+  preloadLandingShirt();
 }
