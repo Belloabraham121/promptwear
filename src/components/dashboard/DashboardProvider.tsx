@@ -13,6 +13,7 @@ import {
   createOrderFromLine,
   loadState,
   type DashboardState,
+  type PlaceOrderOptions,
 } from "@/lib/dashboard/store";
 import type {
   Design,
@@ -22,6 +23,7 @@ import type {
   OrderStatus,
   StudioBackground,
 } from "@/lib/dashboard/types";
+import { normalizeOrderStatus } from "@/lib/dashboard/types";
 import {
   deleteDesign as dbDeleteDesign,
   getAsset,
@@ -48,7 +50,7 @@ type DashboardContextValue = {
   }) => Promise<Design>;
   updateDesign: (id: string, patch: Partial<Design>) => Promise<Design | null>;
   removeDesign: (id: string) => Promise<void>;
-  placeOrder: (line: OrderLine, note?: string) => Promise<Order>;
+  placeOrder: (line: OrderLine, options?: PlaceOrderOptions) => Promise<Order>;
   updateOrderStatus: (id: string, status: OrderStatus) => Promise<void>;
   setUser: (user: DashboardState["user"]) => Promise<void>;
   saveAsset: (input: {
@@ -125,30 +127,40 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
-  const placeOrder = useCallback(async (line: OrderLine, note?: string) => {
-    const order = createOrderFromLine(line, note);
-    await putOrder(order);
-    const design = await getDesign(line.designId);
-    if (design && design.status !== "ordered") {
-      await putDesign({
-        ...design,
-        status: "ordered",
-        updatedAt: new Date().toISOString(),
-      });
-    }
-    setState(await loadState());
-    return order;
-  }, []);
+  const placeOrder = useCallback(
+    async (line: OrderLine, options?: PlaceOrderOptions) => {
+      const order = createOrderFromLine(line, options);
+      await putOrder(order);
+      const design = await getDesign(line.designId);
+      if (design && design.status !== "ordered") {
+        await putDesign({
+          ...design,
+          status: "ordered",
+          updatedAt: new Date().toISOString(),
+        });
+      }
+      setState(await loadState());
+      return order;
+    },
+    [],
+  );
 
   const updateOrderStatus = useCallback(
     async (id: string, status: OrderStatus) => {
       const prev = state;
       const current = prev?.orders.find((o) => o.id === id);
       if (!current) return;
+      const nextStatus = normalizeOrderStatus(status);
+      const ts = new Date().toISOString();
+      const history = [...(current.statusHistory ?? [])];
+      if (history[history.length - 1]?.status !== nextStatus) {
+        history.push({ status: nextStatus, at: ts });
+      }
       const updated: Order = {
         ...current,
-        status,
-        updatedAt: new Date().toISOString(),
+        status: nextStatus,
+        updatedAt: ts,
+        statusHistory: history,
       };
       await putOrder(updated);
       setState((s) =>

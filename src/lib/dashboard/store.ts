@@ -1,15 +1,21 @@
 "use client";
 
-import { quoteOrder } from "@/lib/dashboard/pricing";
+import { quoteOrder, quoteSmartOrder, isSmartQuote } from "@/lib/dashboard/pricing";
+import type { SmartQuote } from "@/lib/pricing/engine";
 import type {
   DashboardUser,
   Design,
   DesignMethod,
   Order,
+  OrderCheckout,
   OrderLine,
+  OrderPricingSnapshot,
   StudioBackground,
 } from "@/lib/dashboard/types";
-import { EMPTY_PANELS } from "@/lib/dashboard/types";
+import {
+  EMPTY_PANELS,
+  normalizeOrderStatus,
+} from "@/lib/dashboard/types";
 import {
   getMeta,
   getUser,
@@ -29,6 +35,12 @@ export type DashboardState = {
   user: DashboardUser;
   designs: Design[];
   orders: Order[];
+};
+
+export type PlaceOrderOptions = {
+  note?: string;
+  checkout?: OrderCheckout;
+  quote?: SmartQuote;
 };
 
 function daysAgoIso(n: number) {
@@ -56,6 +68,18 @@ function normalizeDesign(raw: Partial<Design> & { id: string }): Design {
     createdAt: raw.createdAt ?? ts,
     updatedAt: raw.updatedAt ?? ts,
   };
+}
+
+function normalizeOrder(raw: Order): Order {
+  const status = normalizeOrderStatus(raw.status);
+  const history =
+    raw.statusHistory && raw.statusHistory.length > 0
+      ? raw.statusHistory.map((e) => ({
+          ...e,
+          status: normalizeOrderStatus(e.status),
+        }))
+      : [{ status, at: raw.updatedAt ?? raw.createdAt }];
+  return { ...raw, status, statusHistory: history };
 }
 
 function seedDesigns(): Design[] {
@@ -94,17 +118,49 @@ function seedOrders(designs: Design[]): Order[] {
     sizes: { S: 2, M: 6, L: 4, XL: 2, XXL: 0 },
   };
   const q = quoteOrder(line);
+  const created = daysAgoIso(3);
   return [
     {
       id: "ord_demo01",
-      status: "in_production",
-      createdAt: daysAgoIso(3),
+      status: "printing",
+      createdAt: created,
       updatedAt: daysAgoIso(1),
       line,
       subtotal: q.subtotal,
       delivery: q.delivery,
       total: q.total,
       note: "Crew drop for campus launch.",
+      checkout: {
+        contact: {
+          fullName: "Guest creator",
+          email: "guest@promptwear.ng",
+          phone: "+234 801 000 0000",
+        },
+        address: {
+          line1: "12 Admiralty Way",
+          city: "Lagos",
+          state: "Lagos",
+          country: "NG",
+        },
+        paymentMethod: "card",
+      },
+      pricing: {
+        vendorId: "ven_lagos_press",
+        vendorName: "Lagos Press Co.",
+        strategy: "lowest_cost",
+        fulfillmentCost: Math.round(q.total * 0.78),
+        marginPct: 28,
+        marginAmount: Math.round(q.total * 0.22),
+        productionDays: 3,
+        deliveryDays: 6,
+        overridden: false,
+      },
+      statusHistory: [
+        { status: "order_received", at: created },
+        { status: "design_confirmed", at: daysAgoIso(2) },
+        { status: "production_assigned", at: daysAgoIso(1) },
+        { status: "printing", at: daysAgoIso(1) },
+      ],
     },
   ];
 }
@@ -126,7 +182,7 @@ async function migrateLegacyLocalStorage() {
     }
     if (Array.isArray(legacy.orders)) {
       for (const o of legacy.orders) {
-        if (o?.id) await putOrder(o);
+        if (o?.id) await putOrder(normalizeOrder(o));
       }
     }
     window.localStorage.removeItem(LEGACY_STORAGE_KEY);
@@ -168,7 +224,18 @@ export async function loadState(): Promise<DashboardState> {
     await setMeta(SEEDED_META, true);
   }
 
-  return { user, designs, orders };
+  // Normalize legacy statuses in place
+  const normalized = orders.map(normalizeOrder);
+  for (let i = 0; i < orders.length; i++) {
+    if (
+      orders[i].status !== normalized[i].status ||
+      !orders[i].statusHistory
+    ) {
+      await putOrder(normalized[i]);
+    }
+  }
+
+  return { user, designs, orders: normalized };
 }
 
 export function createDesign(input: {
@@ -194,19 +261,48 @@ export function createDesign(input: {
 
 export function createOrderFromLine(
   line: OrderLine,
-  note?: string,
+  options?: PlaceOrderOptions,
 ): Order {
-  const q = quoteOrder(line);
   const ts = new Date().toISOString();
+  const smart = options?.quote;
+  const fallback = quoteOrder(line);
+  const subtotal = smart?.subtotal ?? fallback.subtotal;
+  const delivery = smart?.delivery ?? fallback.delivery;
+  const total = smart?.total ?? fallback.total;
+
+  let pricing: OrderPricingSnapshot | undefined;
+  if (smart && isSmartQuote(smart) && smart.vendor) {
+    pricing = {
+      vendorId: smart.vendor.vendorId,
+      vendorName: smart.vendor.vendorName,
+      strategy: smart.strategy,
+      fulfillmentCost: smart.fulfillmentCost,
+      marginPct: smart.marginPct,
+      marginAmount: smart.marginAmount,
+      productionDays: smart.productionDays,
+      deliveryDays: smart.deliveryDays,
+      overridden: smart.overridden,
+    };
+  }
+
+  const hasCheckout = Boolean(options?.checkout);
+  const status = hasCheckout ? "order_received" : "quoted";
+
   return {
     id: uid("ord"),
-    status: "quoted",
+    status,
     createdAt: ts,
     updatedAt: ts,
     line,
-    subtotal: q.subtotal,
-    delivery: q.delivery,
-    total: q.total,
-    note,
+    subtotal,
+    delivery,
+    total,
+    note: options?.note,
+    checkout: options?.checkout,
+    pricing,
+    statusHistory: [{ status, at: ts }],
   };
 }
+
+/** Re-export for callers that want a one-shot smart quote helper. */
+export { quoteSmartOrder };

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useDashboard } from "@/components/dashboard/DashboardProvider";
 import { PageHeader } from "@/components/dashboard/ui";
@@ -81,6 +82,12 @@ export default function AccountPage() {
               </span>
             </li>
             <li>
+              Role:{" "}
+              <span className="text-[#f3f0e8]">
+                {user.role === "admin" ? "Admin" : "Customer"}
+              </span>
+            </li>
+            <li>
               Designs saved:{" "}
               <span className="text-[#f3f0e8]">{designs.length}</span>
             </li>
@@ -89,6 +96,43 @@ export default function AccountPage() {
               <span className="text-[#f3f0e8]">{orders.length}</span>
             </li>
           </ul>
+          <div className="mt-6 space-y-3 border-t border-[#f3f0e8]/10 pt-5">
+            <p className="text-[0.65rem] uppercase tracking-[0.14em] text-[#c8c4b8]">
+              Admin access
+            </p>
+            <p className="text-xs text-[#c8c4b8]">
+              Demo only — no real auth. Unlock code{" "}
+              <span className="text-[#f3f0e8]">promptwear-admin</span> on{" "}
+              <Link
+                href="/dashboard/admin"
+                className="text-[#d6ff3c] underline"
+              >
+                /dashboard/admin
+              </Link>
+              .
+            </p>
+            <button
+              type="button"
+              onClick={() =>
+                void setUser({
+                  ...user,
+                  role: user.role === "admin" ? "customer" : "admin",
+                  guest: false,
+                })
+              }
+              className="border border-[#f3f0e8]/20 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.08em] hover:border-[#d6ff3c] hover:text-[#d6ff3c]"
+            >
+              {user.role === "admin" ? "Disable admin mode" : "Enable admin mode"}
+            </button>
+            {user.role === "admin" ? (
+              <Link
+                href="/dashboard/admin"
+                className="inline-flex bg-[#d6ff3c] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.06em] text-[#070807] hover:bg-[#e2ff6a]"
+              >
+                Open admin
+              </Link>
+            ) : null}
+          </div>
           <p className="mt-6 text-xs text-[#c8c4b8]">
             Profile, designs, orders, and image blobs live in IndexedDB
             (index.db) on this device.

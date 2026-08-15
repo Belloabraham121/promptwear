@@ -617,9 +617,9 @@ export function LandingPage() {
           </section>
         </div>
 
-        <div className="relative z-10 bg-[#070807] shadow-[0_-48px_96px_rgba(7,8,7,0.92)]">
+        <div className="relative z-10">
           <div
-            className="overflow-hidden border-y border-[color-mix(in_oklab,#f3f0e8_12%,transparent)] bg-[#070807] py-4"
+            className="overflow-hidden border-y border-[color-mix(in_oklab,#f3f0e8_12%,transparent)] bg-[#070807] py-4 text-[#f3f0e8] shadow-[0_-48px_96px_rgba(7,8,7,0.92)]"
             aria-hidden="true"
           >
             <div className="pw-marquee-track flex w-max gap-8 font-heading text-[clamp(0.95rem,2vw,1.2rem)] font-bold tracking-[0.12em] uppercase whitespace-nowrap">
@@ -632,403 +632,409 @@ export function LandingPage() {
             </div>
           </div>
 
-          <section id="create" className={cn("relative z-[1] bg-[#070807] py-[clamp(4.5rem,10vh,7rem)]", padX)}>
-            <div
-              className="mb-6 flex items-center gap-3 text-[0.7rem] tracking-[0.16em] text-[#c8c4b8] uppercase"
-              data-reveal
+          {/* Create → footer: bone ground, ink type */}
+          <div className="relative bg-[#f3f0e8] text-[#070807]">
+            <section
+              id="create"
+              className={cn("relative z-[1] bg-[#f3f0e8] py-[clamp(4.5rem,10vh,7rem)]", padX)}
             >
-              <span className="text-[#d6ff3c]">02</span>
-              <span>Create your way</span>
-            </div>
-            <div
-              className="mb-[clamp(2.5rem,5vw,3.5rem)] grid max-w-[42rem] gap-4"
-              data-reveal
-            >
-              <h2 className="m-0 font-heading text-[clamp(2.2rem,5.5vw,4rem)] font-bold leading-[1.02] tracking-[-0.045em]">
-                There is no wrong way
-                <br />
-                to start something.
-              </h2>
-              <p className="m-0 max-w-[38ch] leading-[1.55] text-[#c8c4b8]">
-                A sentence, a scribble, a reference—or all three. AI augments your
-                creativity. It never replaces it.
-              </p>
-            </div>
+              <div
+                className="mb-6 flex items-center gap-3 text-[0.7rem] tracking-[0.16em] text-[color-mix(in_oklab,#070807_55%,transparent)] uppercase"
+                data-reveal
+              >
+                <span className="text-[#5a6b14]">02</span>
+                <span className="text-[#5a574f]">Create your way</span>
+              </div>
+              <div
+                className="mb-[clamp(2.5rem,5vw,3.5rem)] grid max-w-[42rem] gap-4"
+                data-reveal
+              >
+                <h2 className="m-0 font-heading text-[clamp(2.2rem,5.5vw,4rem)] font-bold leading-[1.02] tracking-[-0.045em] text-[#070807]">
+                  There is no wrong way
+                  <br />
+                  to start something.
+                </h2>
+                <p className="m-0 max-w-[38ch] leading-[1.55] text-[#5a574f]">
+                  A sentence, a scribble, a reference—or all three. AI augments your
+                  creativity. It never replaces it.
+                </p>
+              </div>
 
-            <div className="grid gap-px border border-[color-mix(in_oklab,#f3f0e8_12%,transparent)] bg-[color-mix(in_oklab,#f3f0e8_12%,transparent)] md:grid-cols-3">
-              {methods.map((method) => (
-                <article
-                  key={method.id}
-                  className="flex min-h-[18rem] flex-col justify-between gap-8 bg-[#070807] p-5 sm:min-h-[22rem] sm:p-6"
-                  data-reveal
-                >
-                  <div>
-                    <span className="text-[0.7rem] tracking-[0.14em] text-[#c8c4b8]">
-                      {method.id}
-                    </span>
-                  </div>
-                  {method.type === "ai" && method.demo ? (
-                    <div className="border border-[color-mix(in_oklab,#f3f0e8_12%,transparent)] bg-[color-mix(in_oklab,#f3f0e8_3%,transparent)] p-[1.1rem]">
-                      <p className="m-0 font-heading text-[1.05rem] leading-[1.35] tracking-[-0.02em]">
-                        {method.demo}
-                      </p>
-                      <span className="mt-[0.85rem] inline-block text-[0.65rem] tracking-[0.12em] text-[#d6ff3c] uppercase">
-                        Generating your vision
+              <div className="grid gap-px border border-[color-mix(in_oklab,#070807_14%,transparent)] bg-[color-mix(in_oklab,#070807_14%,transparent)] md:grid-cols-3">
+                {methods.map((method) => (
+                  <article
+                    key={method.id}
+                    className="flex min-h-[18rem] flex-col justify-between gap-8 bg-[#faf8f3] p-5 sm:min-h-[22rem] sm:p-6"
+                    data-reveal
+                  >
+                    <div>
+                      <span className="text-[0.7rem] tracking-[0.14em] text-[#5a574f]">
+                        {method.id}
                       </span>
                     </div>
-                  ) : null}
-                  {method.type === "draw" ? (
-                    <div className="text-[#d6ff3c] opacity-90" aria-hidden="true">
-                      <svg className="h-auto w-full" viewBox="0 0 400 220" fill="none">
-                        <path
-                          d="M48 168C96 62 168 38 214 118C248 176 312 158 352 48"
-                          stroke="currentColor"
-                          strokeWidth="2.5"
-                        />
-                        <path
-                          d="M64 188C118 108 172 96 214 152C248 196 300 172 328 108"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          opacity="0.45"
-                        />
-                      </svg>
+                    {method.type === "ai" && method.demo ? (
+                      <div className="border border-[color-mix(in_oklab,#070807_12%,transparent)] bg-[color-mix(in_oklab,#070807_3%,transparent)] p-[1.1rem]">
+                        <p className="m-0 font-heading text-[1.05rem] leading-[1.35] tracking-[-0.02em] text-[#070807]">
+                          {method.demo}
+                        </p>
+                        <span className="mt-[0.85rem] inline-block text-[0.65rem] tracking-[0.12em] text-[#5a6b14] uppercase">
+                          Generating your vision
+                        </span>
+                      </div>
+                    ) : null}
+                    {method.type === "draw" ? (
+                      <div className="text-[#5a6b14] opacity-90" aria-hidden="true">
+                        <svg className="h-auto w-full" viewBox="0 0 400 220" fill="none">
+                          <path
+                            d="M48 168C96 62 168 38 214 118C248 176 312 158 352 48"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                          />
+                          <path
+                            d="M64 188C118 108 172 96 214 152C248 196 300 172 328 108"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            opacity="0.45"
+                          />
+                        </svg>
+                      </div>
+                    ) : null}
+                    {method.type === "hybrid" && method.demo ? (
+                      <div className="flex items-center gap-[0.85rem] font-heading text-[1.4rem] font-bold tracking-[-0.03em] text-[#070807]">
+                        <span>ROUGH</span>
+                        <span className="text-[#5a6b14]">→</span>
+                        <span>READY</span>
+                      </div>
+                    ) : null}
+                    <div>
+                      <p className="mb-[0.45rem] text-[0.68rem] tracking-[0.14em] text-[#5a6b14] uppercase">
+                        {method.eyebrow}
+                      </p>
+                      <h3 className="m-0 max-w-[12ch] font-heading text-[clamp(1.45rem,2.8vw,1.85rem)] font-bold leading-[1.1] tracking-[-0.035em] text-[#070807]">
+                        {method.title}
+                      </h3>
                     </div>
-                  ) : null}
-                  {method.type === "hybrid" && method.demo ? (
-                    <div className="flex items-center gap-[0.85rem] font-heading text-[1.4rem] font-bold tracking-[-0.03em]">
-                      <span>ROUGH</span>
-                      <span className="text-[#d6ff3c]">→</span>
-                      <span>READY</span>
-                    </div>
-                  ) : null}
-                  <div>
-                    <p className="mb-[0.45rem] text-[0.68rem] tracking-[0.14em] text-[#d6ff3c] uppercase">
-                      {method.eyebrow}
-                    </p>
-                    <h3 className="m-0 max-w-[12ch] font-heading text-[clamp(1.45rem,2.8vw,1.85rem)] font-bold leading-[1.1] tracking-[-0.035em]">
-                      {method.title}
-                    </h3>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
+                  </article>
+                ))}
+              </div>
+            </section>
 
-          <section
-            ref={audienceSection}
-            className={cn(
-              "relative border-t border-[color-mix(in_oklab,#f3f0e8_12%,transparent)]",
-              audienceStacked ? "h-auto" : "h-[260vh]",
-            )}
-            aria-label="Who it's for"
-          >
-            <div
+            <section
+              ref={audienceSection}
               className={cn(
-                "grid grid-cols-1 items-center gap-5 overflow-clip pt-[5.5rem] pb-8",
-                padX,
-                "bg-[radial-gradient(ellipse_55%_50%_at_85%_45%,color-mix(in_oklab,#d6ff3c_10%,transparent),transparent_70%),#070807]",
-                audienceStacked
-                  ? "relative h-auto min-h-0 pb-14"
-                  : "sticky top-0 h-dvh",
-                !audienceStacked &&
-                  "md:grid-cols-[minmax(16rem,0.9fr)_minmax(20rem,1.15fr)] md:gap-[clamp(1.5rem,4vw,3rem)] md:pr-0",
+                "relative border-t border-[color-mix(in_oklab,#070807_12%,transparent)]",
+                audienceStacked ? "h-auto" : "h-[260vh]",
               )}
+              aria-label="Who it's for"
             >
               <div
                 className={cn(
-                  "relative z-[1] w-full",
-                  audienceStacked ? "max-w-[40rem]" : "max-w-[28rem]",
+                  "grid grid-cols-1 items-center gap-5 overflow-clip pt-[5.5rem] pb-8",
+                  padX,
+                  "bg-[radial-gradient(ellipse_55%_50%_at_85%_45%,color-mix(in_oklab,#d6ff3c_18%,transparent),transparent_70%),#f3f0e8]",
+                  audienceStacked
+                    ? "relative h-auto min-h-0 pb-14"
+                    : "sticky top-0 h-dvh",
+                  !audienceStacked &&
+                    "md:grid-cols-[minmax(16rem,0.9fr)_minmax(20rem,1.15fr)] md:gap-[clamp(1.5rem,4vw,3rem)] md:pr-0",
                 )}
               >
-                <p className="mb-4 text-[0.7rem] tracking-[0.16em] text-[#d6ff3c] uppercase">
-                  Who it&apos;s for
-                </p>
-                <div className="mb-6 flex flex-wrap gap-x-4 gap-y-[0.55rem]">
-                  {audiences.map((item, index) => (
-                    <button
-                      key={item.label}
-                      type="button"
-                      className={cn(
-                        "appearance-none border-0 bg-transparent p-0 font-heading text-[0.72rem] font-bold tracking-[0.14em] uppercase transition-colors duration-[350ms]",
-                        activeAudience === index
-                          ? "text-[#d6ff3c]"
-                          : "text-[color-mix(in_oklab,#f3f0e8_40%,transparent)]",
-                      )}
-                      aria-pressed={activeAudience === index}
-                      onClick={() => {
-                        setActiveAudience(index);
-                        if (audienceStacked) {
-                          document
-                            .getElementById(
-                              `audience-${item.label.toLowerCase()}`,
-                            )
-                            ?.scrollIntoView({
-                              behavior: "smooth",
-                              block: "start",
-                            });
-                          return;
-                        }
-                        const section = audienceSection.current;
-                        if (!section) return;
-                        const top =
-                          section.getBoundingClientRect().top + window.scrollY;
-                        const span = Math.max(
-                          1,
-                          section.offsetHeight - window.innerHeight,
-                        );
-                        const progress = (index + 0.5) / audiences.length;
-                        window.scrollTo({ top: top + span * progress });
-                      }}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-
-                {audienceStacked ? (
-                  <div className="grid w-full gap-10">
+                <div
+                  className={cn(
+                    "relative z-[1] w-full",
+                    audienceStacked ? "max-w-[40rem]" : "max-w-[28rem]",
+                  )}
+                >
+                  <p className="mb-4 text-[0.7rem] tracking-[0.16em] text-[#5a6b14] uppercase">
+                    Who it&apos;s for
+                  </p>
+                  <div className="mb-6 flex flex-wrap gap-x-4 gap-y-[0.55rem]">
                     {audiences.map((item, index) => (
-                      <article
-                        key={item.number}
-                        id={`audience-${item.label.toLowerCase()}`}
-                        className="grid w-full gap-4"
+                      <button
+                        key={item.label}
+                        type="button"
+                        className={cn(
+                          "appearance-none border-0 bg-transparent p-0 font-heading text-[0.72rem] font-bold tracking-[0.14em] uppercase transition-colors duration-[350ms]",
+                          activeAudience === index
+                            ? "text-[#5a6b14]"
+                            : "text-[color-mix(in_oklab,#070807_40%,transparent)]",
+                        )}
+                        aria-pressed={activeAudience === index}
+                        onClick={() => {
+                          setActiveAudience(index);
+                          if (audienceStacked) {
+                            document
+                              .getElementById(
+                                `audience-${item.label.toLowerCase()}`,
+                              )
+                              ?.scrollIntoView({
+                                behavior: "smooth",
+                                block: "start",
+                              });
+                            return;
+                          }
+                          const section = audienceSection.current;
+                          if (!section) return;
+                          const top =
+                            section.getBoundingClientRect().top + window.scrollY;
+                          const span = Math.max(
+                            1,
+                            section.offsetHeight - window.innerHeight,
+                          );
+                          const progress = (index + 0.5) / audiences.length;
+                          window.scrollTo({ top: top + span * progress });
+                        }}
                       >
-                        <div>
-                          <span className="mb-[0.65rem] block font-heading text-[0.72rem] font-bold tracking-[0.16em] text-[color-mix(in_oklab,#f3f0e8_45%,transparent)]">
-                            {item.number}
-                          </span>
-                          <h2 className="m-0 max-w-[14ch] font-heading text-[clamp(1.85rem,4.5vw,3rem)] font-bold leading-[1.05] tracking-[-0.045em]">
-                            {item.title}
-                          </h2>
-                          <p className="mt-4 mb-0 max-w-[34ch] leading-[1.55] text-[#c8c4b8]">
-                            {item.body}
-                          </p>
-                        </div>
-                        <div
-                          className={cn(
-                            "relative m-0 min-h-56 w-full overflow-hidden border border-[color-mix(in_oklab,#f3f0e8_12%,transparent)]",
-                            "bg-[linear-gradient(160deg,#141714_0%,#0c0e0c_55%,color-mix(in_oklab,#d6ff3c_8%,#0c0e0c)_100%)]",
-                          )}
-                          aria-hidden="true"
-                        >
-                          <AudienceArt
-                            active={index}
-                            only={index}
-                            reducedMotion={reducedMotion}
-                            stacked
-                          />
-                        </div>
-                      </article>
+                        {item.label}
+                      </button>
                     ))}
                   </div>
-                ) : (
-                  <div className="relative min-h-44">
-                    {audiences.map((item, index) => {
-                      const active = activeAudience === index;
-                      return (
+
+                  {audienceStacked ? (
+                    <div className="grid w-full gap-10">
+                      {audiences.map((item, index) => (
                         <article
                           key={item.number}
-                          className={cn(
-                            "absolute inset-0 transition-[opacity,transform] duration-[450ms] ease-in-out",
-                            active
-                              ? "translate-y-0 opacity-100 pointer-events-auto"
-                              : "translate-y-[18px] opacity-0 pointer-events-none",
-                          )}
-                          aria-hidden={!active}
+                          id={`audience-${item.label.toLowerCase()}`}
+                          className="grid w-full gap-4"
                         >
-                          <span className="mb-[0.65rem] block font-heading text-[0.72rem] font-bold tracking-[0.16em] text-[color-mix(in_oklab,#f3f0e8_45%,transparent)]">
-                            {item.number}
-                          </span>
-                          <h2 className="m-0 max-w-[14ch] font-heading text-[clamp(1.85rem,4.5vw,3rem)] font-bold leading-[1.05] tracking-[-0.045em]">
-                            {item.title}
-                          </h2>
-                          <p className="mt-4 mb-0 max-w-[34ch] leading-[1.55] text-[#c8c4b8]">
-                            {item.body}
-                          </p>
+                          <div>
+                            <span className="mb-[0.65rem] block font-heading text-[0.72rem] font-bold tracking-[0.16em] text-[color-mix(in_oklab,#070807_45%,transparent)]">
+                              {item.number}
+                            </span>
+                            <h2 className="m-0 max-w-[14ch] font-heading text-[clamp(1.85rem,4.5vw,3rem)] font-bold leading-[1.05] tracking-[-0.045em] text-[#070807]">
+                              {item.title}
+                            </h2>
+                            <p className="mt-4 mb-0 max-w-[34ch] leading-[1.55] text-[#5a574f]">
+                              {item.body}
+                            </p>
+                          </div>
+                          <div
+                            className={cn(
+                              "relative m-0 min-h-56 w-full overflow-hidden border border-[color-mix(in_oklab,#070807_14%,transparent)]",
+                              "bg-[linear-gradient(160deg,#141714_0%,#0c0e0c_55%,color-mix(in_oklab,#d6ff3c_8%,#0c0e0c)_100%)]",
+                            )}
+                            aria-hidden="true"
+                          >
+                            <AudienceArt
+                              active={index}
+                              only={index}
+                              reducedMotion={reducedMotion}
+                              stacked
+                            />
+                          </div>
                         </article>
-                      );
-                    })}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="relative min-h-44">
+                      {audiences.map((item, index) => {
+                        const active = activeAudience === index;
+                        return (
+                          <article
+                            key={item.number}
+                            className={cn(
+                              "absolute inset-0 transition-[opacity,transform] duration-[450ms] ease-in-out",
+                              active
+                                ? "translate-y-0 opacity-100 pointer-events-auto"
+                                : "translate-y-[18px] opacity-0 pointer-events-none",
+                            )}
+                            aria-hidden={!active}
+                          >
+                            <span className="mb-[0.65rem] block font-heading text-[0.72rem] font-bold tracking-[0.16em] text-[color-mix(in_oklab,#070807_45%,transparent)]">
+                              {item.number}
+                            </span>
+                            <h2 className="m-0 max-w-[14ch] font-heading text-[clamp(1.85rem,4.5vw,3rem)] font-bold leading-[1.05] tracking-[-0.045em] text-[#070807]">
+                              {item.title}
+                            </h2>
+                            <p className="mt-4 mb-0 max-w-[34ch] leading-[1.55] text-[#5a574f]">
+                              {item.body}
+                            </p>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {!audienceStacked ? (
+                    <div className="mt-7 flex gap-[0.4rem]" aria-hidden="true">
+                      {audiences.map((item, index) => (
+                        <span
+                          key={item.number}
+                          className={cn(
+                            "block h-0.5 w-9 transition-colors duration-[350ms]",
+                            activeAudience >= index
+                              ? "bg-[#d6ff3c]"
+                              : "bg-[color-mix(in_oklab,#070807_18%,transparent)]",
+                          )}
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
 
                 {!audienceStacked ? (
-                  <div className="mt-7 flex gap-[0.4rem]" aria-hidden="true">
-                    {audiences.map((item, index) => (
-                      <span
-                        key={item.number}
-                        className={cn(
-                          "block h-0.5 w-9 transition-colors duration-[350ms]",
-                          activeAudience >= index
-                            ? "bg-[#d6ff3c]"
-                            : "bg-[color-mix(in_oklab,#f3f0e8_22%,transparent)]",
-                        )}
-                      />
-                    ))}
+                  <div
+                    className={cn(
+                      "relative m-0 min-h-[clamp(16rem,42vw,22rem)] overflow-hidden border border-[color-mix(in_oklab,#070807_14%,transparent)]",
+                      "bg-[linear-gradient(160deg,#141714_0%,#0c0e0c_55%,color-mix(in_oklab,#d6ff3c_8%,#0c0e0c)_100%)]",
+                      "md:min-h-[min(72vh,34rem)] md:self-stretch",
+                    )}
+                    aria-live="polite"
+                  >
+                    <AudienceArt
+                      active={activeAudience}
+                      reducedMotion={reducedMotion}
+                    />
+                    <p className="absolute bottom-[0.85rem] left-4 z-[2] m-0 text-[0.68rem] tracking-[0.14em] text-[color-mix(in_oklab,#f3f0e8_70%,transparent)] uppercase max-md:hidden">
+                      {audiences[activeAudience]?.label}
+                    </p>
                   </div>
                 ) : null}
               </div>
+            </section>
 
-              {!audienceStacked ? (
-                <div
-                  className={cn(
-                    "relative m-0 min-h-[clamp(16rem,42vw,22rem)] overflow-hidden border border-[color-mix(in_oklab,#f3f0e8_12%,transparent)]",
-                    "bg-[linear-gradient(160deg,#141714_0%,#0c0e0c_55%,color-mix(in_oklab,#d6ff3c_8%,#0c0e0c)_100%)]",
-                    "md:min-h-[min(72vh,34rem)] md:self-stretch",
-                  )}
-                  aria-live="polite"
-                >
-                  <AudienceArt
-                    active={activeAudience}
-                    reducedMotion={reducedMotion}
-                  />
-                  <p className="absolute bottom-[0.85rem] left-4 z-[2] m-0 text-[0.68rem] tracking-[0.14em] text-[color-mix(in_oklab,#f3f0e8_70%,transparent)] uppercase max-md:hidden">
-                    {audiences[activeAudience]?.label}
-                  </p>
+            <section
+              id="pricing"
+              className={cn(
+                "border-t border-[color-mix(in_oklab,#070807_12%,transparent)] bg-[#f3f0e8] py-[clamp(4.5rem,10vh,7rem)]",
+                padX,
+              )}
+            >
+              <div
+                className="mb-[clamp(2rem,4vw,3rem)] max-w-[36rem]"
+                data-reveal
+              >
+                <div className="mb-6 flex items-center gap-3 text-[0.7rem] tracking-[0.16em] text-[#5a574f] uppercase">
+                  <span className="text-[#5a6b14]">03</span>
+                  <span>Pricing &amp; proof</span>
                 </div>
-              ) : null}
-            </div>
-          </section>
-
-          <section
-            id="pricing"
-            className={cn(
-              "border-t border-[color-mix(in_oklab,#f3f0e8_12%,transparent)] py-[clamp(4.5rem,10vh,7rem)]",
-              padX,
-            )}
-          >
-            <div
-              className="mb-[clamp(2rem,4vw,3rem)] max-w-[36rem]"
-              data-reveal
-            >
-              <div className="mb-6 flex items-center gap-3 text-[0.7rem] tracking-[0.16em] text-[#c8c4b8] uppercase">
-                <span className="text-[#d6ff3c]">03</span>
-                <span>Pricing &amp; proof</span>
+                <h2 className="mb-4 font-heading text-[clamp(2.1rem,5vw,3.5rem)] font-bold leading-[1.02] tracking-[-0.045em] text-[#070807]">
+                  Transparent price.
+                  <br />
+                  Street-ready print.
+                </h2>
+                <p className="m-0 max-w-[42ch] leading-[1.55] text-[#5a574f]">
+                  Smart pricing weighs garment, print method and delivery so you see
+                  one clear total—before you pay. DTF and screen printing available
+                  now.
+                </p>
               </div>
-              <h2 className="mb-4 font-heading text-[clamp(2.1rem,5vw,3.5rem)] font-bold leading-[1.02] tracking-[-0.045em]">
-                Transparent price.
-                <br />
-                Street-ready print.
-              </h2>
-              <p className="m-0 max-w-[42ch] leading-[1.55] text-[#c8c4b8]">
-                Smart pricing weighs garment, print method and delivery so you see
-                one clear total—before you pay. DTF and screen printing available
-                now.
-              </p>
-            </div>
-            <div className="grid gap-px border border-[color-mix(in_oklab,#f3f0e8_12%,transparent)] bg-[color-mix(in_oklab,#f3f0e8_12%,transparent)] md:grid-cols-3">
-              {(
-                [
-                  ["₦", "Instant pricing", "Totals update as you change quality, print and quantity."],
-                  ["07", "Days to your door", "Printed, checked and delivered across Nigeria."],
-                  ["1", "Piece minimum", "No bulk required. One idea is enough to begin."],
-                ] as const
-              ).map(([num, title, body]) => (
-                <article
-                  key={title}
-                  className="min-h-44 bg-[#070807] px-[1.4rem] py-[1.6rem]"
-                  data-reveal
-                >
-                  <span className="mb-[1.1rem] block font-heading text-[2.4rem] font-extrabold leading-none tracking-[-0.05em] text-[#d6ff3c]">
-                    {num}
-                  </span>
-                  <h3 className="mb-[0.45rem] font-heading text-[1.2rem] font-bold tracking-[-0.03em]">
-                    {title}
-                  </h3>
-                  <p className="m-0 max-w-[28ch] text-[0.92rem] leading-[1.5] text-[#c8c4b8]">
-                    {body}
-                  </p>
-                </article>
-              ))}
-            </div>
-          </section>
+              <div className="grid gap-px border border-[color-mix(in_oklab,#070807_14%,transparent)] bg-[color-mix(in_oklab,#070807_14%,transparent)] md:grid-cols-3">
+                {(
+                  [
+                    ["₦", "Instant pricing", "Totals update as you change quality, print and quantity."],
+                    ["07", "Days to your door", "Printed, checked and delivered across Nigeria."],
+                    ["1", "Piece minimum", "No bulk required. One idea is enough to begin."],
+                  ] as const
+                ).map(([num, title, body]) => (
+                  <article
+                    key={title}
+                    className="min-h-44 bg-[#faf8f3] px-[1.4rem] py-[1.6rem]"
+                    data-reveal
+                  >
+                    <span className="mb-[1.1rem] block font-heading text-[2.4rem] font-extrabold leading-none tracking-[-0.05em] text-[#5a6b14]">
+                      {num}
+                    </span>
+                    <h3 className="mb-[0.45rem] font-heading text-[1.2rem] font-bold tracking-[-0.03em] text-[#070807]">
+                      {title}
+                    </h3>
+                    <p className="m-0 max-w-[28ch] text-[0.92rem] leading-[1.5] text-[#5a574f]">
+                      {body}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </section>
 
-          <section
-            className={cn(
-              "border-t border-[color-mix(in_oklab,#f3f0e8_12%,transparent)] py-10",
-              padX,
-            )}
-            data-reveal
-          >
-            <p className="m-0 max-w-[40rem] text-[0.95rem] leading-[1.55] text-[#c8c4b8]">
-              Made with vetted production partners. Quality-checked before it
-              ships. Built for creatives across Nigeria.
-            </p>
-          </section>
-
-          <section
-            className={cn(
-              "border-t border-[color-mix(in_oklab,#f3f0e8_12%,transparent)] py-[clamp(4.5rem,12vh,8rem)]",
-              padX,
-              "bg-[radial-gradient(ellipse_60%_50%_at_50%_100%,rgba(214,255,60,0.08),transparent_60%),#070807]",
-            )}
-          >
-            <div data-reveal>
-              <p className="mb-3 text-[0.7rem] tracking-[0.16em] text-[#d6ff3c] uppercase">
-                Your blank canvas is waiting.
-              </p>
-              <h2 className="m-0 max-w-full font-heading text-[clamp(2.35rem,10vw,5.5rem)] font-extrabold leading-[0.95] tracking-[-0.055em]">
-                What will
-                <br />
-                you wear next?
-              </h2>
-            </div>
-            <div
-              className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-4"
+            <section
+              className={cn(
+                "border-t border-[color-mix(in_oklab,#070807_12%,transparent)] bg-[#f3f0e8] py-10",
+                padX,
+              )}
               data-reveal
             >
-              <a
-                href="/dashboard"
-                className="inline-flex w-full items-center justify-center gap-[0.45rem] rounded-[2px] bg-[#d6ff3c] px-6 py-[1.05rem] text-[0.9rem] font-bold tracking-[0.04em] text-[#070807] uppercase transition-[transform,background] duration-[250ms] hover:-translate-y-px hover:bg-[color-mix(in_oklab,#d6ff3c_88%,white)] sm:w-auto [&_svg]:text-[#070807]"
+              <p className="m-0 max-w-[40rem] text-[0.95rem] leading-[1.55] text-[#5a574f]">
+                Made with vetted production partners. Quality-checked before it
+                ships. Built for creatives across Nigeria.
+              </p>
+            </section>
+
+            <section
+              className={cn(
+                "border-t border-[color-mix(in_oklab,#070807_12%,transparent)] py-[clamp(4.5rem,12vh,8rem)]",
+                padX,
+                "bg-[radial-gradient(ellipse_60%_50%_at_50%_100%,color-mix(in_oklab,#d6ff3c_22%,transparent),transparent_60%),#f3f0e8]",
+              )}
+            >
+              <div data-reveal>
+                <p className="mb-3 text-[0.7rem] tracking-[0.16em] text-[#5a6b14] uppercase">
+                  Your blank canvas is waiting.
+                </p>
+                <h2 className="m-0 max-w-full font-heading text-[clamp(2.35rem,10vw,5.5rem)] font-extrabold leading-[0.95] tracking-[-0.055em] text-[#070807]">
+                  What will
+                  <br />
+                  you wear next?
+                </h2>
+              </div>
+              <div
+                className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-4"
+                data-reveal
               >
-                Start designing
-                <ArrowUpRight size={18} strokeWidth={2.25} />
-              </a>
+                <a
+                  href="/dashboard"
+                  className="inline-flex w-full items-center justify-center gap-[0.45rem] rounded-[2px] bg-[#d6ff3c] px-6 py-[1.05rem] text-[0.9rem] font-bold tracking-[0.04em] text-[#070807] uppercase transition-[transform,background] duration-[250ms] hover:-translate-y-px hover:bg-[color-mix(in_oklab,#d6ff3c_88%,white)] sm:w-auto [&_svg]:text-[#070807]"
+                >
+                  Start designing
+                  <ArrowUpRight size={18} strokeWidth={2.25} />
+                </a>
+                <a
+                  href="/dashboard"
+                  className="inline-flex w-fit items-center gap-[0.4rem] border-b border-[color-mix(in_oklab,#070807_35%,transparent)] pb-[0.2rem] text-[0.78rem] tracking-[0.08em] text-[#5a574f] uppercase transition-colors hover:text-[#070807]"
+                >
+                  Continue as guest
+                </a>
+              </div>
+              <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-[0.78rem] text-[#5a574f]">
+                {(
+                  [
+                    "No design skills needed",
+                    "Guest checkout",
+                    "One piece minimum",
+                  ] as const
+                ).map((label) => (
+                  <span key={label} className="inline-flex items-center gap-[0.4rem]">
+                    <Plus size={14} strokeWidth={2.5} className="text-[#5a6b14]" />
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </section>
+
+            <footer
+              className={cn(
+                "grid gap-4 border-t border-[color-mix(in_oklab,#070807_12%,transparent)] bg-[#f3f0e8] pt-10 pb-8 text-[0.85rem] text-[#5a574f]",
+                padX,
+                "md:grid-cols-[1fr_auto] md:items-end",
+              )}
+            >
               <a
-                href="/dashboard"
-                className="inline-flex w-fit items-center gap-[0.4rem] border-b border-[color-mix(in_oklab,#f3f0e8_35%,transparent)] pb-[0.2rem] text-[0.78rem] tracking-[0.08em] text-[#c8c4b8] uppercase transition-colors hover:text-[#f3f0e8]"
+                href="#"
+                className="font-heading text-[1.05rem] font-bold tracking-[-0.04em] text-[#070807] lowercase"
               >
-                Continue as guest
+                promptwear
               </a>
-            </div>
-            <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-[0.78rem] text-[#c8c4b8]">
-              {(
-                [
-                  "No design skills needed",
-                  "Guest checkout",
-                  "One piece minimum",
-                ] as const
-              ).map((label) => (
-                <span key={label} className="inline-flex items-center gap-[0.4rem]">
-                  <Plus size={14} strokeWidth={2.5} className="text-[#d6ff3c]" />
-                  {label}
-                </span>
-              ))}
-            </div>
-          </section>
+              <p className="m-0">Ideas deserve a body.</p>
+              <div className="flex flex-wrap gap-x-6 gap-y-4">
+                <a href="mailto:hello@promptwear.ng">hello@promptwear.ng</a>
+                <a href="#how">How it works</a>
+                <a href="#pricing">Pricing</a>
+              </div>
+              <small className="opacity-65">© 2026 Promptwear</small>
+            </footer>
+          </div>
         </div>
       </main>
-
-      <footer
-        className={cn(
-          "grid gap-4 border-t border-[color-mix(in_oklab,#f3f0e8_12%,transparent)] pt-10 pb-8 text-[0.85rem] text-[#c8c4b8]",
-          padX,
-          "md:grid-cols-[1fr_auto] md:items-end",
-        )}
-      >
-        <a
-          href="#"
-          className="font-heading text-[1.05rem] font-bold tracking-[-0.04em] text-[#f3f0e8] lowercase"
-        >
-          promptwear
-        </a>
-        <p className="m-0">Ideas deserve a body.</p>
-        <div className="flex flex-wrap gap-x-6 gap-y-4">
-          <a href="mailto:hello@promptwear.ng">hello@promptwear.ng</a>
-          <a href="#how">How it works</a>
-          <a href="#pricing">Pricing</a>
-        </div>
-        <small className="opacity-65">© 2026 Promptwear</small>
-      </footer>
     </div>
   );
 }

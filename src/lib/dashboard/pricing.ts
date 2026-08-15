@@ -1,3 +1,5 @@
+import type { ProfitSettings, Vendor } from "@/lib/admin/types";
+import { runSmartPricing, type SmartQuote } from "@/lib/pricing/engine";
 import type {
   GarmentQuality,
   PrintMethod,
@@ -32,6 +34,10 @@ export function emptySizes(): SizeBreakdown {
   return { S: 0, M: 0, L: 0, XL: 0, XXL: 0 };
 }
 
+/**
+ * Legacy static quote — used as fallback when admin vendors are unavailable.
+ * Prefer `quoteSmartOrder` for customer-facing pricing.
+ */
 export function quoteOrder(input: {
   quality: GarmentQuality;
   print: PrintMethod;
@@ -49,13 +55,36 @@ export function quoteOrder(input: {
     subtotal += SCREEN_SETUP;
   }
 
-  // Soft bulk break: 8% off garment+print after 20 pcs
   if (qty >= BULK_QTY) {
     subtotal = Math.round(subtotal * 0.92);
   }
 
   const delivery = qty >= BULK_QTY ? DELIVERY_BULK : DELIVERY_FLAT;
   return { qty, subtotal, delivery, total: subtotal + delivery };
+}
+
+export function quoteSmartOrder(
+  input: {
+    quality: GarmentQuality;
+    print: PrintMethod;
+    sizes: SizeBreakdown;
+    deliveryCity?: string;
+    deliveryState?: string;
+    rush?: boolean;
+  },
+  vendors?: Vendor[],
+  profit?: ProfitSettings,
+): SmartQuote | ReturnType<typeof quoteOrder> & { smart?: false } {
+  if (vendors && profit && vendors.length > 0) {
+    return runSmartPricing(input, vendors, profit);
+  }
+  return { ...quoteOrder(input), smart: false as const };
+}
+
+export function isSmartQuote(
+  q: SmartQuote | (ReturnType<typeof quoteOrder> & { smart?: false }),
+): q is SmartQuote {
+  return "vendor" in q && "candidates" in q;
 }
 
 export function formatNaira(amount: number): string {

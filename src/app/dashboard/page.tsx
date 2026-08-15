@@ -23,7 +23,7 @@ export default function DashboardOverviewPage() {
   }
 
   const openOrders = orders.filter(
-    (o) => !["delivered", "cancelled"].includes(o.status),
+    (o) => !["delivered", "cancelled", "refunded"].includes(o.status),
   );
   const recentDesigns = designs.slice(0, 3);
   const recentOrders = orders.slice(0, 3);

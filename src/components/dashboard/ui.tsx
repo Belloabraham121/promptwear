@@ -51,11 +51,17 @@ export function StatCard({
 
 export function StatusPill({ status }: { status: OrderStatus }) {
   const tone =
-    status === "delivered" || status === "paid"
+    status === "delivered" || status === "order_received" || status === "paid"
       ? "bg-[#d6ff3c]/15 text-[#d6ff3c]"
-      : status === "cancelled"
+      : status === "cancelled" || status === "refunded"
         ? "bg-red-500/15 text-red-300"
-        : status === "in_production" || status === "shipped"
+        : status === "printing" ||
+            status === "in_production" ||
+            status === "shipped" ||
+            status === "quality_check" ||
+            status === "packaging" ||
+            status === "production_assigned" ||
+            status === "design_confirmed"
           ? "bg-[#f3f0e8]/12 text-[#f3f0e8]"
           : "bg-[#f3f0e8]/8 text-[#c8c4b8]";
 

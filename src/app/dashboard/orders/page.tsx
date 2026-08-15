@@ -21,7 +21,7 @@ export default function OrdersPage() {
     <div>
       <PageHeader
         title="Orders"
-        description="Quotes, production and delivery — every order you place from a saved design."
+        description="Checkout, production tracking, and delivery — every order you place from a saved design."
         action={
           <PrimaryLink href="/dashboard/orders/new">New order</PrimaryLink>
         }

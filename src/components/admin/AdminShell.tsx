@@ -3,57 +3,41 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
+  BarChart3,
+  Boxes,
   Menu,
   Package,
-  Palette,
-  PenTool,
-  UserRound,
+  Percent,
+  Shield,
+  Truck,
   X,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useDashboard } from "@/components/dashboard/DashboardProvider";
-import { AdminShell } from "@/components/admin/AdminShell";
 
 const NAV = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
-  { href: "/dashboard/designs", label: "Designs", icon: Palette },
-  { href: "/dashboard/studio", label: "Studio", icon: PenTool },
-  { href: "/dashboard/orders", label: "Orders", icon: Package },
-  { href: "/dashboard/account", label: "Account", icon: UserRound },
+  { href: "/dashboard/admin", label: "Overview", icon: Shield, exact: true },
+  { href: "/dashboard/admin/orders", label: "Orders", icon: Package },
+  { href: "/dashboard/admin/products", label: "Products", icon: Boxes },
+  { href: "/dashboard/admin/vendors", label: "Vendors", icon: Truck },
+  { href: "/dashboard/admin/profit", label: "Pricing", icon: Percent },
+  { href: "/dashboard/admin/analytics", label: "Analytics", icon: BarChart3 },
 ] as const;
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
+export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, ready } = useDashboard();
   const [open, setOpen] = useState(false);
-
-  // Canvas editor is a full-page experience (no sidebar / top chrome)
-  const isStudioCanvas = /^\/dashboard\/studio\/[^/]+$/.test(pathname);
-  const isAdmin = pathname.startsWith("/dashboard/admin");
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href;
     return pathname === href || pathname.startsWith(`${href}/`);
   }
 
-  if (isStudioCanvas) {
-    return (
-      <div className="min-h-dvh bg-[#070807] text-[#f3f0e8] font-[family-name:var(--font-body)]">
-        {children}
-      </div>
-    );
-  }
-
-  if (isAdmin) {
-    return <AdminShell>{children}</AdminShell>;
-  }
-
   return (
     <div className="min-h-screen bg-[#070807] text-[#f3f0e8] font-[family-name:var(--font-body)]">
       <div className="flex min-h-screen w-full">
-        {/* Desktop sidebar — flush to the left edge */}
         <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-[#f3f0e8]/10 px-4 py-6 md:flex">
           <Link
             href="/"
@@ -61,11 +45,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           >
             promptwear
           </Link>
-          <p className="mt-1 px-2 text-[0.65rem] uppercase tracking-[0.16em] text-[#c8c4b8]">
-            Studio & orders
+          <p className="mt-1 px-2 text-[0.65rem] uppercase tracking-[0.16em] text-[#d6ff3c]">
+            Admin
           </p>
 
-          <nav className="mt-8 flex flex-1 flex-col gap-1" aria-label="Dashboard">
+          <nav className="mt-8 flex flex-1 flex-col gap-1" aria-label="Admin">
             {NAV.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href, "exact" in item && item.exact);
@@ -87,17 +71,24 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          <div className="mt-auto border-t border-[#f3f0e8]/10 px-2 pt-4">
-            <p className="truncate text-sm font-medium">
-              {ready ? user.name : "…"}
-            </p>
-            <p className="truncate text-xs text-[#c8c4b8]">
-              {ready ? user.email : ""}
-            </p>
+          <div className="mt-auto space-y-3 border-t border-[#f3f0e8]/10 px-2 pt-4">
+            <Link
+              href="/dashboard"
+              className="block text-xs font-semibold uppercase tracking-[0.08em] text-[#c8c4b8] underline-offset-4 hover:text-[#f3f0e8] hover:underline"
+            >
+              ← Creator dashboard
+            </Link>
+            <div>
+              <p className="truncate text-sm font-medium">
+                {ready ? user.name : "…"}
+              </p>
+              <p className="truncate text-xs text-[#c8c4b8]">
+                {ready ? user.email : ""}
+              </p>
+            </div>
           </div>
         </aside>
 
-        {/* Main */}
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="sticky top-0 z-20 flex items-center justify-between border-b border-[#f3f0e8]/10 bg-[#070807]/90 px-4 py-3 backdrop-blur md:px-6">
             <button
@@ -109,35 +100,25 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               {open ? <X size={18} /> : <Menu size={18} />}
             </button>
             <Link
-              href="/"
+              href="/dashboard/admin"
               className="font-[family-name:var(--font-display)] text-base font-extrabold lowercase tracking-[-0.04em] md:hidden"
             >
-              promptwear
+              admin
             </Link>
             <div className="hidden text-xs uppercase tracking-[0.14em] text-[#c8c4b8] md:block">
-              Design · Quote · Order
+              Orders · Catalog · Vendors · Margin
             </div>
-            <div className="flex items-center gap-2">
-              {ready && user.role === "admin" ? (
-                <Link
-                  href="/dashboard/admin"
-                  className="hidden border border-[#f3f0e8]/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#c8c4b8] transition hover:border-[#d6ff3c] hover:text-[#d6ff3c] md:inline-flex"
-                >
-                  Admin
-                </Link>
-              ) : null}
-              <Link
-                href="/dashboard/studio"
-                className="inline-flex items-center gap-1.5 bg-[#d6ff3c] px-3 py-2 text-xs font-bold uppercase tracking-[0.06em] text-[#070807] transition hover:bg-[#e2ff6a]"
-              >
-                New design
-              </Link>
-            </div>
+            <Link
+              href="/dashboard"
+              className="text-xs font-semibold uppercase tracking-[0.08em] text-[#c8c4b8] hover:text-[#f3f0e8]"
+            >
+              Exit admin
+            </Link>
           </header>
 
           {open ? (
             <div className="border-b border-[#f3f0e8]/10 bg-[#0c0e0c] px-3 py-3 md:hidden">
-              <nav className="flex flex-col gap-1" aria-label="Mobile dashboard">
+              <nav className="flex flex-col gap-1" aria-label="Mobile admin">
                 {NAV.map((item) => {
                   const Icon = item.icon;
                   const active = isActive(
@@ -161,6 +142,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                     </Link>
                   );
                 })}
+                <Link
+                  href="/dashboard"
+                  onClick={() => setOpen(false)}
+                  className="px-3 py-2.5 text-sm text-[#c8c4b8]"
+                >
+                  ← Creator dashboard
+                </Link>
               </nav>
             </div>
           ) : null}
