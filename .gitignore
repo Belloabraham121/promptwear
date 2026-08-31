@@ -1,60 +1,22 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Dependencies
+node_modules/
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Environment
+.env
+.env.*
+!.env.example
 
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
+# OS
 .DS_Store
-*.pem
 
-# local 3D tooling / source Blender assets
-.tools/
-*.blend
-*.blend1
-*.abc
-animationcache.abc
+# Build
+dist/
+.next/
+coverage/
 
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+# Logs
+*.log
 
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
+# Temp
+.tmp-*
 *.tsbuildinfo
-next-env.d.ts
-
-# Local extract / CLO source packs (too large for GitHub)
-.tmp/
-**/baggy-shirt/
-*.rar
-*.zprj
-
-# Landing walking tee is Draco-compressed under 50MB and tracked in git
-
-# Unused / experimental atlas normals (not referenced by garments)
-public/models/studio/oversized/atlas-normal.jpg
-public/oversized-material-test.html

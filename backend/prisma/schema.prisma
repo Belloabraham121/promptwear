@@ -1,0 +1,455 @@
+// Promptwear Phase 0 — PostgreSQL schema aligned with client type contracts
+// (client/src/lib/dashboard/types.ts, client/src/lib/admin/types.ts)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  customer
+  admin
+}
+
+enum DesignMethod {
+  prompt
+  draw
+  hybrid
+}
+
+enum StudioBackground {
+  ink
+  bone
+  white
+  grid
+}
+
+enum DesignStatus {
+  draft
+  saved
+  ordered
+}
+
+enum PatternPanel {
+  front
+  back
+  sleeveL
+  sleeveR
+  collar
+}
+
+enum StudioGarmentId {
+  classic
+  oversized
+}
+
+enum GarmentSilhouette {
+  classic
+  oversized
+  fitted
+}
+
+enum GarmentQuality {
+  standard
+  premium
+  heavy
+}
+
+enum PrintMethod {
+  dtf
+  screen
+}
+
+enum OrderStatus {
+  draft
+  quoted
+  order_received
+  design_confirmed
+  production_assigned
+  printing
+  quality_check
+  packaging
+  shipped
+  delivered
+  cancelled
+  refunded
+  /// @deprecated normalized to order_received on read
+  paid
+  /// @deprecated normalized to printing on read
+  in_production
+}
+
+enum PaymentMethod {
+  card
+  bank_transfer
+  wallet
+}
+
+enum PaymentStatus {
+  pending
+  completed
+  failed
+  refunded
+}
+
+enum VendorSelectionStrategy {
+  lowest_cost
+  highest_quality
+  fastest_delivery
+}
+
+enum DiscountType {
+  percent
+  flat
+}
+
+// ─── Auth & users ────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String?
+  role         UserRole @default(customer)
+  guest        Boolean  @default(false)
+  googleId     String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  designs           Design[]
+  assets            Asset[]
+  orders            Order[]
+  payments          Payment[]
+  couponRedemptions CouponRedemption[]
+  refreshTokens     RefreshToken[]
+
+  @@index([role])
+  @@index([guest])
+}
+
+model RefreshToken {
+  jti       String   @id
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// ─── Designs & assets ────────────────────────────────────────────────────────
+
+model Design {
+  id                String           @id @default(cuid())
+  userId            String
+  title             String
+  prompt            String           @default("")
+  method            DesignMethod     @default(prompt)
+  color             String
+  background        StudioBackground @default(ink)
+  status            DesignStatus     @default(draft)
+  garmentId         StudioGarmentId  @default(classic)
+  activePanel       PatternPanel     @default(front)
+  /// Fabric.js canvas JSON per pattern panel
+  panels            Json             @default("{}")
+  thumbnailAssetId  String?
+  /// { role, text, at }[]
+  chat              Json             @default("[]")
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thumbnailAsset  Asset?  @relation("DesignThumbnail", fields: [thumbnailAssetId], references: [id], onDelete: SetNull)
+  assets          Asset[] @relation("DesignAssets")
+
+  @@index([userId])
+  @@index([status])
+  @@index([updatedAt])
+  @@index([userId, status])
+}
+
+model Asset {
+  id         String   @id @default(cuid())
+  userId     String
+  designId   String?
+  name       String
+  mime       String
+  /// Object storage key / path for the binary payload
+  storageKey String
+  sizeBytes  Int?
+  createdAt  DateTime @default(now())
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  design            Design?  @relation("DesignAssets", fields: [designId], references: [id], onDelete: SetNull)
+  thumbnailForDesign Design[] @relation("DesignThumbnail")
+
+  @@index([userId])
+  @@index([designId])
+}
+
+// ─── Orders & fulfillment ────────────────────────────────────────────────────
+
+model Order {
+  id        String      @id @default(cuid())
+  userId    String
+  status    OrderStatus @default(draft)
+  /// OrderLine snapshot: designId, designTitle, color, quality, print, sizes
+  line      Json
+  subtotal  Int
+  delivery  Int
+  total     Int
+  note      String?
+  /// CheckoutContact + DeliveryAddress + paymentMethod
+  checkout  Json?
+  /// OrderPricingSnapshot: vendorId, strategy, costs, margin, SLA
+  pricing   Json?
+  vendorId  String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vendor            Vendor?            @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  statusEvents      OrderStatusEvent[]
+  payments          Payment[]
+  couponRedemptions CouponRedemption[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([vendorId])
+  @@index([createdAt])
+  @@index([userId, status])
+}
+
+model OrderStatusEvent {
+  id        String      @id @default(cuid())
+  orderId   String
+  status    OrderStatus
+  at        DateTime    @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([orderId, at])
+  @@index([status])
+}
+
+// ─── Catalog ─────────────────────────────────────────────────────────────────
+
+model Material {
+  id          String   @id @default(cuid())
+  name        String
+  gsm         Int
+  composition String
+  costPerUnit Int
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  garments Garment[]
+
+  @@index([active])
+}
+
+model Garment {
+  id         String            @id @default(cuid())
+  name       String
+  silhouette GarmentSilhouette
+  materialId String
+  basePrice  Int
+  active     Boolean           @default(true)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  material Material @relation(fields: [materialId], references: [id], onDelete: Restrict)
+
+  @@index([materialId])
+  @@index([active])
+  @@index([silhouette])
+}
+
+model ProductColor {
+  id        String   @id @default(cuid())
+  name      String
+  hex       String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active])
+}
+
+model ProductSize {
+  id        String   @id @default(cuid())
+  label     String
+  sortOrder Int
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active])
+  @@index([sortOrder])
+}
+
+// ─── Vendors & pricing ───────────────────────────────────────────────────────
+
+model Vendor {
+  id                      String   @id @default(cuid())
+  name                    String
+  location                String
+  qualityRating           Float
+  customerRating          Float
+  capacityPerWeek         Int
+  priceIndex              Float    @default(1.0)
+  onTimeRate              Float
+  active                  Boolean  @default(true)
+  excluded                Boolean  @default(false)
+  notes                   String?
+  /// Record<VendorMaterialQuality, number>
+  garmentCostByQuality    Json
+  /// Record<VendorPrintMethod, number>
+  printingCostByMethod    Json
+  /// VendorMaterialQuality[]
+  materialAvailable       Json
+  /// VendorPrintMethod[]
+  printMethods            Json
+  /// string[]
+  deliveryRegions         Json
+  shippingCostBase        Int
+  shippingCostPerUnit     Int
+  estimatedProductionDays Int
+  deliverySlaDays         Int
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  orders                Order[]
+  profitSettingsOverride ProfitSettings[] @relation("ProfitOverrideVendor")
+
+  @@index([active])
+  @@index([excluded])
+  @@index([active, excluded])
+}
+
+model ProfitSettings {
+  /// Singleton row — always id = "default"
+  id                  String                  @id @default("default")
+  defaultMarginPct    Float
+  rushMarginPct       Float
+  minMarginPct        Float
+  maxMarginPct        Float
+  selectionStrategy   VendorSelectionStrategy @default(lowest_cost)
+  /// string[] of excluded vendor ids
+  excludedVendorIds   Json                    @default("[]")
+  overrideVendorId    String?
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+
+  overrideVendor Vendor?     @relation("ProfitOverrideVendor", fields: [overrideVendorId], references: [id], onDelete: SetNull)
+  promotions     Promotion[]
+  discounts      Discount[]
+  coupons        Coupon[]
+}
+
+model Promotion {
+  id               String   @id @default(cuid())
+  profitSettingsId String   @default("default")
+  name             String
+  description      String   @default("")
+  active           Boolean  @default(true)
+  startsAt         DateTime
+  endsAt           DateTime
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  profitSettings ProfitSettings @relation(fields: [profitSettingsId], references: [id], onDelete: Cascade)
+
+  @@index([profitSettingsId])
+  @@index([active])
+  @@index([startsAt, endsAt])
+}
+
+model Discount {
+  id               String       @id @default(cuid())
+  profitSettingsId String       @default("default")
+  name             String
+  type             DiscountType
+  value            Float
+  minQty           Int
+  active           Boolean      @default(true)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  profitSettings ProfitSettings @relation(fields: [profitSettingsId], references: [id], onDelete: Cascade)
+
+  @@index([profitSettingsId])
+  @@index([active])
+}
+
+model Coupon {
+  id               String       @id @default(cuid())
+  profitSettingsId String       @default("default")
+  code             String       @unique
+  type             DiscountType
+  value            Float
+  maxRedemptions   Int
+  redemptionCount  Int          @default(0)
+  active           Boolean      @default(true)
+  expiresAt        DateTime
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  profitSettings ProfitSettings     @relation(fields: [profitSettingsId], references: [id], onDelete: Cascade)
+  redemptions    CouponRedemption[]
+
+  @@index([profitSettingsId])
+  @@index([active])
+  @@index([expiresAt])
+}
+
+model CouponRedemption {
+  id         String   @id @default(cuid())
+  couponId   String
+  orderId    String?
+  userId     String?
+  redeemedAt DateTime @default(now())
+
+  coupon Coupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  order  Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([couponId])
+  @@index([orderId])
+  @@index([userId])
+  @@index([redeemedAt])
+}
+
+// ─── Payments ──────────────────────────────────────────────────────────────────
+
+model Payment {
+  id          String        @id @default(cuid())
+  orderId     String
+  userId      String
+  method      PaymentMethod
+  amount      Int
+  status      PaymentStatus @default(pending)
+  providerRef String?
+  metadata    Json?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
