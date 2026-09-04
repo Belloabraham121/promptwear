@@ -31,7 +31,6 @@ RUN apt-get update \
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
 RUN npm ci --omit=dev \
-  && npm install prisma@6.1.0 --no-save \
   && npm cache clean --force
 
 COPY --from=build /app/dist ./dist
@@ -48,4 +47,7 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=5 \
   CMD curl -fsS "http://127.0.0.1:${PORT}/api/v1/health" || exit 1
 
+# Prefer entrypoint; Coolify may also set start command to `npm start`
+# (which also runs migrate deploy).
 ENTRYPOINT ["./docker-entrypoint.sh"]
+CMD ["node", "dist/main.js"]

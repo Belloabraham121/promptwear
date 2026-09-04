@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-echo "Running Prisma migrations..."
+echo "==> Applying Prisma migrations (migrate deploy)"
 npx prisma migrate deploy
 
-echo "Starting Promptwear API on port ${PORT:-3001}..."
-exec node dist/main.js
+echo "==> Starting Promptwear API"
+exec "$@"
