@@ -13,6 +13,7 @@ export const ErrorCodes = {
   NO_VENDOR_AVAILABLE: 'NO_VENDOR_AVAILABLE',
   IDEMPOTENCY_CONFLICT: 'IDEMPOTENCY_CONFLICT',
   RATE_LIMIT: 'RATE_LIMIT',
+  SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
 } as const;
 
 export type ErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes];

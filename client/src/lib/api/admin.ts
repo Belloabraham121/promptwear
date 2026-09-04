@@ -244,6 +244,10 @@ export function listAdminOrders(params: ListAdminOrdersParams = {}) {
     .then(mapPaginatedOrders);
 }
 
+export function getAdminOrder(id: string) {
+  return api.get<OrderResponse>(`/admin/orders/${id}`).then(mapOrderFromApi);
+}
+
 export function updateAdminOrderStatus(id: string, status: OrderStatus) {
   return api
     .patch<OrderResponse>(`/admin/orders/${id}/status`, { status })

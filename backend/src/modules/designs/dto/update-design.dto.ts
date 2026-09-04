@@ -28,6 +28,16 @@ class DesignChatMessageDto {
 
   @IsString()
   at!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2_000)
+  imageUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  imageAssetId?: string;
 }
 
 export class UpdateDesignDto {

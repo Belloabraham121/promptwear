@@ -22,6 +22,11 @@ export class AdminOrdersController {
     return this.ordersService.listAll(query);
   }
 
+  @Get(':id')
+  getById(@Param('id') id: string) {
+    return this.ordersService.getByIdAdmin(id);
+  }
+
   @Patch(':id/status')
   updateStatus(
     @Param('id') id: string,

@@ -156,10 +156,17 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   });
 
   const ready =
-    catalogQuery.isSuccess &&
-    vendorsQuery.isSuccess &&
-    profitQuery.isSuccess &&
-    ordersQuery.isSuccess;
+    !isAdmin ||
+    (!catalogQuery.isPending &&
+      !vendorsQuery.isPending &&
+      !profitQuery.isPending &&
+      !ordersQuery.isPending);
+
+  const isFetching =
+    catalogQuery.isFetching ||
+    vendorsQuery.isFetching ||
+    profitQuery.isFetching ||
+    ordersQuery.isFetching;
 
   const error =
     (catalogQuery.error ??
@@ -452,11 +459,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<AdminContextValue>(
     () => ({
       ready,
-      isFetching:
-        catalogQuery.isFetching ||
-        vendorsQuery.isFetching ||
-        profitQuery.isFetching ||
-        ordersQuery.isFetching,
+      isFetching,
       error,
       catalog: catalogQuery.data ?? EMPTY_CATALOG,
       vendors,
@@ -481,11 +484,8 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     }),
     [
       ready,
-      catalogQuery.isFetching,
+      isFetching,
       catalogQuery.data,
-      vendorsQuery.isFetching,
-      profitQuery.isFetching,
-      ordersQuery.isFetching,
       ordersQuery.data,
       error,
       vendors,

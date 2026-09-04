@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FormEvent, useEffect, useState } from "react";
 import { useDashboard } from "@/components/dashboard/DashboardProvider";
@@ -123,16 +122,6 @@ export default function AccountPage() {
               <span className="text-[#f3f0e8]">{orders.length}</span>
             </li>
           </ul>
-          {session?.role === "admin" ? (
-            <div className="mt-6 border-t border-[#f3f0e8]/10 pt-5">
-              <Link
-                href="/dashboard/admin"
-                className="inline-flex bg-[#d6ff3c] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.06em] text-[#070807] hover:bg-[#e2ff6a]"
-              >
-                Open admin
-              </Link>
-            </div>
-          ) : null}
           <p className="mt-6 text-xs text-[#c8c4b8]">
             Designs, orders, and assets are synced to your account.
           </p>

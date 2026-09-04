@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useAdmin } from "@/components/admin/AdminProvider";
+import { AdminPageSkeleton } from "@/components/admin/AdminSkeleton";
 import { EmptyState, PageHeader } from "@/components/dashboard/ui";
 import { formatNaira } from "@/lib/dashboard/pricing";
 import { cn } from "@/lib/utils";
@@ -19,7 +20,7 @@ export default function AdminVendorsPage() {
   const [location, setLocation] = useState("");
 
   if (!ready) {
-    return <p className="text-sm text-[#c8c4b8]">Loading vendors…</p>;
+    return <AdminPageSkeleton cards={0} rows={6} />;
   }
 
   if (error) {

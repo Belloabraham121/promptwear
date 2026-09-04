@@ -16,7 +16,7 @@ const instrument = Instrument_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Promptwear — Wear what you imagine",
+  title: "Driplap — Wear what you imagine",
   description:
     "Turn your ideas into one-of-one custom apparel with AI, freehand drawing, or both. Designed by you, made in Nigeria.",
 };

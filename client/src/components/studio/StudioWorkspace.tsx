@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   AudioLines,
   ChevronDown,
+  ChevronUp,
   Eraser,
   ImagePlus,
   Mic,
@@ -13,7 +14,6 @@ import {
   PanelRight,
   PenTool,
   Plus,
-  Sparkles,
   Trash2,
   X,
 } from "lucide-react";
@@ -41,12 +41,17 @@ import {
   PATTERN_PANELS,
 } from "@/lib/dashboard/types";
 import { ApiError } from "@/lib/api/errors";
-import { getDesign } from "@/lib/api/designs";
 import {
   getChatHistory,
+  getStudioImageOptions,
+  getStudioModels,
   pollGenerateJob,
   sendChat,
-  startGenerate,
+  STUDIO_IMAGE_MODEL_ID,
+  type ImageQuality,
+  type ImageSize,
+  type StudioAiModel,
+  type StudioImageOption,
 } from "@/lib/api/studio";
 import {
   clearDraft,
@@ -73,6 +78,44 @@ const TEE_COLORS = [
 ];
 const PEN_COLORS = ["#f3f0e8", "#d6ff3c", "#070807", "#ff5a5a", "#7ec8e3"];
 
+/** Fallback if /studio/image-options is unreachable — matches backend catalog. */
+const FALLBACK_IMAGE_OPTIONS: StudioImageOption[] = [
+  { quality: "low", size: "1024x1024", priceUsd: 0.011, label: "Low · Square" },
+  { quality: "low", size: "1024x1536", priceUsd: 0.016, label: "Low · Portrait" },
+  { quality: "low", size: "1536x1024", priceUsd: 0.016, label: "Low · Landscape" },
+  {
+    quality: "medium",
+    size: "1024x1024",
+    priceUsd: 0.042,
+    label: "Medium · Square",
+  },
+  {
+    quality: "medium",
+    size: "1024x1536",
+    priceUsd: 0.063,
+    label: "Medium · Portrait",
+  },
+  {
+    quality: "medium",
+    size: "1536x1024",
+    priceUsd: 0.063,
+    label: "Medium · Landscape",
+  },
+  { quality: "high", size: "1024x1024", priceUsd: 0.167, label: "High · Square" },
+  {
+    quality: "high",
+    size: "1024x1536",
+    priceUsd: 0.25,
+    label: "High · Portrait",
+  },
+  {
+    quality: "high",
+    size: "1536x1024",
+    priceUsd: 0.25,
+    label: "High · Landscape",
+  },
+];
+
 /** Matches the reference composer width — not full viewport. */
 const CHAT_WIDTH = "w-[min(100%,36rem)]";
 
@@ -82,7 +125,8 @@ const API_SYNC_DEBOUNCE_MS = 5000;
 function studioApiMessage(error: unknown, fallback: string): string {
   if (error instanceof ApiError) {
     if (error.status === 429 || error.code === "RATE_LIMIT") {
-      return "Too many requests — wait a moment and try again.";
+      // Prefer the server message — distinguishes throttle vs active jobs.
+      return error.message || "Too many requests — wait a moment and try again.";
     }
     return error.message;
   }
@@ -110,6 +154,16 @@ export function StudioWorkspace({ design: initial }: Props) {
   const [chatLoading, setChatLoading] = useState(true);
   const [chatSending, setChatSending] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(true);
+  const [studioModels, setStudioModels] = useState<StudioAiModel[]>([]);
+  const [selectedModel, setSelectedModel] = useState(STUDIO_IMAGE_MODEL_ID);
+  const [modelPickerOpen, setModelPickerOpen] = useState(false);
+  const [openaiConfigured, setOpenaiConfigured] = useState(false);
+  const [imageOptions, setImageOptions] = useState<StudioImageOption[]>(
+    FALLBACK_IMAGE_OPTIONS,
+  );
+  const [imageQuality, setImageQuality] = useState<ImageQuality>("medium");
+  const [imageSize, setImageSize] = useState<ImageSize>("1024x1024");
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [online, setOnline] = useState(
@@ -120,6 +174,7 @@ export function StudioWorkspace({ design: initial }: Props) {
   const [draftChecked, setDraftChecked] = useState(false);
   const patternRef = useRef<PatternCanvasHandle>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
   const apiTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const thumbTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -171,6 +226,88 @@ export function StudioWorkspace({ design: initial }: Props) {
       cancelled = true;
     };
   }, [initial.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const [catalog, images] = await Promise.all([
+          getStudioModels(),
+          getStudioImageOptions(),
+        ]);
+        if (cancelled) return;
+        setStudioModels(catalog.models);
+        // Default to print generation in the composer.
+        setSelectedModel(STUDIO_IMAGE_MODEL_ID);
+        setOpenaiConfigured(
+          catalog.openaiConfigured || images.openaiConfigured,
+        );
+        setImageOptions(images.options.length ? images.options : FALLBACK_IMAGE_OPTIONS);
+        setImageQuality(images.defaultQuality);
+        setImageSize(images.defaultSize);
+      } catch {
+        // Keep hardcoded defaults if catalog fails.
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!chatOpen) return;
+    const el = chatScrollRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+  }, [design.chat, chatSending, chatOpen, generating]);
+
+  const isImageMode = selectedModel === STUDIO_IMAGE_MODEL_ID;
+
+  const selectedModelMeta = useMemo(
+    () => studioModels.find((model) => model.id === selectedModel),
+    [studioModels, selectedModel],
+  );
+
+  const selectedImageOption = useMemo(
+    () =>
+      imageOptions.find(
+        (option) =>
+          option.quality === imageQuality && option.size === imageSize,
+      ) ?? imageOptions[0] ?? null,
+    [imageOptions, imageQuality, imageSize],
+  );
+
+  const composerModelLabel = isImageMode
+    ? selectedImageOption
+      ? `gpt-image-1 · $${selectedImageOption.priceUsd.toFixed(3)}`
+      : "gpt-image-1"
+    : (selectedModelMeta?.label ?? selectedModel);
+
+  const imageOptionsByQuality = useMemo(() => {
+    const order: ImageQuality[] = ["low", "medium", "high"];
+    return order
+      .map((quality) => ({
+        quality,
+        options: imageOptions.filter((option) => option.quality === quality),
+      }))
+      .filter((group) => group.options.length > 0);
+  }, [imageOptions]);
+
+  const modelsByGroup = useMemo(() => {
+    const groups: Array<{ group: StudioAiModel["group"]; models: StudioAiModel[] }> =
+      [];
+    for (const model of studioModels) {
+      const existing = groups.find((entry) => entry.group === model.group);
+      if (existing) {
+        existing.models.push(model);
+      } else {
+        groups.push({ group: model.group, models: [model] });
+      }
+    }
+    return groups;
+  }, [studioModels]);
 
   useEffect(() => {
     if (draftChecked || !ownerId) return;
@@ -301,57 +438,108 @@ export function StudioWorkspace({ design: initial }: Props) {
     await persistNow({ activePanel: panel, panels: design.panels });
   }
 
-  async function onChatSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const text = chatInput.trim();
-    if (!text || !online || chatSending) return;
-
-    setChatInput("");
-    setChatError(null);
-    setChatSending(true);
-
-    try {
-      const { chat } = await sendChat(design.id, text);
-      const prompt = design.prompt ? design.prompt : text;
-      const method = design.method === "draw" ? "hybrid" : design.method;
-      setDesign((current) => ({
-        ...current,
-        chat,
-        prompt,
-        method,
-      }));
-    } catch (error) {
-      setChatInput(text);
-      setChatError(studioApiMessage(error, "Could not send message."));
-    } finally {
-      setChatSending(false);
-    }
+  async function placeGeneratedImage(imageUrl: string) {
+    setToolsOpen(true);
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
+    await patternRef.current?.addImageFromUrl(imageUrl);
+    setPrintRevision((n) => n + 1);
   }
 
-  async function onGenerate() {
-    if (!online || generating) return;
-
-    setGenerateError(null);
+  async function awaitGenerateJob(jobId: string) {
     setGenerating(true);
-
+    setGenerateError(null);
     try {
-      const { jobId } = await startGenerate(design.id, design.activePanel);
       const job = await pollGenerateJob(design.id, jobId);
-
       if (job.status === "failed") {
         throw new Error(job.error ?? "Generation failed.");
       }
-
-      const refreshed = await getDesign(design.id);
-      setDesign(refreshed);
-      setPrintRevision((n) => n + 1);
-      setPanelPrints({});
+      if (job.result?.imageUrl) {
+        await placeGeneratedImage(job.result.imageUrl);
+        const imageUrl = job.result.imageUrl;
+        const imageAssetId = job.result.assetId;
+        setDesign((current) => {
+          const chat = [...current.chat];
+          for (let i = chat.length - 1; i >= 0; i -= 1) {
+            if (chat[i].role === "assistant") {
+              chat[i] = {
+                ...chat[i],
+                imageUrl,
+                imageAssetId,
+                text:
+                  chat[i].text ||
+                  "Print generated — it’s on the tee.",
+              };
+              break;
+            }
+          }
+          void updateDesign(current.id, { chat });
+          return { ...current, chat };
+        });
+      }
     } catch (error) {
       setGenerateError(
         studioApiMessage(error, "Could not generate design."),
       );
     } finally {
       setGenerating(false);
+    }
+  }
+
+  async function onChatSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const text = chatInput.trim();
+    if (!text || !online || chatSending || generating) return;
+
+    setChatInput("");
+    setChatError(null);
+    setGenerateError(null);
+    setChatSending(true);
+    setChatOpen(true);
+
+    const optimisticAt = new Date().toISOString();
+    setDesign((current) => ({
+      ...current,
+      chat: [
+        ...current.chat,
+        { role: "user", text, at: optimisticAt },
+      ],
+    }));
+
+    try {
+      const { chat, generateJobId } = await sendChat(design.id, text, {
+        // Image mode uses gpt-image-1; chat reply still uses a text model.
+        ...(isImageMode ? {} : { model: selectedModel }),
+        generateImage: isImageMode,
+        ...(isImageMode
+          ? { quality: imageQuality, size: imageSize }
+          : {}),
+      });
+      const method = design.method === "draw" ? "hybrid" : design.method;
+      setDesign((current) => ({
+        ...current,
+        chat,
+        prompt: text,
+        method,
+      }));
+
+      if (generateJobId) {
+        setChatSending(false);
+        await awaitGenerateJob(generateJobId);
+        return;
+      }
+    } catch (error) {
+      setChatInput(text);
+      setDesign((current) => ({
+        ...current,
+        chat: current.chat.filter(
+          (m) => !(m.at === optimisticAt && m.role === "user" && m.text === text),
+        ),
+      }));
+      setChatError(studioApiMessage(error, "Could not send message."));
+    } finally {
+      setChatSending(false);
     }
   }
 
@@ -400,15 +588,6 @@ export function StudioWorkspace({ design: initial }: Props) {
           aria-label={toolsOpen ? "Hide tools" : "Show tools"}
         >
           <PanelRight size={16} />
-        </button>
-        <button
-          type="button"
-          disabled={!online || generating}
-          onClick={() => void onGenerate()}
-          className="inline-flex items-center gap-1.5 border border-[#d6ff3c]/40 px-3 py-2 text-[0.65rem] font-bold uppercase tracking-[0.06em] text-[#d6ff3c] hover:border-[#d6ff3c] disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          <Sparkles size={12} />
-          {generating ? "Generating…" : "Generate"}
         </button>
         <button
           type="button"
@@ -686,29 +865,103 @@ export function StudioWorkspace({ design: initial }: Props) {
                 Offline — chat is disabled. Local drafts still save.
               </p>
             ) : null}
+            {!openaiConfigured && online ? (
+              <p className="mb-2 px-1 text-xs text-[#c8c4b8]">
+                Live AI needs OPENAI_API_KEY in backend/.env — using local
+                fallback replies for now.
+              </p>
+            ) : null}
             {chatError ? (
               <p className="mb-2 px-1 text-xs text-[#ff5a5a]">{chatError}</p>
             ) : null}
             {generateError ? (
               <p className="mb-2 px-1 text-xs text-[#ff5a5a]">{generateError}</p>
             ) : null}
-            {design.chat.length > 0 ? (
-              <div className="mb-2 max-h-14 space-y-1 overflow-y-auto px-1 text-xs text-[#c8c4b8]">
-                {design.chat.slice(-2).map((m, i) => (
-                  <p key={`${m.at}-${i}`} className="truncate">
-                    <span className="text-[#d6ff3c]">
-                      {m.role === "user" ? "You" : "Promptwear"}
+
+            {design.chat.length > 0 || chatSending ? (
+              <div className="mb-2 overflow-hidden rounded-2xl border border-[#f3f0e8]/12 bg-[#121511]/92 shadow-[0_12px_40px_rgba(0,0,0,0.4)] backdrop-blur-md">
+                <button
+                  type="button"
+                  onClick={() => setChatOpen((open) => !open)}
+                  className="flex w-full items-center justify-between gap-2 px-3.5 py-2.5 text-left transition hover:bg-[#f3f0e8]/5"
+                  aria-expanded={chatOpen}
+                >
+                  <span className="text-xs font-medium tracking-wide text-[#c8c4b8]">
+                    Conversation
+                    <span className="ml-1.5 text-[#8a877c]">
+                      ({design.chat.length}
+                      {chatSending ? "+" : ""})
                     </span>
-                    {": "}
-                    {m.text}
-                  </p>
-                ))}
+                  </span>
+                  {chatOpen ? (
+                    <ChevronDown size={14} className="text-[#8a877c]" />
+                  ) : (
+                    <ChevronUp size={14} className="text-[#8a877c]" />
+                  )}
+                </button>
+
+                {chatOpen ? (
+                  <div
+                    ref={chatScrollRef}
+                    className="max-h-[min(42vh,22rem)] space-y-3 overflow-y-auto border-t border-[#f3f0e8]/8 px-3.5 py-3"
+                    role="log"
+                    aria-live="polite"
+                    aria-label="AI chat history"
+                  >
+                    {design.chat.map((m, i) => {
+                      const isUser = m.role === "user";
+                      return (
+                        <div
+                          key={`${m.at}-${i}`}
+                          className={cn(
+                            "flex flex-col gap-1",
+                            isUser ? "items-end" : "items-start",
+                          )}
+                        >
+                          <span className="px-1 text-[0.65rem] font-medium tracking-[0.08em] text-[#8a877c] uppercase">
+                            {isUser ? "You" : "Driplap"}
+                          </span>
+                          <div
+                            className={cn(
+                              "max-w-[92%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words",
+                              isUser
+                                ? "rounded-br-md bg-[#d6ff3c]/15 text-[#f3f0e8]"
+                                : "rounded-bl-md bg-[#f3f0e8]/8 text-[#e8e4d8]",
+                            )}
+                          >
+                            {m.text}
+                            {m.imageUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={m.imageUrl}
+                                alt="Generated print"
+                                className="mt-2 max-h-48 w-full rounded-lg object-contain"
+                              />
+                            ) : null}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {chatSending || generating ? (
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="px-1 text-[0.65rem] font-medium tracking-[0.08em] text-[#8a877c] uppercase">
+                          Driplap
+                        </span>
+                        <div className="rounded-2xl rounded-bl-md bg-[#f3f0e8]/8 px-3.5 py-2.5 text-sm text-[#8a877c]">
+                          {generating
+                            ? "Generating print with gpt-image-1…"
+                            : "Thinking…"}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             ) : null}
 
             <form
               onSubmit={onChatSubmit}
-              className="w-full rounded-2xl border border-[#f3f0e8]/14 bg-[#121511]/95 shadow-[0_0_0_1px_rgba(214,255,60,0.04),0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-md"
+              className="relative w-full rounded-2xl border border-[#f3f0e8]/14 bg-[#121511]/95 shadow-[0_0_0_1px_rgba(214,255,60,0.04),0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-md"
             >
               <textarea
                 value={chatInput}
@@ -720,9 +973,13 @@ export function StudioWorkspace({ design: initial }: Props) {
                   }
                 }}
                 rows={2}
-                disabled={!online || chatSending}
+                disabled={!online || chatSending || generating}
                 placeholder={
-                  online ? "Type / for skills" : "Chat unavailable offline"
+                  online
+                    ? isImageMode
+                      ? "Describe the print to put on the tee…"
+                      : "Ask about your design…"
+                    : "Chat unavailable offline"
                 }
                 className="min-h-[3.25rem] w-full resize-none bg-transparent px-4 pt-3.5 pb-1 text-[0.95rem] leading-relaxed text-[#f3f0e8] outline-none placeholder:text-[#8a877c] disabled:cursor-not-allowed disabled:opacity-50"
               />
@@ -737,18 +994,100 @@ export function StudioWorkspace({ design: initial }: Props) {
                   <Plus size={18} strokeWidth={2} />
                 </button>
 
-                <div className="flex items-center gap-0.5 sm:gap-1">
+                <div className="relative flex items-center gap-0.5 sm:gap-1">
+                  {modelPickerOpen ? (
+                    <div className="absolute bottom-[calc(100%+0.5rem)] right-0 z-40 max-h-72 w-[min(20rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-[#f3f0e8]/14 bg-[#121511] p-2 shadow-[0_16px_40px_rgba(0,0,0,0.55)]">
+                      <div className="mb-2">
+                        <p className="px-2 pb-1 text-[0.65rem] font-semibold tracking-[0.12em] text-[#8a877c] uppercase">
+                          Image
+                        </p>
+                        <p className="px-2 pb-1.5 text-[0.7rem] text-[#8a877c]">
+                          gpt-image-1 — pick a price, then describe the print
+                        </p>
+                        {imageOptionsByQuality.map(({ quality, options }) => (
+                          <div key={quality} className="mb-1.5 last:mb-0">
+                            <p className="px-2 pb-0.5 text-[0.6rem] tracking-[0.1em] text-[#8a877c] uppercase">
+                              {quality}
+                            </p>
+                            {options.map((option) => {
+                              const active =
+                                isImageMode &&
+                                option.quality === imageQuality &&
+                                option.size === imageSize;
+                              return (
+                                <button
+                                  key={`${option.quality}-${option.size}`}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedModel(STUDIO_IMAGE_MODEL_ID);
+                                    setImageQuality(option.quality);
+                                    setImageSize(option.size);
+                                    setModelPickerOpen(false);
+                                  }}
+                                  className={cn(
+                                    "flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition",
+                                    active
+                                      ? "bg-[#d6ff3c]/12 text-[#d6ff3c]"
+                                      : "text-[#f3f0e8] hover:bg-[#f3f0e8]/8",
+                                  )}
+                                >
+                                  <span>{option.size}</span>
+                                  <span className="text-[0.7rem] text-[#8a877c]">
+                                    ${option.priceUsd.toFixed(3)}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ))}
+                      </div>
+
+                      {modelsByGroup.map(({ group, models }) => (
+                        <div key={group} className="mb-2 last:mb-0">
+                          <p className="px-2 pb-1 text-[0.65rem] font-semibold tracking-[0.12em] text-[#8a877c] uppercase">
+                            {group}
+                          </p>
+                          {models.map((model) => {
+                            const active =
+                              !isImageMode && model.id === selectedModel;
+                            return (
+                              <button
+                                key={model.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedModel(model.id);
+                                  setModelPickerOpen(false);
+                                }}
+                                className={cn(
+                                  "flex w-full flex-col items-start rounded-lg px-2 py-1.5 text-left transition",
+                                  active
+                                    ? "bg-[#d6ff3c]/12 text-[#d6ff3c]"
+                                    : "text-[#f3f0e8] hover:bg-[#f3f0e8]/8",
+                                )}
+                              >
+                                <span className="text-sm font-medium">
+                                  {model.label}
+                                </span>
+                                <span className="text-[0.7rem] text-[#8a877c]">
+                                  {model.description}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+
                   <button
                     type="button"
-                    className="hidden items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-[#f3f0e8] transition hover:bg-[#f3f0e8]/8 sm:inline-flex"
+                    onClick={() => setModelPickerOpen((open) => !open)}
+                    disabled={!online}
+                    className="inline-flex max-w-[14rem] items-center gap-1 rounded-lg px-2 py-1.5 text-sm text-[#f3f0e8] transition hover:bg-[#f3f0e8]/8 disabled:opacity-50"
+                    aria-label="Choose model or image quality"
+                    aria-expanded={modelPickerOpen}
                   >
-                    Promptwear
-                  </button>
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm text-[#c8c4b8] transition hover:bg-[#f3f0e8]/8 hover:text-[#f3f0e8]"
-                  >
-                    Medium
+                    <span className="truncate">{composerModelLabel}</span>
                     <ChevronDown size={14} strokeWidth={2} />
                   </button>
                   <button
@@ -761,7 +1100,12 @@ export function StudioWorkspace({ design: initial }: Props) {
                   <button
                     type="submit"
                     aria-label="Send prompt"
-                    disabled={!online || chatSending || !chatInput.trim()}
+                    disabled={
+                      !online ||
+                      chatSending ||
+                      generating ||
+                      !chatInput.trim()
+                    }
                     className="grid size-8 place-items-center rounded-lg text-[#d6ff3c] transition hover:bg-[#d6ff3c]/15 disabled:cursor-not-allowed disabled:opacity-35"
                   >
                     <AudioLines size={16} strokeWidth={2} />

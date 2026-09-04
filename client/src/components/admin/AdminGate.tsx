@@ -1,31 +1,33 @@
 "use client";
 
-import { PageHeader } from "@/components/dashboard/ui";
+import { useRouter } from "next/navigation";
+import { useEffect, type ReactNode } from "react";
+import { AdminGateSkeleton } from "@/components/admin/AdminSkeleton";
 import { useAuth } from "@/providers/AuthProvider";
 
-export function AdminGate({ children }: { children: React.ReactNode }) {
+export function AdminGate({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const { session, isLoading } = useAuth();
+  const isAdmin = session?.role === "admin";
 
-  if (isLoading) {
-    return <p className="text-sm text-[#c8c4b8]">Loading admin…</p>;
+  useEffect(() => {
+    if (isLoading) return;
+    if (!session) {
+      router.replace("/admin/login");
+      return;
+    }
+    if (!isAdmin) {
+      router.replace("/dashboard");
+    }
+  }, [isAdmin, isLoading, router, session]);
+
+  if (isLoading || session === undefined) {
+    return <AdminGateSkeleton />;
   }
 
-  if (session?.role === "admin") {
-    return <>{children}</>;
+  if (!session || !isAdmin) {
+    return <AdminGateSkeleton />;
   }
 
-  return (
-    <div className="mx-auto max-w-md">
-      <PageHeader
-        title="Admin access"
-        description="This area is restricted to admin accounts."
-      />
-      <div className="border border-[#f3f0e8]/12 p-5">
-        <p className="text-sm text-[#c8c4b8]">
-          Your account does not have admin privileges. Contact support if you
-          believe this is an error.
-        </p>
-      </div>
-    </div>
-  );
+  return <>{children}</>;
 }

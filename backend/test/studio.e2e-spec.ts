@@ -131,20 +131,24 @@ describe('Studio (e2e)', () => {
     const generateResponse = await agent
       .post(`/api/v1/designs/${designId}/generate`)
       .set('X-CSRF-Token', generateCsrf)
-      .send({ panel: 'front' })
+      .send({ panel: 'front', quality: 'low', size: '1024x1024' })
       .expect(202);
 
     expect(generateResponse.body.data.jobId).toBeTruthy();
 
+    const jobId = generateResponse.body.data.jobId as string;
     await new Promise((resolve) => setTimeout(resolve, 1200));
 
-    const designAfterGenerate = await agent
-      .get(`/api/v1/designs/${designId}`)
+    const jobResponse = await agent
+      .get(`/api/v1/designs/${designId}/generate/${jobId}`)
       .expect(200);
 
-    expect(designAfterGenerate.body.data.panels.front).toMatchObject({
-      studioGenerated: true,
-      panel: 'front',
-    });
+    // Without OPENAI_API_KEY the job fails with a clear config error.
+    expect(['completed', 'failed']).toContain(jobResponse.body.data.job.status);
+    if (jobResponse.body.data.job.status === 'failed') {
+      expect(jobResponse.body.data.job.error).toMatch(/OPENAI_API_KEY|OpenAI/i);
+    } else {
+      expect(jobResponse.body.data.job.result?.imageUrl).toBeTruthy();
+    }
   });
 });

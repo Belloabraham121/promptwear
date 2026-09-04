@@ -121,6 +121,25 @@ export class OrdersService {
     return toOrderResponse(order, order.statusEvents);
   }
 
+  async getByIdAdmin(id: string): Promise<OrderResponse> {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: {
+        statusEvents: { orderBy: { at: 'asc' } },
+      },
+    });
+
+    if (!order) {
+      throw new AppException(
+        ErrorCodes.NOT_FOUND,
+        'Order not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return toOrderResponse(order, order.statusEvents);
+  }
+
   async create(
     userId: string,
     dto: CreateOrderDto,

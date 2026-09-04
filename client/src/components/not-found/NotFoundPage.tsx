@@ -36,9 +36,9 @@ export function NotFoundPage() {
         <Link
           href="/"
           className="font-heading text-[1.05rem] font-bold tracking-[-0.04em] lowercase transition-opacity hover:opacity-80"
-          aria-label="Promptwear home"
+          aria-label="Driplap home"
         >
-          promptwear
+          driplap
         </Link>
         <Link
           href="/dashboard"
@@ -91,9 +91,9 @@ export function NotFoundPage() {
 
           <h1
             className="font-heading text-[clamp(2.75rem,9vw,6.25rem)] font-extrabold leading-[0.92] tracking-[-0.065em] lowercase motion-safe:animate-[nf-fade-up_0.85s_0.08s_ease-out_both]"
-            aria-label="Promptwear"
+            aria-label="Driplap"
           >
-            promptwear
+            driplap
           </h1>
 
           <p className="mt-5 max-w-[18ch] font-heading text-[clamp(1.35rem,3.2vw,2rem)] font-semibold leading-[1.15] tracking-[-0.03em] motion-safe:animate-[nf-fade-up_0.85s_0.16s_ease-out_both]">
@@ -141,7 +141,7 @@ export function NotFoundPage() {
 
       <footer className="relative z-10 flex flex-wrap items-end justify-between gap-3 px-[clamp(1.1rem,3vw,2.4rem)] py-5 text-[0.85rem] text-[#c8c4b8]">
         <p className="m-0">Ideas deserve a body.</p>
-        <small className="opacity-65">© 2026 Promptwear</small>
+        <small className="opacity-65">© 2026 Driplap</small>
       </footer>
     </div>
   );

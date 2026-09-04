@@ -28,7 +28,13 @@ export type Design = {
   panels: Record<PatternPanel, PanelJson>;
   /** IndexedDB asset id for PNG/JPEG thumbnail */
   thumbnailAssetId?: string;
-  chat: { role: "user" | "assistant"; text: string; at: string }[];
+  chat: {
+    role: "user" | "assistant";
+    text: string;
+    at: string;
+    imageUrl?: string;
+    imageAssetId?: string;
+  }[];
   createdAt: string;
   updatedAt: string;
 };
@@ -104,6 +110,8 @@ export type OrderPricingSnapshot = {
   productionDays: number;
   deliveryDays: number;
   overridden: boolean;
+  couponCode?: string;
+  discountAmount?: number;
 };
 
 export type StatusEvent = {

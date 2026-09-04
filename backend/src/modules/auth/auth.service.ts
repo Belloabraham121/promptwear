@@ -37,6 +37,14 @@ export class AuthService {
       where: { email: dto.email.toLowerCase() },
     });
 
+    if (existing?.role === 'admin') {
+      throw new AppException(
+        ErrorCodes.CONFLICT,
+        'This email is reserved for staff',
+        HttpStatus.CONFLICT,
+      );
+    }
+
     if (existing) {
       throw new AppException(
         ErrorCodes.CONFLICT,
@@ -81,6 +89,22 @@ export class AuthService {
         ErrorCodes.UNAUTHORIZED,
         'Invalid email or password',
         HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    if (dto.portal === 'admin' && user.role !== 'admin') {
+      throw new AppException(
+        ErrorCodes.FORBIDDEN,
+        'This account does not have admin access',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    if (dto.portal === 'creator' && user.role === 'admin') {
+      throw new AppException(
+        ErrorCodes.FORBIDDEN,
+        'This email is reserved for staff. Use the admin login.',
+        HttpStatus.FORBIDDEN,
       );
     }
 
@@ -205,6 +229,70 @@ export class AuthService {
     }
 
     return toSafeUser(user);
+  }
+
+  async loginOrRegisterWithGoogle(input: {
+    googleId: string;
+    email: string;
+    name: string;
+  }): Promise<{ user: SafeUser; tokens: TokenPair }> {
+    const email = input.email.toLowerCase();
+
+    let user = await this.prisma.user.findUnique({
+      where: { googleId: input.googleId },
+    });
+
+    if (!user) {
+      const byEmail = await this.prisma.user.findUnique({
+        where: { email },
+      });
+
+      if (byEmail) {
+        if (byEmail.role === 'admin') {
+          throw new AppException(
+            ErrorCodes.FORBIDDEN,
+            'This email is reserved for staff. Use the admin login.',
+            HttpStatus.FORBIDDEN,
+          );
+        }
+
+        if (byEmail.googleId && byEmail.googleId !== input.googleId) {
+          throw new AppException(
+            ErrorCodes.CONFLICT,
+            'This email is linked to a different Google account',
+            HttpStatus.CONFLICT,
+          );
+        }
+
+        // Never auto-link Google to an existing password/guest account —
+        // that enables email-squatting account takeover.
+        throw new AppException(
+          ErrorCodes.CONFLICT,
+          'An account with this email already exists. Log in with your password instead.',
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          name: input.name,
+          googleId: input.googleId,
+          guest: false,
+        },
+      });
+    }
+
+    if (user.role === 'admin') {
+      throw new AppException(
+        ErrorCodes.FORBIDDEN,
+        'This email is reserved for staff. Use the admin login.',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const tokens = await this.issueTokens(user);
+    return { user: toSafeUser(user), tokens };
   }
 
   issueCsrfToken(): string {

@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useAuth } from "@/providers/AuthProvider";
 import { cn } from "@/lib/utils";
 
 function formatNaira(amount: number) {
@@ -307,12 +308,14 @@ function QuotePanel() {
 }
 
 export function LandingPage() {
+  const { isAuthenticated, isLoading } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [filter, setFilter] = useState<CatalogTag>("all");
   const visibleProducts =
     filter === "all"
       ? products
       : products.filter((product) => product.tag === filter);
+  const showAuthedCtas = !isLoading && isAuthenticated;
 
   return (
     <div className="min-h-dvh overflow-x-clip bg-[#f3f0e8] font-sans text-[#070807] [&_a]:no-underline">
@@ -325,9 +328,9 @@ export function LandingPage() {
         <Link
           href="/"
           className="font-heading text-[1.12rem] font-bold tracking-[-0.04em] lowercase"
-          aria-label="Promptwear home"
+          aria-label="Driplap home"
         >
-          promptwear
+          driplap
         </Link>
         <nav
           className="hidden items-center gap-7 text-[0.78rem] tracking-[0.06em] text-[#5a574f] md:flex"
@@ -347,15 +350,24 @@ export function LandingPage() {
           </a>
         </nav>
         <div className="hidden items-center justify-end gap-3 md:flex">
-          <Link
-            href="/login"
-            className="inline-flex items-center rounded-full border border-[color-mix(in_oklab,#070807_22%,transparent)] px-4 py-2 text-[0.78rem] font-semibold tracking-[0.04em] text-[#070807] transition-colors hover:border-[#070807]"
-          >
-            Log in
-          </Link>
-          <LimeButton href="/dashboard" className="px-4 py-2">
-            Sign up
-          </LimeButton>
+          {showAuthedCtas ? (
+            <LimeButton href="/dashboard" className="px-4 py-2">
+              Open app
+              <ArrowUpRight size={15} strokeWidth={2.25} />
+            </LimeButton>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="inline-flex items-center rounded-full border border-[color-mix(in_oklab,#070807_22%,transparent)] px-4 py-2 text-[0.78rem] font-semibold tracking-[0.04em] text-[#070807] transition-colors hover:border-[#070807]"
+              >
+                Log in
+              </Link>
+              <LimeButton href="/login?mode=signup" className="px-4 py-2">
+                Sign up
+              </LimeButton>
+            </>
+          )}
         </div>
         <button
           type="button"
@@ -386,8 +398,13 @@ export function LandingPage() {
             Pricing
           </a>
           <Link href="/dashboard" onClick={() => setMenuOpen(false)}>
-            Start designing
+            {showAuthedCtas ? "Open app" : "Start designing"}
           </Link>
+          {!showAuthedCtas ? (
+            <Link href="/login" onClick={() => setMenuOpen(false)}>
+              Log in
+            </Link>
+          ) : null}
         </nav>
       ) : null}
 
@@ -408,12 +425,14 @@ export function LandingPage() {
               ))}
             </ul>
             <LimeButton href="/dashboard" className="mt-7 px-7 py-3.5 text-[0.88rem]">
-              Start designing
+              {showAuthedCtas ? "Open app" : "Start designing"}
               <ArrowUpRight size={17} strokeWidth={2.25} />
             </LimeButton>
-            <p className="mt-3 mb-0 text-[0.78rem] text-[#8a867c]">
-              No credit card required · guest checkout
-            </p>
+            {!showAuthedCtas ? (
+              <p className="mt-3 mb-0 text-[0.78rem] text-[#8a867c]">
+                No credit card required · guest checkout
+              </p>
+            ) : null}
           </div>
 
           <div className="relative mx-auto mt-10 max-w-[68rem] md:mt-14">
@@ -479,7 +498,7 @@ export function LandingPage() {
                 Start with one idea.
               </h2>
               <p className="mt-3 mb-0 max-w-[42ch] leading-[1.55] text-[#5a574f]">
-                We are not a bulk merch factory. Promptwear is for original tees —
+                We are not a bulk merch factory. Driplap is for original tees —
                 a thought, a sketch, a small drop — printed and delivered.
               </p>
             </div>
@@ -739,23 +758,26 @@ export function LandingPage() {
             </h2>
             <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
               <LimeButton href="/dashboard" className="w-full px-7 py-3.5 text-[0.9rem] sm:w-auto">
-                Start designing
+                {showAuthedCtas ? "Open app" : "Start designing"}
                 <ArrowUpRight size={18} strokeWidth={2.25} />
               </LimeButton>
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-1 border-b border-[color-mix(in_oklab,#f3f0e8_28%,transparent)] pb-0.5 text-[0.78rem] tracking-[0.08em] text-[#c8c4b8] uppercase hover:text-[#f3f0e8]"
-              >
-                Continue as guest
-              </Link>
+              {!showAuthedCtas ? (
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-1 border-b border-[color-mix(in_oklab,#f3f0e8_28%,transparent)] pb-0.5 text-[0.78rem] tracking-[0.08em] text-[#c8c4b8] uppercase hover:text-[#f3f0e8]"
+                >
+                  Continue as guest
+                </Link>
+              ) : null}
             </div>
             <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-[0.78rem] text-[#c8c4b8]">
-              {(
-                [
-                  "No design skills needed",
-                  "Guest checkout",
-                  "One piece minimum",
-                ] as const
+              {(showAuthedCtas
+                ? (["No design skills needed", "One piece minimum"] as const)
+                : ([
+                    "No design skills needed",
+                    "Guest checkout",
+                    "One piece minimum",
+                  ] as const)
               ).map((label) => (
                 <span key={label} className="inline-flex items-center gap-1.5">
                   <Plus size={14} strokeWidth={2.5} className="text-[#d6ff3c]" />
@@ -779,7 +801,7 @@ export function LandingPage() {
             href="/"
             className="font-heading text-[1.1rem] font-bold tracking-[-0.04em] text-[#070807] lowercase"
           >
-            promptwear
+            driplap
           </Link>
           <p className="mt-3 mb-0 max-w-[28ch] leading-[1.5]">
             Ideas deserve a body. Custom tees from prompt or drawing, made in
@@ -798,10 +820,12 @@ export function LandingPage() {
           <p className="m-0 font-heading text-[0.72rem] font-bold tracking-[0.12em] text-[#070807] uppercase">
             Studio
           </p>
-          <Link href="/dashboard">Start designing</Link>
-          <Link href="/login">Log in</Link>
-          <a href="mailto:hello@promptwear.ng">hello@promptwear.ng</a>
-          <small className="mt-4 opacity-70">© 2026 Promptwear</small>
+          <Link href="/dashboard">
+            {showAuthedCtas ? "Open app" : "Start designing"}
+          </Link>
+          {!showAuthedCtas ? <Link href="/login">Log in</Link> : null}
+          <a href="mailto:hello@driplap.ng">hello@driplap.ng</a>
+          <small className="mt-4 opacity-70">© 2026 Driplap</small>
         </div>
       </footer>
     </div>

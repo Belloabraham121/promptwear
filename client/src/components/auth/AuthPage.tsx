@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpRight, Eye, EyeOff } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { getApiBaseUrl } from "@/lib/api/csrf";
 import { ApiError } from "@/lib/api/errors";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -33,37 +35,60 @@ function GoogleIcon({ className }: { className?: string }) {
 }
 
 export function AuthPage({ initialMode = "signin" }: { initialMode?: Mode }) {
+  return (
+    <Suspense fallback={null}>
+      <AuthPageInner initialMode={initialMode} />
+    </Suspense>
+  );
+}
+
+function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
   const router = useRouter();
-  const { login, register } = useAuth();
+  const searchParams = useSearchParams();
+  const { login, register, session, isAuthenticated, isLoading: authLoading } =
+    useAuth();
   const [mode, setMode] = useState<Mode>(initialMode);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState<"email" | "google" | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const isSignup = mode === "signup";
 
+  useEffect(() => {
+    if (authLoading || !isAuthenticated) return;
+    if (session?.role === "admin") {
+      router.replace("/dashboard/admin");
+      return;
+    }
+    router.replace("/dashboard");
+  }, [authLoading, isAuthenticated, session?.role, router]);
+
+  useEffect(() => {
+    const oauthError = searchParams.get("error");
+    if (oauthError) {
+      toast.error(oauthError);
+    }
+  }, [searchParams]);
+
   function switchMode(next: Mode) {
     setMode(next);
-    setError(null);
   }
 
   async function handleEmailSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError(null);
 
     if (!email.trim() || !password.trim()) {
-      setError("Enter your email and password to continue.");
+      toast.error("Enter your email and password to continue.");
       return;
     }
     if (isSignup && !name.trim()) {
-      setError("Add your name so we know who to print for.");
+      toast.error("Add your name so we know who to print for.");
       return;
     }
     if (password.length < 8) {
-      setError("Password needs at least 8 characters.");
+      toast.error("Password needs at least 8 characters.");
       return;
     }
 
@@ -79,21 +104,33 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: Mode }) {
         await login({
           email: email.trim(),
           password,
+          portal: "creator",
         });
       }
+      toast.success(isSignup ? "Account created" : "Welcome back");
       router.push("/dashboard");
     } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message);
-      } else {
-        setError("Something went wrong. Try again in a moment.");
-      }
+      toast.error(
+        err instanceof ApiError
+          ? err.message
+          : "Something went wrong. Try again in a moment.",
+      );
       setLoading(null);
     }
   }
 
   async function handleGoogle() {
-    setError("Google sign-in is not available yet. Use email instead.");
+    setLoading("google");
+    // Full-page redirect into Nest Google OAuth (sets cookies on callback).
+    window.location.assign(`${getApiBaseUrl()}/auth/google`);
+  }
+
+  if (authLoading || isAuthenticated) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-[#070807] text-[#c8c4b8]">
+        <p className="text-sm tracking-[0.08em] uppercase">Loading…</p>
+      </div>
+    );
   }
 
   return (
@@ -111,9 +148,9 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: Mode }) {
         <Link
           href="/"
           className="font-heading text-[1.05rem] font-bold tracking-[-0.04em] lowercase transition-opacity hover:opacity-80"
-          aria-label="Promptwear home"
+          aria-label="Driplap home"
         >
-          promptwear
+          driplap
         </Link>
         <Link
           href="/dashboard"
@@ -130,7 +167,7 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: Mode }) {
           className="relative w-full max-w-[26rem] border border-[color-mix(in_oklab,#f3f0e8_12%,transparent)] bg-[color-mix(in_oklab,#070807_78%,transparent)] p-6 backdrop-blur-sm sm:p-8 motion-safe:animate-[nf-fade-up_0.85s_ease-out_both]"
         >
           <h1 className="sr-only">
-            {isSignup ? "Create your Promptwear account" : "Log in to Promptwear"}
+            {isSignup ? "Create your Driplap account" : "Log in to Driplap"}
           </h1>
 
           <div
@@ -233,7 +270,7 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: Mode }) {
                     type="button"
                     className="text-[0.68rem] tracking-[0.08em] text-[#c8c4b8] transition-colors hover:text-[#d6ff3c]"
                     onClick={() =>
-                      setError(
+                      toast.message(
                         "Password reset will be available once auth is connected.",
                       )
                     }
@@ -270,12 +307,6 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: Mode }) {
               </div>
             </div>
 
-            {error ? (
-              <p role="alert" className="text-[0.9rem] text-[#ff8f7a]">
-                {error}
-              </p>
-            ) : null}
-
             <button
               type="submit"
               disabled={loading !== null}
@@ -306,7 +337,7 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: Mode }) {
       </main>
 
       <footer className="relative z-10 px-[clamp(1.1rem,3vw,2.4rem)] py-5 text-right text-[0.85rem] text-[#c8c4b8]">
-        <small className="opacity-65">© 2026 Promptwear</small>
+        <small className="opacity-65">© 2026 Driplap</small>
       </footer>
     </div>
   );
