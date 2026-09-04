@@ -1,0 +1,82 @@
+# Standalone MinIO for Coolify (S3-compatible storage).
+#
+# Coolify:
+# 1. New Resource → Docker Compose → this file
+# 2. Set MINIO_ROOT_USER, MINIO_ROOT_PASSWORD, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY
+# 3. Expose domains:
+#    - minio → port 9000  (S3 API)
+#    - Do NOT publish console port 9001 publicly
+# 4. Point your API env at the public MinIO domain with the *app* keys (not root):
+#      S3_ENDPOINT=https://<generated-minio-domain>
+#      S3_PUBLIC_ENDPOINT=https://<generated-minio-domain>
+#      S3_REGION=us-east-1
+#      S3_ACCESS_KEY_ID=<same as Coolify S3_ACCESS_KEY_ID>
+#      S3_SECRET_ACCESS_KEY=<same as Coolify S3_SECRET_ACCESS_KEY>
+#      S3_BUCKET=promptwear-assets
+#      S3_FORCE_PATH_STYLE=true
+
+services:
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-promptwear}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD (min 8 chars)}
+    volumes:
+      - minio_data:/data
+    expose:
+      - "9000"
+      - "9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # Creates the assets bucket + scoped app user (not MinIO root).
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-promptwear}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:?Set S3_ACCESS_KEY_ID (app key, not root)}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:?Set S3_SECRET_ACCESS_KEY}
+      S3_BUCKET: ${S3_BUCKET:-promptwear-assets}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -eu
+        mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD"
+        mc mb --ignore-existing "local/$$S3_BUCKET"
+
+        cat > /tmp/promptwear-app.json <<EOF
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": ["s3:GetBucketLocation", "s3:ListBucket", "s3:CreateBucket"],
+              "Resource": ["arn:aws:s3:::$$S3_BUCKET"]
+            },
+            {
+              "Effect": "Allow",
+              "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
+              "Resource": ["arn:aws:s3:::$$S3_BUCKET/*"]
+            }
+          ]
+        }
+        EOF
+
+        mc admin policy create local promptwear-app /tmp/promptwear-app.json || true
+        mc admin user add local "$$S3_ACCESS_KEY_ID" "$$S3_SECRET_ACCESS_KEY" || true
+        mc admin policy attach local promptwear-app --user "$$S3_ACCESS_KEY_ID" || true
+        echo "Bucket $$S3_BUCKET and app user ready."
+    restart: "on-failure"
+
+volumes:
+  minio_data:

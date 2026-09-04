@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useAuth } from "@/providers/AuthProvider";
 import { cn } from "@/lib/utils";
 
@@ -325,13 +326,7 @@ export function LandingPage() {
           padX,
         )}
       >
-        <Link
-          href="/"
-          className="font-heading text-[1.12rem] font-bold tracking-[-0.04em] lowercase"
-          aria-label="Driplap home"
-        >
-          driplap
-        </Link>
+        <BrandLogo href="/" size="md" />
         <nav
           className="hidden items-center gap-7 text-[0.78rem] tracking-[0.06em] text-[#5a574f] md:flex"
           aria-label="Main"
@@ -440,11 +435,11 @@ export function LandingPage() {
               <figure className="relative m-0 aspect-[4/3] bg-[#f0c4a8]">
                 <Image
                   src="/landing/landing-hero-editor.jpg"
-                  alt="Studio mockup of a white tee with a lime graphic in a design selection box"
+                  alt="Cream embroidered tee front with botanical print and Opium chest mark"
                   fill
                   priority
                   sizes="(min-width: 768px) 50vw, 100vw"
-                  className="object-cover"
+                  className="object-cover object-center"
                 />
                 <figcaption className="absolute bottom-3 left-3 rounded-full bg-[#070807]/88 px-3 py-1.5 text-[0.68rem] tracking-[0.1em] text-[#f3f0e8] uppercase">
                   Prompt + draw
@@ -453,11 +448,11 @@ export function LandingPage() {
               <figure className="relative m-0 aspect-[4/3] bg-[#1a1c18]">
                 <Image
                   src="/landing/landing-hero-life.jpg"
-                  alt="Finished custom white tee hanging in a sunlit room"
+                  alt="Cream embroidered tee back with Opium mark, 19, and poppy embroidery"
                   fill
                   priority
                   sizes="(min-width: 768px) 50vw, 100vw"
-                  className="object-cover"
+                  className="object-cover object-center"
                 />
                 <span className="absolute top-4 right-4 rounded-full bg-[#d6ff3c] px-2.5 py-1 text-[0.68rem] font-bold tracking-[0.08em] text-[#070807] uppercase">
                   Ready
@@ -797,12 +792,7 @@ export function LandingPage() {
         )}
       >
         <div>
-          <Link
-            href="/"
-            className="font-heading text-[1.1rem] font-bold tracking-[-0.04em] text-[#070807] lowercase"
-          >
-            driplap
-          </Link>
+          <BrandLogo href="/" size="md" />
           <p className="mt-3 mb-0 max-w-[28ch] leading-[1.5]">
             Ideas deserve a body. Custom tees from prompt or drawing, made in
             Nigeria.

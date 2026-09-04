@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpRight, Eye, EyeOff } from "lucide-react";
 import { FormEvent, Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { getApiBaseUrl } from "@/lib/api/csrf";
 import { ApiError } from "@/lib/api/errors";
 import { useAuth } from "@/providers/AuthProvider";
@@ -145,13 +146,7 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
       />
 
       <header className="relative z-20 flex items-center justify-between px-[clamp(1.1rem,3vw,2.4rem)] py-5">
-        <Link
-          href="/"
-          className="font-heading text-[1.05rem] font-bold tracking-[-0.04em] lowercase transition-opacity hover:opacity-80"
-          aria-label="Driplap home"
-        >
-          driplap
-        </Link>
+        <BrandLogo href="/" variant="onDark" size="sm" />
         <Link
           href="/dashboard"
           className="inline-flex items-center gap-1.5 border-b border-current pb-0.5 text-[0.78rem] tracking-[0.06em] uppercase transition-opacity hover:opacity-80"
