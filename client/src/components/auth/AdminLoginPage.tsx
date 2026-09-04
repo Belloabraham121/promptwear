@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight, Eye, EyeOff } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { ApiError } from "@/lib/api/errors";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -71,13 +71,7 @@ export function AdminLoginPage() {
       />
 
       <header className="relative z-20 flex items-center justify-between px-[clamp(1.1rem,3vw,2.4rem)] py-5">
-        <Link
-          href="/"
-          className="font-heading text-[1.05rem] font-bold tracking-[-0.04em] lowercase transition-opacity hover:opacity-80"
-          aria-label="Driplap home"
-        >
-          driplap
-        </Link>
+        <BrandLogo href="/" variant="onDark" size="sm" />
       </header>
 
       <main className="relative z-10 flex flex-1 items-center justify-center px-[clamp(1.1rem,3vw,2.4rem)] py-8">

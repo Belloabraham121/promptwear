@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 
 const marqueeItems = [
   "PAGE NOT FOUND",
@@ -33,13 +34,7 @@ export function NotFoundPage() {
 
       {/* Nav */}
       <header className="relative z-20 flex items-center justify-between px-[clamp(1.1rem,3vw,2.4rem)] py-5">
-        <Link
-          href="/"
-          className="font-heading text-[1.05rem] font-bold tracking-[-0.04em] lowercase transition-opacity hover:opacity-80"
-          aria-label="Driplap home"
-        >
-          driplap
-        </Link>
+        <BrandLogo href="/" variant="onDark" size="sm" />
         <Link
           href="/dashboard"
           className="inline-flex items-center gap-1.5 border-b border-current pb-0.5 text-[0.78rem] tracking-[0.06em] uppercase transition-opacity hover:opacity-80"
@@ -77,8 +72,8 @@ export function NotFoundPage() {
                 d="M28 72C90 36 140 30 186 54C228 76 270 68 318 42"
                 stroke="currentColor"
                 strokeWidth="1.25"
-                opacity="0.4"
                 strokeLinecap="round"
+                opacity="0.55"
               />
             </svg>
           </div>
@@ -89,12 +84,15 @@ export function NotFoundPage() {
             Error 404
           </p>
 
-          <h1
-            className="font-heading text-[clamp(2.75rem,9vw,6.25rem)] font-extrabold leading-[0.92] tracking-[-0.065em] lowercase motion-safe:animate-[nf-fade-up_0.85s_0.08s_ease-out_both]"
-            aria-label="Driplap"
-          >
-            driplap
-          </h1>
+          <div className="motion-safe:animate-[nf-fade-up_0.85s_0.08s_ease-out_both]">
+            <BrandLogo
+              href={null}
+              variant="onDark"
+              size="lg"
+              label="Driplab"
+              className="max-w-[min(100%,18rem)]"
+            />
+          </div>
 
           <p className="mt-5 max-w-[18ch] font-heading text-[clamp(1.35rem,3.2vw,2rem)] font-semibold leading-[1.15] tracking-[-0.03em] motion-safe:animate-[nf-fade-up_0.85s_0.16s_ease-out_both]">
             This idea never got printed.
@@ -115,7 +113,7 @@ export function NotFoundPage() {
             </Link>
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-1.5 border-b border-[color-mix(in_oklab,#f3f0e8_35%,transparent)] pb-0.5 text-[0.78rem] tracking-[0.08em] text-[#c8c4b8] uppercase transition-colors hover:text-[#f3f0e8]"
+              className="inline-flex items-center gap-1.5 border-b border-current pb-0.5 text-[0.82rem] tracking-[0.06em] uppercase transition-opacity hover:opacity-80"
             >
               Start designing
               <ArrowUpRight size={15} strokeWidth={2.25} />
@@ -124,25 +122,16 @@ export function NotFoundPage() {
         </div>
       </main>
 
-      {/* Marquee */}
       <div
+        className="relative z-10 overflow-hidden border-y border-[#f3f0e8]/10 py-3 text-[0.68rem] tracking-[0.18em] text-[#c8c4b8] uppercase"
         aria-hidden="true"
-        className="relative z-10 overflow-hidden border-y border-[color-mix(in_oklab,#f3f0e8_12%,transparent)] py-3.5"
       >
-        <div className="flex w-max gap-8 font-heading text-[clamp(0.95rem,2vw,1.15rem)] font-bold tracking-[0.12em] uppercase whitespace-nowrap motion-safe:animate-[nf-marquee_28s_linear_infinite]">
-          {marqueeItems.map((item, index) => (
-            <span key={`${item}-${index}`} className="inline-flex items-center">
-              {item}
-              <i className="ml-8 not-italic text-[#d6ff3c]">/</i>
-            </span>
+        <div className="flex w-max animate-[nf-marquee_28s_linear_infinite] gap-10 whitespace-nowrap">
+          {[...marqueeItems, ...marqueeItems].map((item, i) => (
+            <span key={`${item}-${i}`}>{item}</span>
           ))}
         </div>
       </div>
-
-      <footer className="relative z-10 flex flex-wrap items-end justify-between gap-3 px-[clamp(1.1rem,3vw,2.4rem)] py-5 text-[0.85rem] text-[#c8c4b8]">
-        <p className="m-0">Ideas deserve a body.</p>
-        <small className="opacity-65">© 2026 Driplap</small>
-      </footer>
     </div>
   );
 }

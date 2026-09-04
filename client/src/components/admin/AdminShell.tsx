@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { AdminUserSkeleton } from "@/components/admin/AdminSkeleton";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -46,12 +47,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-[#070807] text-[#f3f0e8] font-[family-name:var(--font-body)]">
       <div className="flex min-h-screen w-full">
         <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-[#f3f0e8]/10 px-4 py-6 md:flex">
-          <Link
+          <BrandLogo
             href="/dashboard/admin"
-            className="px-2 font-[family-name:var(--font-display)] text-lg font-extrabold lowercase tracking-[-0.04em]"
-          >
-            driplap
-          </Link>
+            variant="onDark"
+            size="sm"
+            className="px-2"
+            label="Driplab admin"
+          />
           <p className="mt-1 px-2 text-[0.65rem] uppercase tracking-[0.16em] text-[#d6ff3c]">
             Admin
           </p>
@@ -113,12 +115,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             >
               {open ? <X size={18} /> : <Menu size={18} />}
             </button>
-            <Link
+            <BrandLogo
               href="/dashboard/admin"
-              className="font-[family-name:var(--font-display)] text-base font-extrabold lowercase tracking-[-0.04em] md:hidden"
-            >
-              admin
-            </Link>
+              variant="onDark"
+              size="sm"
+              className="md:hidden"
+              label="Driplab admin"
+            />
             <div className="hidden text-xs uppercase tracking-[0.14em] text-[#c8c4b8] md:block">
               Orders · Catalog · Vendors · Margin
             </div>
