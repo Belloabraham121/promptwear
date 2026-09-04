@@ -46,22 +46,9 @@ import { PricingModule } from './pricing/pricing.module';
       {
         name: 'default',
         ttl: 60_000,
-        limit: 100,
-      },
-      {
-        name: 'auth',
-        ttl: 60_000,
-        limit: 5,
-      },
-      {
-        name: 'studio-chat',
-        ttl: 60_000,
-        limit: 20,
-      },
-      {
-        name: 'studio-generate',
-        ttl: 60_000,
-        limit: 10,
+        // High enough for studio job polling + normal dashboard traffic.
+        // Stricter limits are set per-route with @Throttle.
+        limit: 300,
       },
     ]),
     PrismaModule,

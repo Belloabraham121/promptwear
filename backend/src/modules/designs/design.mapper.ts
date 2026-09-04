@@ -32,14 +32,43 @@ export function normalizeChat(value: Prisma.JsonValue): DesignChatMessage[] {
     return [];
   }
 
-  return value.filter(
-    (entry): entry is DesignChatMessage =>
-      typeof entry === 'object' &&
-      entry !== null &&
-      'role' in entry &&
-      'text' in entry &&
-      'at' in entry,
-  );
+  const messages: DesignChatMessage[] = [];
+  for (const entry of value) {
+    if (
+      typeof entry !== 'object' ||
+      entry === null ||
+      !('role' in entry) ||
+      !('text' in entry) ||
+      !('at' in entry)
+    ) {
+      continue;
+    }
+
+    const role = (entry as { role: unknown }).role;
+    const text = (entry as { text: unknown }).text;
+    const at = (entry as { at: unknown }).at;
+    if (
+      (role !== 'user' && role !== 'assistant') ||
+      typeof text !== 'string' ||
+      typeof at !== 'string'
+    ) {
+      continue;
+    }
+
+    const imageUrl = (entry as { imageUrl?: unknown }).imageUrl;
+    const imageAssetId = (entry as { imageAssetId?: unknown }).imageAssetId;
+    messages.push({
+      role,
+      text,
+      at,
+      ...(typeof imageUrl === 'string' && imageUrl ? { imageUrl } : {}),
+      ...(typeof imageAssetId === 'string' && imageAssetId
+        ? { imageAssetId }
+        : {}),
+    });
+  }
+
+  return messages;
 }
 
 export function toDesignResponse(design: Design): DesignResponse {

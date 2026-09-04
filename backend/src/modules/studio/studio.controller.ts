@@ -8,7 +8,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { ErrorCodes } from '../../common/constants/error-codes';
 import { AppException } from '../../common/exceptions/app.exception';
 import { CheckOwnership } from '../../common/decorators/ownership.decorator';
@@ -28,7 +28,7 @@ export class StudioController {
   ) {}
 
   @Get(':id/chat')
-  @Throttle({ 'studio-chat': { limit: 20, ttl: 60_000 } })
+  @Throttle({ default: { limit: 60, ttl: 60_000 } })
   @UseGuards(OwnershipGuard)
   @CheckOwnership({ resource: 'design' })
   getChat(@CurrentUser() user: RequestUser, @Param('id') id: string) {
@@ -36,7 +36,7 @@ export class StudioController {
   }
 
   @Post(':id/chat')
-  @Throttle({ 'studio-chat': { limit: 20, ttl: 60_000 } })
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @UseGuards(OwnershipGuard)
   @CheckOwnership({ resource: 'design' })
   sendChat(
@@ -44,12 +44,16 @@ export class StudioController {
     @Param('id') id: string,
     @Body() dto: SendChatDto,
   ) {
-    return this.chatService.sendMessage(user.sub, id, dto.text);
+    return this.chatService.sendMessage(user.sub, id, dto.text, dto.model, {
+      generateImage: dto.generateImage,
+      quality: dto.quality,
+      size: dto.size,
+    });
   }
 
   @Post(':id/generate')
   @HttpCode(HttpStatus.ACCEPTED)
-  @Throttle({ 'studio-generate': { limit: 10, ttl: 60_000 } })
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @UseGuards(OwnershipGuard)
   @CheckOwnership({ resource: 'design' })
   generate(
@@ -57,10 +61,18 @@ export class StudioController {
     @Param('id') id: string,
     @Body() dto: GenerateDesignDto,
   ) {
-    return this.generateService.enqueue(user.sub, id, dto.panel);
+    return this.generateService.enqueue(
+      user.sub,
+      id,
+      dto.panel,
+      dto.quality,
+      dto.size,
+    );
   }
 
+  /** Polled every ~1s while generating — must not share auth/studio quotas. */
   @Get(':id/generate/:jobId')
+  @SkipThrottle()
   @UseGuards(OwnershipGuard)
   @CheckOwnership({ resource: 'design' })
   getGenerateJob(

@@ -5,6 +5,7 @@ import type { SafeUser } from "./types";
 export interface LoginInput {
   email: string;
   password: string;
+  portal?: "creator" | "admin";
 }
 
 export interface RegisterInput {

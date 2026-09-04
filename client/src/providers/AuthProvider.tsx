@@ -126,8 +126,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<AuthContextValue>(
     () => ({
-      session: sessionQuery.data,
-      isLoading: sessionQuery.isLoading,
+      // undefined while the first session fetch is in flight; null when logged out.
+      session: sessionQuery.isPending
+        ? undefined
+        : (sessionQuery.data ?? null),
+      isLoading: sessionQuery.isPending,
       isAuthenticated: sessionQuery.data != null,
       login,
       register,
@@ -138,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }),
     [
       sessionQuery.data,
-      sessionQuery.isLoading,
+      sessionQuery.isPending,
       login,
       register,
       logout,

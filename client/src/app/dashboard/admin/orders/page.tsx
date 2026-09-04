@@ -1,12 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import { toast } from "sonner";
 import { useAdmin } from "@/components/admin/AdminProvider";
+import { AdminPageSkeleton } from "@/components/admin/AdminSkeleton";
 import {
   EmptyState,
   PageHeader,
   StatusPill,
 } from "@/components/dashboard/ui";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { ApiError } from "@/lib/api/errors";
 import { formatNaira, totalQuantity } from "@/lib/dashboard/pricing";
 import {
   ADMIN_FULFILLMENT_STATUSES,
@@ -25,9 +30,29 @@ export default function AdminOrdersPage() {
     cancelOrder,
     refundOrder,
   } = useAdmin();
+  const [refundOrderId, setRefundOrderId] = useState<string | null>(null);
+  const [refunding, setRefunding] = useState(false);
+
+  const pendingRefund = orders.find((order) => order.id === refundOrderId);
+
+  async function confirmRefund() {
+    if (!refundOrderId) return;
+    setRefunding(true);
+    try {
+      await refundOrder(refundOrderId);
+      toast.success("Order marked refunded");
+      setRefundOrderId(null);
+    } catch (err) {
+      toast.error(
+        err instanceof ApiError ? err.message : "Could not refund order",
+      );
+    } finally {
+      setRefunding(false);
+    }
+  }
 
   if (!ready) {
-    return <p className="text-sm text-[#c8c4b8]">Loading orders…</p>;
+    return <AdminPageSkeleton cards={0} rows={6} />;
   }
 
   if (error) {
@@ -122,7 +147,7 @@ export default function AdminOrdersPage() {
                           </button>
                         ) : null}
                         <Link
-                          href={`/dashboard/orders/${order.id}`}
+                          href={`/dashboard/admin/orders/${order.id}`}
                           className="border border-[#f3f0e8]/20 px-2.5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em] hover:border-[#d6ff3c] hover:text-[#d6ff3c]"
                         >
                           View
@@ -151,7 +176,7 @@ export default function AdminOrdersPage() {
                             order.status === "draft" ||
                             order.status === "quoted"
                           }
-                          onClick={() => void refundOrder(order.id)}
+                          onClick={() => setRefundOrderId(order.id)}
                           className={cn(
                             "border border-[#f3f0e8]/20 px-2.5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em]",
                             order.status === "refunded" ||
@@ -172,6 +197,32 @@ export default function AdminOrdersPage() {
           </table>
         </div>
       )}
+
+      <ConfirmDialog
+        open={refundOrderId != null}
+        title="Refund this order?"
+        description={
+          pendingRefund ? (
+            <>
+              This will mark{" "}
+              <span className="text-[#f3f0e8]">{pendingRefund.id}</span> (
+              {pendingRefund.line.designTitle},{" "}
+              {formatNaira(pendingRefund.total)}) as refunded. This cannot be
+              undone from the admin UI.
+            </>
+          ) : (
+            "This will mark the order as refunded. This cannot be undone from the admin UI."
+          )
+        }
+        confirmLabel="Refund order"
+        cancelLabel="Keep order"
+        tone="danger"
+        confirming={refunding}
+        onConfirm={() => void confirmRefund()}
+        onCancel={() => {
+          if (!refunding) setRefundOrderId(null);
+        }}
+      />
     </div>
   );
 }

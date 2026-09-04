@@ -13,6 +13,8 @@ export type DesignChatMessage = {
   role: "user" | "assistant";
   text: string;
   at: string;
+  imageUrl?: string;
+  imageAssetId?: string;
 };
 
 export type DesignResponse = {

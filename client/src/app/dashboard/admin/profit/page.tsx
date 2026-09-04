@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useAdmin } from "@/components/admin/AdminProvider";
+import { AdminPageSkeleton } from "@/components/admin/AdminSkeleton";
 import { PageHeader } from "@/components/dashboard/ui";
 import { formatNaira } from "@/lib/dashboard/pricing";
 import type { VendorSelectionStrategy } from "@/lib/admin/types";
@@ -61,7 +62,7 @@ export default function AdminProfitPage() {
   ]);
 
   if (!ready) {
-    return <p className="text-sm text-[#c8c4b8]">Loading profit settings…</p>;
+    return <AdminPageSkeleton cards={2} rows={6} />;
   }
 
   if (error) {

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   BarChart3,
   Boxes,
@@ -13,8 +13,9 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { AdminUserSkeleton } from "@/components/admin/AdminSkeleton";
 import { cn } from "@/lib/utils";
-import { useDashboard } from "@/components/dashboard/DashboardProvider";
+import { useAuth } from "@/providers/AuthProvider";
 
 const NAV = [
   { href: "/dashboard/admin", label: "Overview", icon: Shield, exact: true },
@@ -27,7 +28,8 @@ const NAV = [
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, ready } = useDashboard();
+  const router = useRouter();
+  const { session, isLoading, logout, isLoggingOut } = useAuth();
   const [open, setOpen] = useState(false);
 
   function isActive(href: string, exact?: boolean) {
@@ -35,15 +37,20 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     return pathname === href || pathname.startsWith(`${href}/`);
   }
 
+  async function handleLogout() {
+    await logout();
+    router.replace("/admin/login");
+  }
+
   return (
     <div className="min-h-screen bg-[#070807] text-[#f3f0e8] font-[family-name:var(--font-body)]">
       <div className="flex min-h-screen w-full">
         <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-[#f3f0e8]/10 px-4 py-6 md:flex">
           <Link
-            href="/"
+            href="/dashboard/admin"
             className="px-2 font-[family-name:var(--font-display)] text-lg font-extrabold lowercase tracking-[-0.04em]"
           >
-            promptwear
+            driplap
           </Link>
           <p className="mt-1 px-2 text-[0.65rem] uppercase tracking-[0.16em] text-[#d6ff3c]">
             Admin
@@ -72,20 +79,27 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="mt-auto space-y-3 border-t border-[#f3f0e8]/10 px-2 pt-4">
-            <Link
-              href="/dashboard"
-              className="block text-xs font-semibold uppercase tracking-[0.08em] text-[#c8c4b8] underline-offset-4 hover:text-[#f3f0e8] hover:underline"
+            {isLoading || !session ? (
+              <AdminUserSkeleton />
+            ) : (
+              <div>
+                <p className="truncate text-sm font-medium">{session.name}</p>
+                <p className="truncate text-xs text-[#c8c4b8]">
+                  {session.email}
+                </p>
+                <p className="mt-1 text-[0.65rem] uppercase tracking-[0.12em] text-[#d6ff3c]">
+                  {session.role}
+                </p>
+              </div>
+            )}
+            <button
+              type="button"
+              disabled={isLoggingOut}
+              onClick={() => void handleLogout()}
+              className="block text-xs font-semibold uppercase tracking-[0.08em] text-[#c8c4b8] underline-offset-4 hover:text-[#f3f0e8] hover:underline disabled:opacity-50"
             >
-              ← Creator dashboard
-            </Link>
-            <div>
-              <p className="truncate text-sm font-medium">
-                {ready ? user.name : "…"}
-              </p>
-              <p className="truncate text-xs text-[#c8c4b8]">
-                {ready ? user.email : ""}
-              </p>
-            </div>
+              {isLoggingOut ? "Signing out…" : "Log out"}
+            </button>
           </div>
         </aside>
 
@@ -108,12 +122,21 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <div className="hidden text-xs uppercase tracking-[0.14em] text-[#c8c4b8] md:block">
               Orders · Catalog · Vendors · Margin
             </div>
-            <Link
-              href="/dashboard"
-              className="text-xs font-semibold uppercase tracking-[0.08em] text-[#c8c4b8] hover:text-[#f3f0e8]"
-            >
-              Exit admin
-            </Link>
+            <div className="flex items-center gap-3">
+              {!isLoading && session ? (
+                <span className="hidden max-w-[10rem] truncate text-xs text-[#c8c4b8] sm:inline">
+                  {session.name}
+                </span>
+              ) : null}
+              <button
+                type="button"
+                disabled={isLoggingOut}
+                onClick={() => void handleLogout()}
+                className="text-xs font-semibold uppercase tracking-[0.08em] text-[#c8c4b8] hover:text-[#f3f0e8] disabled:opacity-50"
+              >
+                {isLoggingOut ? "Signing out…" : "Log out"}
+              </button>
+            </div>
           </header>
 
           {open ? (
@@ -142,13 +165,27 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                     </Link>
                   );
                 })}
-                <Link
-                  href="/dashboard"
-                  onClick={() => setOpen(false)}
-                  className="px-3 py-2.5 text-sm text-[#c8c4b8]"
+                {session ? (
+                  <div className="mt-2 border-t border-[#f3f0e8]/10 px-3 pt-3">
+                    <p className="truncate text-sm font-medium">
+                      {session.name}
+                    </p>
+                    <p className="truncate text-xs text-[#c8c4b8]">
+                      {session.email}
+                    </p>
+                  </div>
+                ) : null}
+                <button
+                  type="button"
+                  disabled={isLoggingOut}
+                  onClick={() => {
+                    setOpen(false);
+                    void handleLogout();
+                  }}
+                  className="px-3 py-2.5 text-left text-sm text-[#c8c4b8] disabled:opacity-50"
                 >
-                  ← Creator dashboard
-                </Link>
+                  {isLoggingOut ? "Signing out…" : "Log out"}
+                </button>
               </nav>
             </div>
           ) : null}

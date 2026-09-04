@@ -17,6 +17,9 @@ export type DesignChatMessage = {
   role: 'user' | 'assistant';
   text: string;
   at: string;
+  /** Optional print preview from gpt-image-1 */
+  imageUrl?: string;
+  imageAssetId?: string;
 };
 
 export type DesignResponse = {

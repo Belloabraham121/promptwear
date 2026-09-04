@@ -58,6 +58,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
           code = ErrorCodes.FORBIDDEN;
         } else if (status === HttpStatus.NOT_FOUND) {
           code = ErrorCodes.NOT_FOUND;
+        } else if (status === HttpStatus.TOO_MANY_REQUESTS) {
+          code = ErrorCodes.RATE_LIMIT;
         }
 
         if (typeof body.message === 'string') {

@@ -23,28 +23,31 @@ export class AdminAnalyticsService {
   ) {}
 
   async getSnapshot(): Promise<AnalyticsSnapshot> {
-    const [orders, designCount, vendors, repeatCount] = await Promise.all([
-      this.prisma.order.findMany({
-        where: { status: { notIn: EXCLUDED_ORDER_STATUSES } },
-        select: { total: true, line: true },
-      }),
-      this.prisma.design.count(),
-      this.prisma.vendor.findMany({
-        orderBy: { name: 'asc' },
-        select: {
-          id: true,
-          name: true,
-          qualityRating: true,
-          onTimeRate: true,
-          capacityPerWeek: true,
-          priceIndex: true,
-          active: true,
-        },
-      }),
-      this.rollupService.countRepeatCustomers(
-        new Date(Date.now() - REPEAT_WINDOW_DAYS * 86_400_000),
-      ),
-    ]);
+    const [orders, designCount, vendors, repeatCount, userCount, customerCount] =
+      await Promise.all([
+        this.prisma.order.findMany({
+          where: { status: { notIn: EXCLUDED_ORDER_STATUSES } },
+          select: { total: true, line: true },
+        }),
+        this.prisma.design.count(),
+        this.prisma.vendor.findMany({
+          orderBy: { name: 'asc' },
+          select: {
+            id: true,
+            name: true,
+            qualityRating: true,
+            onTimeRate: true,
+            capacityPerWeek: true,
+            priceIndex: true,
+            active: true,
+          },
+        }),
+        this.rollupService.countRepeatCustomers(
+          new Date(Date.now() - REPEAT_WINDOW_DAYS * 86_400_000),
+        ),
+        this.prisma.user.count(),
+        this.prisma.user.count({ where: { role: 'customer' } }),
+      ]);
 
     const revenue = orders.reduce((sum, order) => sum + order.total, 0);
     const orderCount = orders.length;
@@ -75,7 +78,7 @@ export class AdminAnalyticsService {
 
     const bestSelling = [...byDesign.values()]
       .sort((a, b) => b.units - a.units)
-      .slice(0, 5);
+      .slice(0, 8);
 
     return {
       revenue,
@@ -83,6 +86,10 @@ export class AdminAnalyticsService {
       orderCount,
       conversionRate,
       conversionLabel: `${Math.round(conversionRate * 100)}%`,
+      userCount,
+      customerCount,
+      activeVendorCount: vendors.filter((vendor) => vendor.active).length,
+      vendorCount: vendors.length,
       bestSelling,
       repeatCustomers: {
         label: 'Repeat buyers',

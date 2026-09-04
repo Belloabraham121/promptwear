@@ -1,6 +1,7 @@
 "use client";
 
 import { useAdmin } from "@/components/admin/AdminProvider";
+import { AdminPageSkeleton } from "@/components/admin/AdminSkeleton";
 import { PageHeader } from "@/components/dashboard/ui";
 import { formatNaira } from "@/lib/dashboard/pricing";
 import { cn } from "@/lib/utils";
@@ -32,7 +33,7 @@ export default function AdminProductsPage() {
   const { ready, catalog, error, updateCatalogItem } = useAdmin();
 
   if (!ready) {
-    return <p className="text-sm text-[#c8c4b8]">Loading products…</p>;
+    return <AdminPageSkeleton cards={0} rows={8} />;
   }
 
   if (error) {

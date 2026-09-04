@@ -51,7 +51,12 @@ function redirectToLogin(): void {
   if (typeof window === "undefined") return;
 
   const path = window.location.pathname;
-  if (path === "/login" || path === "/signup") return;
+  if (path === "/login" || path === "/signup" || path === "/admin/login") return;
+
+  if (path.startsWith("/dashboard/admin") || path.startsWith("/admin")) {
+    window.location.assign("/admin/login");
+    return;
+  }
 
   window.location.assign("/login");
 }

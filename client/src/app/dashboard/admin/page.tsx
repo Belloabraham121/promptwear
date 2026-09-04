@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowUpRight } from "lucide-react";
 import { useAdmin } from "@/components/admin/AdminProvider";
+import { AdminPageSkeleton } from "@/components/admin/AdminSkeleton";
 import {
   GhostLink,
   PageHeader,
@@ -44,7 +45,7 @@ const LINKS = [
 ] as const;
 
 export default function AdminOverviewPage() {
-  const { ready: adminReady, vendors, catalog, orders } = useAdmin();
+  const { ready: adminReady, vendors, catalog, orders, error } = useAdmin();
   const { session } = useAuth();
   const isAdmin = session?.role === "admin";
   const analyticsQuery = useQuery({
@@ -53,8 +54,16 @@ export default function AdminOverviewPage() {
     enabled: adminReady && isAdmin,
   });
 
-  if (!adminReady || analyticsQuery.isLoading) {
-    return <p className="text-sm text-[#c8c4b8]">Loading admin…</p>;
+  if (!adminReady) {
+    return <AdminPageSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <p className="text-sm text-red-300">
+        Failed to load admin data: {error.message}
+      </p>
+    );
   }
 
   const analytics = analyticsQuery.data;
@@ -67,13 +76,19 @@ export default function AdminOverviewPage() {
     <div>
       <PageHeader
         title="Admin"
-        description="Operate catalog, vendors, and fulfillment across the platform."
+        description={
+          session
+            ? `Signed in as ${session.name} · ${session.email}`
+            : "Operate catalog, vendors, and fulfillment across the platform."
+        }
       />
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Revenue"
-          value={analytics?.revenueLabel ?? "—"}
+          value={
+            analyticsQuery.isPending ? "…" : (analytics?.revenueLabel ?? "—")
+          }
           hint="Paid orders, all time"
         />
         <StatCard
@@ -131,7 +146,7 @@ export default function AdminOverviewPage() {
             {recent.map((order) => (
               <Link
                 key={order.id}
-                href={`/dashboard/admin/orders`}
+                href={`/dashboard/admin/orders/${order.id}`}
                 className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 transition hover:bg-[#f3f0e8]/4"
               >
                 <div>

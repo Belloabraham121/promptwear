@@ -1,8 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  CreateBucketCommand,
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadBucketCommand,
   HeadObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -13,7 +19,8 @@ const DEFAULT_UPLOAD_TTL_SECONDS = 900;
 const DEFAULT_DOWNLOAD_TTL_SECONDS = 900;
 
 @Injectable()
-export class StorageService {
+export class StorageService implements OnModuleInit {
+  private readonly logger = new Logger(StorageService.name);
   private readonly client: S3Client;
   private readonly bucket: string;
 
@@ -38,6 +45,33 @@ export class StorageService {
         secretAccessKey,
       },
     });
+  }
+
+  async onModuleInit(): Promise<void> {
+    await this.ensureBucket();
+  }
+
+  private async ensureBucket(): Promise<void> {
+    try {
+      await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
+      return;
+    } catch {
+      // Bucket missing or unreachable — try create.
+    }
+
+    try {
+      await this.client.send(new CreateBucketCommand({ Bucket: this.bucket }));
+      this.logger.log(`Created S3 bucket "${this.bucket}"`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      // Race: another process created it first.
+      if (/BucketAlreadyOwnedByYou|BucketAlreadyExists|already own/i.test(message)) {
+        return;
+      }
+      this.logger.warn(
+        `Could not ensure S3 bucket "${this.bucket}": ${message}. Run: npm run docker:up`,
+      );
+    }
   }
 
   buildStorageKey(userId: string, assetId: string, fileName: string): string {
@@ -85,6 +119,21 @@ export class StorageService {
       sizeBytes: response.ContentLength,
       contentType: response.ContentType,
     };
+  }
+
+  async putObject(
+    storageKey: string,
+    body: Buffer,
+    contentType: string,
+  ): Promise<void> {
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: storageKey,
+        Body: body,
+        ContentType: contentType,
+      }),
+    );
   }
 
   async deleteObject(storageKey: string): Promise<void> {

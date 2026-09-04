@@ -34,7 +34,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   // Canvas editor is a full-page experience (no sidebar / top chrome)
   const isStudioCanvas = /^\/dashboard\/studio\/[^/]+$/.test(pathname);
-  const isAdmin = pathname.startsWith("/dashboard/admin");
+  const isAdminRoute = pathname.startsWith("/dashboard/admin");
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href;
@@ -49,7 +49,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (isAdmin) {
+  // Admin chrome only for admins. Always render children so AdminGate can redirect.
+  if (isAdminRoute) {
+    if (!isAdminUser) {
+      return <>{children}</>;
+    }
     return <AdminShell>{children}</AdminShell>;
   }
 
@@ -62,7 +66,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             href="/"
             className="px-2 font-[family-name:var(--font-display)] text-lg font-extrabold lowercase tracking-[-0.04em]"
           >
-            promptwear
+            driplap
           </Link>
           <p className="mt-1 px-2 text-[0.65rem] uppercase tracking-[0.16em] text-[#c8c4b8]">
             Studio & orders
@@ -123,20 +127,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               href="/"
               className="font-[family-name:var(--font-display)] text-base font-extrabold lowercase tracking-[-0.04em] md:hidden"
             >
-              promptwear
+              driplap
             </Link>
             <div className="hidden text-xs uppercase tracking-[0.14em] text-[#c8c4b8] md:block">
               Design · Quote · Order
             </div>
             <div className="flex items-center gap-2">
-              {ready && isAdminUser ? (
-                <Link
-                  href="/dashboard/admin"
-                  className="hidden border border-[#f3f0e8]/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#c8c4b8] transition hover:border-[#d6ff3c] hover:text-[#d6ff3c] md:inline-flex"
-                >
-                  Admin
-                </Link>
-              ) : null}
               <Link
                 href="/dashboard/studio"
                 className="inline-flex items-center gap-1.5 bg-[#d6ff3c] px-3 py-2 text-xs font-bold uppercase tracking-[0.06em] text-[#070807] transition hover:bg-[#e2ff6a]"
