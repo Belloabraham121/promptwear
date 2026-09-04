@@ -1,16 +1,14 @@
 import type { NextConfig } from "next";
 
 /**
- * When the browser is on HTTPS (Vercel) but the API is HTTP (Coolify),
- * rewrite same-origin /api/v1 → the HTTP backend so mixed content is avoided.
+ * Same-origin /api/v1 rewrite → Coolify API (avoids browser mixed-content issues).
  *
  * - Explicit API_PROXY_TARGET always wins.
- * - Otherwise only Vercel production uses the Coolify default (not previews/forks).
- * - Local / preview: set API_PROXY_TARGET yourself, or use NEXT_PUBLIC_API_URL
- *   pointing at localhost (no rewrite needed).
+ * - Otherwise only Vercel production uses the default (not previews/forks).
+ * - Local: use NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
  */
 const DEFAULT_API_PROXY_TARGET =
-  "http://ycfqy2f20ak12p32hyc32t6n.80.241.213.233.sslip.io";
+  "https://ycfqy2f20ak12p32hyc32t6n.locimind.org";
 
 const apiProxyTarget = (
   process.env.API_PROXY_TARGET?.trim() ||
