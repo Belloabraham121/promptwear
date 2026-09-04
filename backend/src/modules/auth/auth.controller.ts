@@ -125,7 +125,7 @@ export class AuthController {
     res.cookie(this.googleOAuthService.getStateCookieName(), state, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: 'lax',
+      sameSite: isProduction ? 'none' : 'lax',
       path: '/api/v1/auth',
       maxAge: 10 * 60 * 1000,
     });
@@ -151,7 +151,7 @@ export class AuthController {
       res.clearCookie(this.googleOAuthService.getStateCookieName(), {
         httpOnly: true,
         secure: isProduction,
-        sameSite: 'lax',
+        sameSite: isProduction ? 'none' : 'lax',
         path: '/api/v1/auth',
       });
     };
