@@ -55,10 +55,12 @@ export class AuthCookieService {
   }
 
   private baseCookieOptions(maxAge: number): CookieOptions {
+    // Cross-origin frontends (e.g. Vercel HTTPS → Coolify API) need SameSite=None
+    // + Secure so credentialed fetch can send cookies.
     return {
       httpOnly: true,
       secure: this.isProduction,
-      sameSite: 'lax',
+      sameSite: this.isProduction ? 'none' : 'lax',
       maxAge,
     };
   }
@@ -75,7 +77,6 @@ export class AuthCookieService {
 
     res.cookie('refresh_token', refreshToken, {
       ...this.baseCookieOptions(this.refreshTtlMs),
-      sameSite: 'strict',
       path: AUTH_PREFIX,
     });
   }
@@ -84,7 +85,7 @@ export class AuthCookieService {
     res.cookie('csrf_token', token, {
       httpOnly: false,
       secure: this.isProduction,
-      sameSite: 'lax',
+      sameSite: this.isProduction ? 'none' : 'lax',
       path: '/',
       maxAge: this.accessTtlMs,
     });
@@ -94,7 +95,7 @@ export class AuthCookieService {
     const clearOptions: CookieOptions = {
       httpOnly: true,
       secure: this.isProduction,
-      sameSite: 'lax',
+      sameSite: this.isProduction ? 'none' : 'lax',
     };
 
     res.clearCookie('access_token', { ...clearOptions, path: '/' });
@@ -102,7 +103,7 @@ export class AuthCookieService {
     res.clearCookie('csrf_token', {
       httpOnly: false,
       secure: this.isProduction,
-      sameSite: 'lax',
+      sameSite: this.isProduction ? 'none' : 'lax',
       path: '/',
     });
   }
