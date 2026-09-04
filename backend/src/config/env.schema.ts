@@ -23,6 +23,8 @@ export const envSchema = z.object({
     .enum(['development', 'production', 'test'])
     .default('development'),
   S3_ENDPOINT: z.string().url(),
+  /** Browser-reachable S3/MinIO URL for presigned uploads/downloads. Defaults to S3_ENDPOINT. */
+  S3_PUBLIC_ENDPOINT: optionalUrl,
   S3_REGION: z.string().min(1),
   S3_ACCESS_KEY_ID: z.string().min(1),
   S3_SECRET_ACCESS_KEY: z.string().min(1),

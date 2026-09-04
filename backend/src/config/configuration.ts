@@ -20,6 +20,7 @@ export default () => {
     },
     s3: {
       endpoint: env.S3_ENDPOINT,
+      publicEndpoint: env.S3_PUBLIC_ENDPOINT ?? env.S3_ENDPOINT,
       region: env.S3_REGION,
       accessKeyId: env.S3_ACCESS_KEY_ID,
       secretAccessKey: env.S3_SECRET_ACCESS_KEY,

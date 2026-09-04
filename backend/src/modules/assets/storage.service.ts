@@ -22,10 +22,14 @@ const DEFAULT_DOWNLOAD_TTL_SECONDS = 900;
 export class StorageService implements OnModuleInit {
   private readonly logger = new Logger(StorageService.name);
   private readonly client: S3Client;
+  private readonly signClient: S3Client;
   private readonly bucket: string;
 
   constructor(private readonly configService: ConfigService) {
     const endpoint = this.configService.getOrThrow<string>('s3.endpoint');
+    const publicEndpoint = this.configService.getOrThrow<string>(
+      's3.publicEndpoint',
+    );
     const region = this.configService.getOrThrow<string>('s3.region');
     const accessKeyId = this.configService.getOrThrow<string>('s3.accessKeyId');
     const secretAccessKey = this.configService.getOrThrow<string>(
@@ -36,15 +40,23 @@ export class StorageService implements OnModuleInit {
     );
 
     this.bucket = this.configService.getOrThrow<string>('s3.bucket');
+
+    const credentials = { accessKeyId, secretAccessKey };
     this.client = new S3Client({
       endpoint,
       region,
       forcePathStyle,
-      credentials: {
-        accessKeyId,
-        secretAccessKey,
-      },
+      credentials,
     });
+    this.signClient =
+      publicEndpoint === endpoint
+        ? this.client
+        : new S3Client({
+            endpoint: publicEndpoint,
+            region,
+            forcePathStyle,
+            credentials,
+          });
   }
 
   async onModuleInit(): Promise<void> {
@@ -90,7 +102,7 @@ export class StorageService implements OnModuleInit {
       ContentType: mime,
     });
 
-    return getSignedUrl(this.client, command, { expiresIn });
+    return getSignedUrl(this.signClient, command, { expiresIn });
   }
 
   async createPresignedDownloadUrl(
@@ -102,7 +114,7 @@ export class StorageService implements OnModuleInit {
       Key: storageKey,
     });
 
-    return getSignedUrl(this.client, command, { expiresIn });
+    return getSignedUrl(this.signClient, command, { expiresIn });
   }
 
   async headObject(
