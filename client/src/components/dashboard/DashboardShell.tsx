@@ -33,8 +33,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const isAdminUser = session?.role === "admin";
 
-  // Canvas editor is a full-page experience (no sidebar / top chrome)
-  const isStudioCanvas = /^\/dashboard\/studio\/[^/]+$/.test(pathname);
+  // Studio chat app is a full-page experience (owns its own left chat list)
+  const isStudioRoute =
+    pathname === "/dashboard/studio" ||
+    pathname.startsWith("/dashboard/studio/");
   const isAdminRoute = pathname.startsWith("/dashboard/admin");
 
   function isActive(href: string, exact?: boolean) {
@@ -42,7 +44,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     return pathname === href || pathname.startsWith(`${href}/`);
   }
 
-  if (isStudioCanvas) {
+  if (isStudioRoute) {
     return (
       <div className="min-h-dvh bg-[#070807] text-[#f3f0e8] font-[family-name:var(--font-body)]">
         {children}
