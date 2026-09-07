@@ -234,7 +234,7 @@ export function StudioChatApp() {
     try {
       const design = await addDesign({
         title: "New chat",
-        method: "ai",
+        method: "prompt",
         color: "#1a1e19",
       });
       setSidebarOpen(false);
@@ -314,7 +314,7 @@ export function StudioChatApp() {
           activeDesign?.title === "Untitled design"
             ? text.slice(0, 48)
             : activeDesign?.title,
-        method: "ai",
+        method: "prompt",
       });
 
       if (generateJobId) {
