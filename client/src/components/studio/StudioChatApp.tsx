@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
+  AudioLines,
   ChevronDown,
-  ImagePlus,
   Menu,
   MessageSquarePlus,
-  Send,
+  Mic,
+  Plus,
   Sparkles,
   Trash2,
   X,
@@ -160,10 +161,38 @@ export function StudioChatApp() {
       (o) => o.quality === imageQuality && o.size === imageSize,
     ) ?? imageOptions[0];
 
-  const selectedModelLabel = isImageMode
-    ? "Image · gpt-image-1"
-    : (studioModels.find((m) => m.id === selectedModel)?.label ??
-      selectedModel);
+  const selectedModelMeta = studioModels.find((m) => m.id === selectedModel);
+  const composerModelLabel = isImageMode
+    ? selectedImageOption
+      ? `gpt-image-1 · $${selectedImageOption.priceUsd.toFixed(3)}`
+      : "gpt-image-1"
+    : (selectedModelMeta?.label ?? selectedModel);
+
+  const imageOptionsByQuality = useMemo(() => {
+    const order: ImageQuality[] = ["low", "medium", "high"];
+    return order
+      .map((quality) => ({
+        quality,
+        options: imageOptions.filter((option) => option.quality === quality),
+      }))
+      .filter((group) => group.options.length > 0);
+  }, [imageOptions]);
+
+  const modelsByGroup = useMemo(() => {
+    const groups: Array<{
+      group: StudioAiModel["group"];
+      models: StudioAiModel[];
+    }> = [];
+    for (const model of studioModels) {
+      const existing = groups.find((entry) => entry.group === model.group);
+      if (existing) {
+        existing.models.push(model);
+      } else {
+        groups.push({ group: model.group, models: [model] });
+      }
+    }
+    return groups;
+  }, [studioModels]);
 
   useEffect(() => {
     let cancelled = false;
@@ -549,36 +578,34 @@ export function StudioChatApp() {
                   <div
                     key={`${message.at}-${index}`}
                     className={cn(
-                      "flex",
-                      isUser ? "justify-end" : "justify-start",
+                      "flex flex-col gap-1",
+                      isUser ? "items-end" : "items-start",
                     )}
                   >
+                    <span className="px-1 text-[0.65rem] font-medium tracking-[0.08em] text-[#8a877c] uppercase">
+                      {isUser ? "You" : "Driplap"}
+                    </span>
                     <div
                       className={cn(
-                        "max-w-[min(100%,34rem)] px-4 py-3 text-sm leading-relaxed",
+                        "max-w-[min(100%,34rem)] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words",
                         isUser
-                          ? "bg-[#d6ff3c] text-[#070807]"
-                          : "border border-[#f3f0e8]/12 bg-[#0c0e0c] text-[#f3f0e8]",
+                          ? "rounded-br-md bg-[#d6ff3c]/15 text-[#f3f0e8]"
+                          : "rounded-bl-md border border-[#f3f0e8]/10 bg-[#f3f0e8]/8 text-[#e8e4d8]",
                       )}
                     >
-                      {message.text ? <p className="whitespace-pre-wrap">{message.text}</p> : null}
+                      {message.text ? <p>{message.text}</p> : null}
                       {message.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={message.imageUrl}
                           alt="Generated print concept"
                           className={cn(
-                            "mt-3 max-h-80 w-full object-contain",
+                            "mt-2 max-h-80 w-full rounded-xl object-contain",
                             message.text ? "" : "mt-0",
                           )}
                         />
                       ) : null}
-                      <p
-                        className={cn(
-                          "mt-2 text-[0.65rem]",
-                          isUser ? "text-[#070807]/60" : "text-[#8a867c]",
-                        )}
-                      >
+                      <p className="mt-2 text-[0.65rem] text-[#8a867c]">
                         {formatChatTime(message.at)}
                       </p>
                     </div>
@@ -586,117 +613,33 @@ export function StudioChatApp() {
                 );
               })}
               {busy ? (
-                <p className="text-sm text-[#c8c4b8]">
-                  {generating ? "Generating image…" : "Thinking…"}
-                </p>
+                <div className="flex flex-col items-start gap-1">
+                  <span className="px-1 text-[0.65rem] font-medium tracking-[0.08em] text-[#8a877c] uppercase">
+                    Driplap
+                  </span>
+                  <div className="rounded-2xl rounded-bl-md bg-[#f3f0e8]/8 px-3.5 py-2.5 text-sm text-[#8a877c]">
+                    {generating ? "Generating image…" : "Thinking…"}
+                  </div>
+                </div>
               ) : null}
             </div>
           )}
         </div>
 
         {activeId ? (
-          <div className="shrink-0 border-t border-[#f3f0e8]/10 px-3 py-3 md:px-8 md:py-4">
-            <form
-              onSubmit={(e) => void onSubmit(e)}
-              className="mx-auto max-w-2xl"
-            >
-              <div className="relative mb-2">
-                <button
-                  type="button"
-                  onClick={() => setModelPickerOpen((v) => !v)}
-                  className="inline-flex items-center gap-1.5 border border-[#f3f0e8]/15 bg-[#0c0e0c] px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-[#c8c4b8] transition hover:border-[#d6ff3c] hover:text-[#d6ff3c]"
-                >
-                  {isImageMode ? (
-                    <ImagePlus size={13} strokeWidth={2.25} />
-                  ) : (
-                    <Sparkles size={13} strokeWidth={2.25} />
-                  )}
-                  {selectedModelLabel}
-                  <ChevronDown size={13} />
-                </button>
+          <div className="shrink-0 px-3 pb-5 pt-3 md:px-8">
+            <div className="mx-auto w-[min(100%,36rem)]">
+              {!openaiConfigured ? (
+                <p className="mb-2 px-1 text-xs text-[#c8c4b8]">
+                  Live AI needs OPENAI_API_KEY in backend/.env — using local
+                  fallback replies for now.
+                </p>
+              ) : null}
 
-                {modelPickerOpen ? (
-                  <div className="absolute bottom-[calc(100%+0.5rem)] left-0 z-20 flex max-h-[min(16rem,42vh)] w-[min(100vw-2rem,20rem)] flex-col border border-[#f3f0e8]/15 bg-[#0c0e0c] shadow-[0_16px_48px_rgba(0,0,0,0.45)]">
-                    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
-                      <p className="px-2 py-1 text-[0.65rem] uppercase tracking-[0.12em] text-[#8a867c]">
-                        Generate
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedModel(STUDIO_IMAGE_MODEL_ID);
-                          setModelPickerOpen(false);
-                        }}
-                        className={cn(
-                          "flex w-full flex-col items-start gap-0.5 px-2 py-2 text-left text-sm transition hover:bg-[#f3f0e8]/6",
-                          isImageMode ? "text-[#d6ff3c]" : "text-[#f3f0e8]",
-                        )}
-                      >
-                        <span className="font-medium">Image · gpt-image-1</span>
-                        <span className="text-xs text-[#8a867c]">
-                          Generate a print concept from your prompt
-                        </span>
-                      </button>
-
-                      {isImageMode ? (
-                        <div className="mt-1 space-y-1 border-t border-[#f3f0e8]/10 pt-2">
-                          {imageOptions.map((option) => {
-                            const selected =
-                              option.quality === imageQuality &&
-                              option.size === imageSize;
-                            return (
-                              <button
-                                key={`${option.quality}-${option.size}`}
-                                type="button"
-                                onClick={() => {
-                                  setImageQuality(option.quality);
-                                  setImageSize(option.size);
-                                }}
-                                className={cn(
-                                  "flex w-full items-center justify-between px-2 py-1.5 text-left text-xs transition hover:bg-[#f3f0e8]/6",
-                                  selected
-                                    ? "text-[#d6ff3c]"
-                                    : "text-[#c8c4b8]",
-                                )}
-                              >
-                                <span>{option.label}</span>
-                                <span>${option.priceUsd.toFixed(3)}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      ) : null}
-
-                      <p className="mt-2 px-2 py-1 text-[0.65rem] uppercase tracking-[0.12em] text-[#8a867c]">
-                        Chat models
-                      </p>
-                      {studioModels.map((model) => (
-                        <button
-                          key={model.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedModel(model.id);
-                            setModelPickerOpen(false);
-                          }}
-                          className={cn(
-                            "flex w-full flex-col items-start gap-0.5 px-2 py-2 text-left text-sm transition hover:bg-[#f3f0e8]/6",
-                            selectedModel === model.id
-                              ? "text-[#d6ff3c]"
-                              : "text-[#f3f0e8]",
-                          )}
-                        >
-                          <span className="font-medium">{model.label}</span>
-                          <span className="text-xs text-[#8a867c]">
-                            {model.description}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="flex items-end gap-2 border border-[#f3f0e8]/15 bg-[#0c0e0c] p-2">
+              <form
+                onSubmit={(e) => void onSubmit(e)}
+                className="relative w-full rounded-2xl border border-[#f3f0e8]/14 bg-[#121511]/95 shadow-[0_0_0_1px_rgba(214,255,60,0.04),0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-md"
+              >
                 <textarea
                   ref={textareaRef}
                   value={chatInput}
@@ -704,38 +647,148 @@ export function StudioChatApp() {
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
-                      void onSubmit(e);
+                      e.currentTarget.form?.requestSubmit();
                     }
                   }}
-                  rows={1}
+                  rows={2}
+                  disabled={busy}
                   placeholder={
                     isImageMode
                       ? "Describe the print to generate…"
-                      : "Message the studio agent…"
+                      : "Ask about your design…"
                   }
-                  disabled={busy}
-                  className="min-h-[2.75rem] max-h-40 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-[#f3f0e8] outline-none placeholder:text-[#8a867c] disabled:opacity-50"
+                  className="min-h-[3.25rem] w-full resize-none bg-transparent px-4 pt-3.5 pb-1 text-[0.95rem] leading-relaxed text-[#f3f0e8] outline-none placeholder:text-[#8a877c] disabled:cursor-not-allowed disabled:opacity-50"
                 />
-                <button
-                  type="submit"
-                  disabled={busy || !chatInput.trim()}
-                  className="grid size-10 shrink-0 place-items-center bg-[#d6ff3c] text-[#070807] transition hover:bg-[#e2ff6a] disabled:opacity-40"
-                  aria-label="Send"
-                >
-                  <Send size={16} strokeWidth={2.25} />
-                </button>
-              </div>
-              {isImageMode && selectedImageOption ? (
-                <p className="mt-2 text-[0.7rem] text-[#8a867c]">
-                  Image mode · {selectedImageOption.label} · $
-                  {selectedImageOption.priceUsd.toFixed(3)}
-                </p>
-              ) : (
-                <p className="mt-2 text-[0.7rem] text-[#8a867c]">
-                  Enter to send · Shift+Enter for a new line
-                </p>
-              )}
-            </form>
+
+                <div className="flex items-center justify-between gap-3 px-2.5 pb-2.5 pt-1">
+                  <button
+                    type="button"
+                    aria-label="Add image or attachment"
+                    onClick={() =>
+                      toast.message("Attachments from chat are coming soon.")
+                    }
+                    className="grid size-8 place-items-center rounded-lg text-[#f3f0e8]/80 transition hover:bg-[#f3f0e8]/8 hover:text-[#d6ff3c]"
+                  >
+                    <Plus size={18} strokeWidth={2} />
+                  </button>
+
+                  <div className="relative flex items-center gap-0.5 sm:gap-1">
+                    {modelPickerOpen ? (
+                      <div className="absolute bottom-[calc(100%+0.5rem)] right-0 z-40 max-h-[min(16rem,42vh)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-xl border border-[#f3f0e8]/14 bg-[#121511] p-2 shadow-[0_16px_40px_rgba(0,0,0,0.55)]">
+                        <div className="mb-2">
+                          <p className="px-2 pb-1 text-[0.65rem] font-semibold tracking-[0.12em] text-[#8a877c] uppercase">
+                            Image
+                          </p>
+                          <p className="px-2 pb-1.5 text-[0.7rem] text-[#8a877c]">
+                            gpt-image-1 — pick a price, then describe the print
+                          </p>
+                          {imageOptionsByQuality.map(({ quality, options }) => (
+                            <div key={quality} className="mb-1.5 last:mb-0">
+                              <p className="px-2 pb-0.5 text-[0.6rem] tracking-[0.1em] text-[#8a877c] uppercase">
+                                {quality}
+                              </p>
+                              {options.map((option) => {
+                                const active =
+                                  isImageMode &&
+                                  option.quality === imageQuality &&
+                                  option.size === imageSize;
+                                return (
+                                  <button
+                                    key={`${option.quality}-${option.size}`}
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedModel(STUDIO_IMAGE_MODEL_ID);
+                                      setImageQuality(option.quality);
+                                      setImageSize(option.size);
+                                      setModelPickerOpen(false);
+                                    }}
+                                    className={cn(
+                                      "flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition",
+                                      active
+                                        ? "bg-[#d6ff3c]/12 text-[#d6ff3c]"
+                                        : "text-[#f3f0e8] hover:bg-[#f3f0e8]/8",
+                                    )}
+                                  >
+                                    <span>{option.size}</span>
+                                    <span className="text-[0.7rem] text-[#8a877c]">
+                                      ${option.priceUsd.toFixed(3)}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          ))}
+                        </div>
+
+                        {modelsByGroup.map(({ group, models }) => (
+                          <div key={group} className="mb-2 last:mb-0">
+                            <p className="px-2 pb-1 text-[0.65rem] font-semibold tracking-[0.12em] text-[#8a877c] uppercase">
+                              {group}
+                            </p>
+                            {models.map((model) => {
+                              const active =
+                                !isImageMode && model.id === selectedModel;
+                              return (
+                                <button
+                                  key={model.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedModel(model.id);
+                                    setModelPickerOpen(false);
+                                  }}
+                                  className={cn(
+                                    "flex w-full flex-col items-start rounded-lg px-2 py-1.5 text-left transition",
+                                    active
+                                      ? "bg-[#d6ff3c]/12 text-[#d6ff3c]"
+                                      : "text-[#f3f0e8] hover:bg-[#f3f0e8]/8",
+                                  )}
+                                >
+                                  <span className="text-sm font-medium">
+                                    {model.label}
+                                  </span>
+                                  <span className="text-[0.7rem] text-[#8a877c]">
+                                    {model.description}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    <button
+                      type="button"
+                      onClick={() => setModelPickerOpen((open) => !open)}
+                      className="inline-flex max-w-[14rem] items-center gap-1 rounded-lg px-2 py-1.5 text-sm text-[#f3f0e8] transition hover:bg-[#f3f0e8]/8"
+                      aria-label="Choose model or image quality"
+                      aria-expanded={modelPickerOpen}
+                    >
+                      <span className="truncate">{composerModelLabel}</span>
+                      <ChevronDown size={14} strokeWidth={2} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Voice input"
+                      onClick={() =>
+                        toast.message("Voice input is coming soon.")
+                      }
+                      className="grid size-8 place-items-center rounded-lg text-[#c8c4b8] transition hover:bg-[#f3f0e8]/8 hover:text-[#d6ff3c]"
+                    >
+                      <Mic size={16} strokeWidth={2} />
+                    </button>
+                    <button
+                      type="submit"
+                      aria-label="Send prompt"
+                      disabled={busy || !chatInput.trim()}
+                      className="grid size-8 place-items-center rounded-lg text-[#d6ff3c] transition hover:bg-[#d6ff3c]/15 disabled:cursor-not-allowed disabled:opacity-35"
+                    >
+                      <AudioLines size={16} strokeWidth={2} />
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
           </div>
         ) : null}
       </div>
