@@ -9,6 +9,7 @@ import {
   MessageSquarePlus,
   Send,
   Sparkles,
+  Trash2,
   X,
 } from "lucide-react";
 import {
@@ -21,6 +22,7 @@ import {
 import { toast } from "sonner";
 import { useDashboard } from "@/components/dashboard/DashboardProvider";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ApiError } from "@/lib/api/errors";
 import type { DesignChatMessage } from "@/lib/api/designs";
 import {
@@ -112,10 +114,13 @@ export function StudioChatApp() {
   const router = useRouter();
   const params = useParams<{ id?: string }>();
   const activeId = typeof params.id === "string" ? params.id : undefined;
-  const { ready, designs, addDesign, updateDesign } = useDashboard();
+  const { ready, designs, addDesign, updateDesign, removeDesign } =
+    useDashboard();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Design | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [chat, setChat] = useState<DesignChatMessage[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
   const [chatInput, setChatInput] = useState("");
@@ -243,6 +248,25 @@ export function StudioChatApp() {
       toast.error(studioApiMessage(error, "Could not create chat."));
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function confirmDeleteChat() {
+    if (!deleteTarget) return;
+    const deletingId = deleteTarget.id;
+    setDeleting(true);
+    try {
+      await removeDesign(deletingId);
+      toast.success("Chat deleted");
+      setDeleteTarget(null);
+      if (activeId === deletingId) {
+        setChat([]);
+        router.push("/dashboard/studio");
+      }
+    } catch (error) {
+      toast.error(studioApiMessage(error, "Could not delete chat."));
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -401,24 +425,40 @@ export function StudioChatApp() {
             sortedDesigns.map((design) => {
               const active = design.id === activeId;
               return (
-                <Link
+                <div
                   key={design.id}
-                  href={`/dashboard/studio/${design.id}`}
-                  onClick={() => setSidebarOpen(false)}
                   className={cn(
-                    "block rounded-md px-3 py-2.5 transition",
+                    "group flex items-stretch gap-1 rounded-md transition",
                     active
                       ? "bg-[#d6ff3c]/12 text-[#f3f0e8]"
                       : "text-[#c8c4b8] hover:bg-[#f3f0e8]/6 hover:text-[#f3f0e8]",
                   )}
                 >
-                  <p className="truncate text-sm font-medium text-[#f3f0e8]">
-                    {design.title || "Untitled chat"}
-                  </p>
-                  <p className="mt-0.5 line-clamp-1 text-xs text-[#8a867c]">
-                    {chatPreview(design)}
-                  </p>
-                </Link>
+                  <Link
+                    href={`/dashboard/studio/${design.id}`}
+                    onClick={() => setSidebarOpen(false)}
+                    className="min-w-0 flex-1 px-3 py-2.5"
+                  >
+                    <p className="truncate text-sm font-medium text-[#f3f0e8]">
+                      {design.title || "Untitled chat"}
+                    </p>
+                    <p className="mt-0.5 line-clamp-1 text-xs text-[#8a867c]">
+                      {chatPreview(design)}
+                    </p>
+                  </Link>
+                  <button
+                    type="button"
+                    aria-label={`Delete ${design.title || "chat"}`}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      setDeleteTarget(design);
+                    }}
+                    className="mr-1 grid size-9 shrink-0 place-items-center self-center text-[#8a867c] opacity-100 transition hover:text-red-300 md:opacity-0 md:group-hover:opacity-100"
+                  >
+                    <Trash2 size={14} strokeWidth={2.25} />
+                  </button>
+                </div>
               );
             })
           )}
@@ -453,6 +493,16 @@ export function StudioChatApp() {
               Talk through ideas, then generate a print concept.
             </p>
           </div>
+          {activeDesign ? (
+            <button
+              type="button"
+              onClick={() => setDeleteTarget(activeDesign)}
+              className="inline-flex items-center gap-1.5 border border-[#f3f0e8]/20 px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-[#c8c4b8] transition hover:border-red-300 hover:text-red-300"
+            >
+              <Trash2 size={13} strokeWidth={2.25} />
+              Delete
+            </button>
+          ) : null}
           {!openaiConfigured ? (
             <span className="hidden text-[0.65rem] uppercase tracking-[0.1em] text-[#ff8f7a] sm:inline">
               AI offline
@@ -566,78 +616,82 @@ export function StudioChatApp() {
                 </button>
 
                 {modelPickerOpen ? (
-                  <div className="absolute bottom-[calc(100%+0.5rem)] left-0 z-20 w-[min(100vw-2rem,20rem)] border border-[#f3f0e8]/15 bg-[#0c0e0c] p-2 shadow-[0_16px_48px_rgba(0,0,0,0.45)]">
-                    <p className="px-2 py-1 text-[0.65rem] uppercase tracking-[0.12em] text-[#8a867c]">
-                      Generate
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedModel(STUDIO_IMAGE_MODEL_ID);
-                        setModelPickerOpen(false);
-                      }}
-                      className={cn(
-                        "flex w-full flex-col items-start gap-0.5 px-2 py-2 text-left text-sm transition hover:bg-[#f3f0e8]/6",
-                        isImageMode ? "text-[#d6ff3c]" : "text-[#f3f0e8]",
-                      )}
-                    >
-                      <span className="font-medium">Image · gpt-image-1</span>
-                      <span className="text-xs text-[#8a867c]">
-                        Generate a print concept from your prompt
-                      </span>
-                    </button>
-
-                    {isImageMode ? (
-                      <div className="mt-1 space-y-1 border-t border-[#f3f0e8]/10 pt-2">
-                        {imageOptions.map((option) => {
-                          const selected =
-                            option.quality === imageQuality &&
-                            option.size === imageSize;
-                          return (
-                            <button
-                              key={`${option.quality}-${option.size}`}
-                              type="button"
-                              onClick={() => {
-                                setImageQuality(option.quality);
-                                setImageSize(option.size);
-                              }}
-                              className={cn(
-                                "flex w-full items-center justify-between px-2 py-1.5 text-left text-xs transition hover:bg-[#f3f0e8]/6",
-                                selected ? "text-[#d6ff3c]" : "text-[#c8c4b8]",
-                              )}
-                            >
-                              <span>{option.label}</span>
-                              <span>${option.priceUsd.toFixed(3)}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    ) : null}
-
-                    <p className="mt-2 px-2 py-1 text-[0.65rem] uppercase tracking-[0.12em] text-[#8a867c]">
-                      Chat models
-                    </p>
-                    {studioModels.map((model) => (
+                  <div className="absolute bottom-[calc(100%+0.5rem)] left-0 z-20 flex max-h-[min(16rem,42vh)] w-[min(100vw-2rem,20rem)] flex-col border border-[#f3f0e8]/15 bg-[#0c0e0c] shadow-[0_16px_48px_rgba(0,0,0,0.45)]">
+                    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
+                      <p className="px-2 py-1 text-[0.65rem] uppercase tracking-[0.12em] text-[#8a867c]">
+                        Generate
+                      </p>
                       <button
-                        key={model.id}
                         type="button"
                         onClick={() => {
-                          setSelectedModel(model.id);
+                          setSelectedModel(STUDIO_IMAGE_MODEL_ID);
                           setModelPickerOpen(false);
                         }}
                         className={cn(
                           "flex w-full flex-col items-start gap-0.5 px-2 py-2 text-left text-sm transition hover:bg-[#f3f0e8]/6",
-                          selectedModel === model.id
-                            ? "text-[#d6ff3c]"
-                            : "text-[#f3f0e8]",
+                          isImageMode ? "text-[#d6ff3c]" : "text-[#f3f0e8]",
                         )}
                       >
-                        <span className="font-medium">{model.label}</span>
+                        <span className="font-medium">Image · gpt-image-1</span>
                         <span className="text-xs text-[#8a867c]">
-                          {model.description}
+                          Generate a print concept from your prompt
                         </span>
                       </button>
-                    ))}
+
+                      {isImageMode ? (
+                        <div className="mt-1 space-y-1 border-t border-[#f3f0e8]/10 pt-2">
+                          {imageOptions.map((option) => {
+                            const selected =
+                              option.quality === imageQuality &&
+                              option.size === imageSize;
+                            return (
+                              <button
+                                key={`${option.quality}-${option.size}`}
+                                type="button"
+                                onClick={() => {
+                                  setImageQuality(option.quality);
+                                  setImageSize(option.size);
+                                }}
+                                className={cn(
+                                  "flex w-full items-center justify-between px-2 py-1.5 text-left text-xs transition hover:bg-[#f3f0e8]/6",
+                                  selected
+                                    ? "text-[#d6ff3c]"
+                                    : "text-[#c8c4b8]",
+                                )}
+                              >
+                                <span>{option.label}</span>
+                                <span>${option.priceUsd.toFixed(3)}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : null}
+
+                      <p className="mt-2 px-2 py-1 text-[0.65rem] uppercase tracking-[0.12em] text-[#8a867c]">
+                        Chat models
+                      </p>
+                      {studioModels.map((model) => (
+                        <button
+                          key={model.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedModel(model.id);
+                            setModelPickerOpen(false);
+                          }}
+                          className={cn(
+                            "flex w-full flex-col items-start gap-0.5 px-2 py-2 text-left text-sm transition hover:bg-[#f3f0e8]/6",
+                            selectedModel === model.id
+                              ? "text-[#d6ff3c]"
+                              : "text-[#f3f0e8]",
+                          )}
+                        >
+                          <span className="font-medium">{model.label}</span>
+                          <span className="text-xs text-[#8a867c]">
+                            {model.description}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -685,6 +739,32 @@ export function StudioChatApp() {
           </div>
         ) : null}
       </div>
+
+      <ConfirmDialog
+        open={deleteTarget != null}
+        title="Delete this chat?"
+        description={
+          deleteTarget ? (
+            <>
+              This permanently deletes{" "}
+              <span className="text-[#f3f0e8]">
+                {deleteTarget.title || "Untitled chat"}
+              </span>{" "}
+              and its messages. This cannot be undone.
+            </>
+          ) : (
+            "This permanently deletes the chat and its messages."
+          )
+        }
+        confirmLabel="Delete chat"
+        cancelLabel="Keep chat"
+        tone="danger"
+        confirming={deleting}
+        onConfirm={() => void confirmDeleteChat()}
+        onCancel={() => {
+          if (!deleting) setDeleteTarget(null);
+        }}
+      />
     </div>
   );
 }
