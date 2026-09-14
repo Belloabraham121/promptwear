@@ -12,7 +12,6 @@ import {
   PanelLeftOpen,
   Plus,
   Send,
-  Sparkles,
   Trash2,
   X,
 } from "lucide-react";
@@ -26,6 +25,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { useVoiceDictation } from "@/hooks/useVoiceDictation";
+import { AnimatedOrb } from "@/components/studio/AnimatedOrb";
 import { VoiceWaveform } from "@/components/studio/VoiceWaveform";
 import { uploadAsset } from "@/lib/api/assets";
 import { useDashboard } from "@/components/dashboard/DashboardProvider";
@@ -647,7 +647,7 @@ export function StudioChatApp() {
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-3 py-6 md:px-8">
           {!activeId ? (
             <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center text-center">
-              <Sparkles className="text-[#5a6b14]" size={28} />
+              <AnimatedOrb size={64} />
               <h1 className="mt-4 font-[family-name:var(--font-display)] text-3xl font-extrabold tracking-[-0.04em]">
                 What should we design?
               </h1>
