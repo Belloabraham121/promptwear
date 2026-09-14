@@ -144,36 +144,6 @@ export function GhostLink({
   );
 }
 
-export function DesignSwatch({
-  color,
-  title,
-  className,
-}: {
-  color: string;
-  title: string;
-  className?: string;
-}) {
-  return (
-    <div
-      className={cn(
-        "relative aspect-[4/5] overflow-hidden rounded-2xl border border-[#0b1f1c]/10",
-        className,
-      )}
-      style={{
-        background: `linear-gradient(160deg, #ffffff 0%, ${color}2e 45%, #dcebe6 100%)`,
-      }}
-    >
-      <div
-        className="absolute inset-[18%_22%_28%] rounded-sm border border-[#0b1f1c]/10"
-        style={{ backgroundColor: color === "#f3f0e8" ? "#ffffff" : color }}
-      />
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-white via-white/85 to-transparent p-3">
-        <p className="truncate text-sm font-medium text-[#0b1f1c]">{title}</p>
-      </div>
-    </div>
-  );
-}
-
 export function EmptyState({
   title,
   body,

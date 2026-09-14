@@ -4,11 +4,11 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useDashboard } from "@/components/dashboard/DashboardProvider";
 import {
-  DesignSwatch,
   GhostLink,
   PageHeader,
   PrimaryLink,
 } from "@/components/dashboard/ui";
+import { ChatGarmentCard } from "@/components/dashboard/GarmentArt";
 
 export default function DesignDetailPage() {
   const params = useParams<{ id: string }>();
@@ -42,7 +42,12 @@ export default function DesignDetailPage() {
       />
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,22rem)_1fr]">
-        <DesignSwatch color={design.color} title={design.title} />
+        <ChatGarmentCard
+          title={design.title}
+          text={design.prompt}
+          method={design.method}
+          messageCount={design.chat.length}
+        />
 
         <div className="space-y-6">
           <dl className="grid gap-4 sm:grid-cols-2">

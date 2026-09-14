@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useDashboard } from "@/components/dashboard/DashboardProvider";
 import {
-  DesignSwatch,
   EmptyState,
   PageHeader,
   PrimaryLink,
 } from "@/components/dashboard/ui";
+import { ChatGarmentCard } from "@/components/dashboard/GarmentArt";
 
 export default function DesignsPage() {
   const { ready, designs } = useDashboard();
@@ -36,21 +36,14 @@ export default function DesignsPage() {
             <Link
               key={design.id}
               href={`/dashboard/studio/${design.id}`}
-              className="block rounded-2xl border border-[#0b1f1c]/10 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)] transition hover:border-[#d6ff3c]/40"
+              className="block transition hover:opacity-95"
             >
-              <DesignSwatch
-                color={design.color}
+              <ChatGarmentCard
                 title={design.title}
-                className="border-0"
+                text={design.prompt}
+                method={design.method}
+                messageCount={design.chat.length}
               />
-              <div className="space-y-1 p-4">
-                <p className="text-[0.65rem] uppercase tracking-[0.14em] text-[#3f4d0e]">
-                  {design.method}
-                </p>
-                <p className="line-clamp-2 text-sm text-[#52706a]">
-                  {design.prompt || "No prompt saved"}
-                </p>
-              </div>
             </Link>
           ))}
         </div>

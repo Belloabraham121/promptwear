@@ -4,13 +4,13 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { useDashboard } from "@/components/dashboard/DashboardProvider";
 import {
-  DesignSwatch,
   GhostLink,
   PageHeader,
   PrimaryLink,
   StatCard,
   StatusPill,
 } from "@/components/dashboard/ui";
+import { ChatGarmentCard } from "@/components/dashboard/GarmentArt";
 import { formatNaira, totalQuantity } from "@/lib/dashboard/pricing";
 
 export default function DashboardOverviewPage() {
@@ -74,10 +74,12 @@ export default function DashboardOverviewPage() {
                 href={`/dashboard/studio/${design.id}`}
                 className="group block transition hover:opacity-95"
               >
-                <DesignSwatch color={design.color} title={design.title} />
-                <p className="mt-2 truncate text-xs text-[#52706a]">
-                  {design.method} · {design.prompt}
-                </p>
+                <ChatGarmentCard
+                  title={design.title}
+                  text={design.prompt}
+                  method={design.method}
+                  messageCount={design.chat.length}
+                />
               </Link>
             ))}
           </div>
