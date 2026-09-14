@@ -14,7 +14,7 @@ function Bone({ className }: { className?: string }) {
 /** Full-page gate skeleton (auth / admin access). */
 export function AdminGateSkeleton() {
   return (
-    <div className="flex min-h-dvh bg-[#edf4f1] text-[#0b1f1c]">
+    <div className="flex min-h-dvh bg-[#f3f0e8] text-[#0b1f1c]">
       <aside className="hidden w-60 shrink-0 border-r border-[#0b1f1c]/10 p-6 md:block">
         <Bone className="h-6 w-24" />
         <Bone className="mt-2 h-3 w-14" />

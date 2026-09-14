@@ -33,7 +33,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-dvh bg-[#edf4f1] px-4 py-6 md:px-6">
+      <div className="min-h-dvh bg-[#f3f0e8] px-4 py-6 md:px-6">
         <AdminUserSkeleton />
       </div>
     );

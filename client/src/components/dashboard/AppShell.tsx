@@ -54,7 +54,7 @@ export function AppShell({
   const initial = (userName.trim()[0] || "•").toUpperCase();
 
   return (
-    <div className="min-h-dvh bg-[#edf4f1] font-[family-name:var(--font-body)] text-[#0b1f1c]">
+    <div className="min-h-dvh bg-[#f3f0e8] font-[family-name:var(--font-body)] text-[#0b1f1c]">
       <div className="flex min-h-dvh w-full items-start">
         {/* Detached desktop sidebar */}
         {!collapsed ? (
@@ -98,7 +98,7 @@ export function AppShell({
               })}
             </nav>
 
-            <div className="mt-auto rounded-xl border border-[#0b1f1c]/10 bg-[#edf4f1] p-3">
+            <div className="mt-auto rounded-xl border border-[#0b1f1c]/10 bg-[#f3f0e8] p-3">
               <div className="flex items-center gap-2.5">
                 <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#0b1f1c] text-sm font-bold text-white">
                   {initial}
@@ -139,7 +139,7 @@ export function AppShell({
         {/* Main column */}
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Mobile top bar */}
-          <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-[#0b1f1c]/10 bg-[#edf4f1]/92 px-4 py-3 backdrop-blur md:hidden">
+          <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-[#0b1f1c]/10 bg-[#f3f0e8]/92 px-4 py-3 backdrop-blur md:hidden">
             <BrandLogo href={brandHref} size="sm" label={brandLabel} />
             <button
               type="button"
