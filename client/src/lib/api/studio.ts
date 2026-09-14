@@ -106,6 +106,7 @@ export function sendChat(
     generateImage?: boolean;
     quality?: ImageQuality;
     size?: ImageSize;
+    imageAssetIds?: string[];
   },
 ) {
   return api.post<SendChatResponse>(`/designs/${designId}/chat`, {
@@ -114,6 +115,9 @@ export function sendChat(
     ...(options?.generateImage ? { generateImage: true } : {}),
     ...(options?.quality ? { quality: options.quality } : {}),
     ...(options?.size ? { size: options.size } : {}),
+    ...(options?.imageAssetIds?.length
+      ? { imageAssetIds: options.imageAssetIds }
+      : {}),
   });
 }
 

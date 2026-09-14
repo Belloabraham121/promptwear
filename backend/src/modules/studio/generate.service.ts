@@ -45,6 +45,8 @@ export type GenerateJob = {
   createdAt: string;
   completedAt?: string;
   error?: string;
+  /** LLM-enhanced print brief (option C) — overrides raw chat text. */
+  imagePrompt?: string;
   result?: GenerateJobResult;
 };
 
@@ -93,6 +95,7 @@ export class GenerateService {
     panel?: PatternPanel,
     qualityRaw?: string,
     sizeRaw?: string,
+    imagePrompt?: string,
   ): Promise<GenerateJobResponse> {
     const design = await this.prisma.design.findFirst({
       where: { id: designId, userId },
@@ -131,6 +134,7 @@ export class GenerateService {
       size,
       status: 'queued',
       createdAt: new Date().toISOString(),
+      ...(imagePrompt?.trim() ? { imagePrompt: imagePrompt.trim() } : {}),
     };
     this.jobs.set(jobId, job);
 
@@ -241,6 +245,7 @@ export class GenerateService {
         design.prompt,
         normalizeChat(design.chat),
         job.panel,
+        job.imagePrompt,
       );
 
       const option = findImageOption(job.quality, job.size);
@@ -304,17 +309,24 @@ export class GenerateService {
     designPrompt: string,
     chat: Array<{ role: string; text: string }>,
     panel: PatternPanel,
+    override?: string,
   ): string {
+    const brief = (
+      override?.trim() ||
+      [...chat].reverse().find((m) => m.role === 'user')?.text ||
+      designPrompt ||
+      'abstract apparel graphic'
+    ).trim().slice(0, 1_200);
+    // Style-neutral: the enhancer already shaped the brief (photorealistic,
+    // 3D, mockup on a person, flat vector, etc.). Only nudge quality,
+    // never force a style.
+    if (override?.trim()) {
+      return `${brief} High detail, clean composition.`;
+    }
     const panelLabel = PANEL_LABELS[panel];
-    const lastUser = [...chat].reverse().find((m) => m.role === 'user')?.text;
-    const brief = (lastUser || designPrompt || 'abstract graphic tee print').trim();
-
     return [
-      `Create a print-ready graphic for the ${panelLabel} of a t-shirt.`,
-      'Flat artwork only — no mockup, no worn shirt, no hanger, no model.',
-      'Centered composition that works as a textile print on fabric.',
-      'Clean edges, high contrast, suitable for DTG/DTF printing.',
-      `Design brief: ${brief.slice(0, 1_200)}`,
+      `Design for a custom apparel/merch piece (${panelLabel}). Honor the requested garment, style, scene, or mockup described below; default to a centered graphic composition only when none is specified.`,
+      `Brief: ${brief}`,
     ].join(' ');
   }
 

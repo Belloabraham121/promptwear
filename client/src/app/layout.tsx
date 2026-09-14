@@ -37,7 +37,10 @@ export default function RootLayout({
       lang="en"
       className={`${syne.variable} ${instrument.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#070807] text-[#f3f0e8]">
+      <body
+        className="min-h-full flex flex-col bg-[#070807] text-[#f3f0e8]"
+        suppressHydrationWarning
+      >
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

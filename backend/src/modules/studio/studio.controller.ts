@@ -48,6 +48,7 @@ export class StudioController {
       generateImage: dto.generateImage,
       quality: dto.quality,
       size: dto.size,
+      imageAssetIds: dto.imageAssetIds,
     });
   }
 

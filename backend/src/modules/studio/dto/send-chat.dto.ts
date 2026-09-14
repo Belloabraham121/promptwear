@@ -1,4 +1,6 @@
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsEnum,
   IsIn,
@@ -24,6 +26,13 @@ export class SendChatDto {
   @IsString()
   @IsIn(ALLOWED_MODEL_IDS)
   model?: string = DEFAULT_STUDIO_AI_MODEL;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(3)
+  @IsString({ each: true })
+  @MaxLength(128, { each: true })
+  imageAssetIds?: string[];
 
   /** When true, also enqueue gpt-image-1 for the active panel. */
   @IsOptional()
