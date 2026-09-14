@@ -13,6 +13,13 @@ export type DesignStatus = 'draft' | 'saved' | 'ordered';
 
 export type PanelJson = Record<string, unknown> | null;
 
+export type ChatAttachment = {
+  assetId: string;
+  /** Fresh presigned download URL, resolved on read (never persisted). */
+  url?: string;
+  mime?: string;
+};
+
 export type DesignChatMessage = {
   role: 'user' | 'assistant';
   text: string;
@@ -20,6 +27,8 @@ export type DesignChatMessage = {
   /** Optional print preview from gpt-image-1 */
   imageUrl?: string;
   imageAssetId?: string;
+  /** User-uploaded reference images (asset-backed). */
+  attachments?: ChatAttachment[];
 };
 
 export type DesignResponse = {

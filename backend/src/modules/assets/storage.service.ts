@@ -133,8 +133,22 @@ export class StorageService implements OnModuleInit {
     };
   }
 
-  async putObject(
+  async getObjectBytes(
     storageKey: string,
+  ): Promise<{ bytes: Buffer; contentType?: string }> {
+    const response = await this.client.send(
+      new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: storageKey,
+      }),
+    );
+    const body = response.Body;
+    if (!body) throw new Error('Empty object body');
+    const bytes = Buffer.from(await (body as { transformToByteArray: () => Promise<Uint8Array> }).transformToByteArray());
+    return { bytes, contentType: response.ContentType };
+  }
+
+  async putObject(    storageKey: string,
     body: Buffer,
     contentType: string,
   ): Promise<void> {

@@ -57,6 +57,25 @@ export function normalizeChat(value: Prisma.JsonValue): DesignChatMessage[] {
 
     const imageUrl = (entry as { imageUrl?: unknown }).imageUrl;
     const imageAssetId = (entry as { imageAssetId?: unknown }).imageAssetId;
+    const rawAttachments = (entry as { attachments?: unknown }).attachments;
+    const attachments = Array.isArray(rawAttachments)
+      ? rawAttachments
+          .filter(
+            (a): a is { assetId: string } =>
+              typeof a === 'object' &&
+              a !== null &&
+              typeof (a as { assetId?: unknown }).assetId === 'string',
+          )
+          .slice(0, 3)
+          .map((a) => {
+            const rec = a as { assetId: string; url?: unknown; mime?: unknown };
+            return {
+              assetId: rec.assetId,
+              ...(typeof rec.url === 'string' && rec.url ? { url: rec.url } : {}),
+              ...(typeof rec.mime === 'string' && rec.mime ? { mime: rec.mime } : {}),
+            };
+          })
+      : undefined;
     messages.push({
       role,
       text,
@@ -65,6 +84,7 @@ export function normalizeChat(value: Prisma.JsonValue): DesignChatMessage[] {
       ...(typeof imageAssetId === 'string' && imageAssetId
         ? { imageAssetId }
         : {}),
+      ...(attachments?.length ? { attachments } : {}),
     });
   }
 

@@ -9,12 +9,19 @@ import type {
 } from "@/lib/dashboard/types";
 import { EMPTY_PANELS } from "@/lib/dashboard/types";
 
+export type ChatAttachment = {
+  assetId: string;
+  url?: string;
+  mime?: string;
+};
+
 export type DesignChatMessage = {
   role: "user" | "assistant";
   text: string;
   at: string;
   imageUrl?: string;
   imageAssetId?: string;
+  attachments?: ChatAttachment[];
 };
 
 export type DesignResponse = {

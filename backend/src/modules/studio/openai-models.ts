@@ -12,6 +12,13 @@ export type StudioAiModel = {
 /** Allowlist only — never accept arbitrary model strings from the client. */
 export const STUDIO_AI_MODELS: readonly StudioAiModel[] = [
   {
+    id: 'gpt-5.6-luna',
+    label: 'GPT-5.6 Luna',
+    description: 'Latest nano-tier — fastest & cheapest',
+    family: 'reasoning',
+    group: 'Latest',
+  },
+  {
     id: 'gpt-5.2',
     label: 'GPT-5.2',
     description: 'Newest flagship — best quality',

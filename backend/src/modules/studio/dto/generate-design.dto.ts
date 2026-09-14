@@ -6,7 +6,7 @@ export class GenerateDesignDto {
   @IsEnum(['front', 'back', 'sleeveL', 'sleeveR', 'collar'])
   panel?: PatternPanel;
 
-  /** gpt-image-1 render fidelity — higher = sharper print on the tee. */
+  /** gpt-image-1 render fidelity — higher = sharper design on the piece. */
   @IsOptional()
   @IsEnum(['low', 'medium', 'high'])
   quality?: 'low' | 'medium' | 'high';
