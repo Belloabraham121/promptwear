@@ -32,8 +32,7 @@ export function AnimatedOrb({
           width: size,
           height: size,
           backgroundColor: "#f3f0e8",
-          boxShadow:
-            "0 0 0 1px rgba(11,31,28,0.12), 0 12px 32px rgba(11,31,28,0.18)",
+          boxShadow: "0 8px 24px rgba(11,31,28,0.10)",
           animation: "driplap-orb-breathe 5s ease-in-out infinite",
         }}
         aria-hidden="true"
