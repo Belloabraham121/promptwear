@@ -47,7 +47,7 @@ export default function AccountPage() {
   }
 
   if (!ready) {
-    return <p className="text-sm text-[#c8c4b8]">Loading account…</p>;
+    return <p className="text-sm text-[#52706a]">Loading account…</p>;
   }
 
   return (
@@ -60,28 +60,28 @@ export default function AccountPage() {
       <div className="grid gap-8 lg:grid-cols-[minmax(0,28rem)_1fr]">
         <form onSubmit={handleSave} className="space-y-4">
           <label className="block">
-            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#c8c4b8]">
+            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
               Name
             </span>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-2 w-full border border-[#f3f0e8]/15 bg-transparent px-3 py-3 text-sm outline-none focus:border-[#d6ff3c]"
+              className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-3 text-sm outline-none focus:border-[#d6ff3c]"
             />
           </label>
           <label className="block">
-            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#c8c4b8]">
+            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
               Email
             </span>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-2 w-full border border-[#f3f0e8]/15 bg-transparent px-3 py-3 text-sm outline-none focus:border-[#d6ff3c]"
+              className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-3 text-sm outline-none focus:border-[#d6ff3c]"
             />
           </label>
           {error ? (
-            <p className="text-xs text-red-400">{error}</p>
+            <p className="text-xs text-red-700">{error}</p>
           ) : null}
           <button
             type="submit"
@@ -96,33 +96,33 @@ export default function AccountPage() {
           </button>
         </form>
 
-        <aside className="border border-[#f3f0e8]/12 p-5">
+        <aside className="rounded-2xl border border-[#0b1f1c]/12 bg-white p-5 shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
           <h2 className="font-[family-name:var(--font-display)] text-lg font-bold">
             Snapshot
           </h2>
-          <ul className="mt-4 space-y-2 text-sm text-[#c8c4b8]">
+          <ul className="mt-4 space-y-2 text-sm text-[#52706a]">
             <li>
               Account:{" "}
-              <span className="text-[#f3f0e8]">
+              <span className="text-[#0b1f1c]">
                 {session?.guest ? "Guest" : "Registered"}
               </span>
             </li>
             <li>
               Role:{" "}
-              <span className="text-[#f3f0e8]">
+              <span className="text-[#0b1f1c]">
                 {session?.role === "admin" ? "Admin" : "Customer"}
               </span>
             </li>
             <li>
               Designs saved:{" "}
-              <span className="text-[#f3f0e8]">{designs.length}</span>
+              <span className="text-[#0b1f1c]">{designs.length}</span>
             </li>
             <li>
               Orders placed:{" "}
-              <span className="text-[#f3f0e8]">{orders.length}</span>
+              <span className="text-[#0b1f1c]">{orders.length}</span>
             </li>
           </ul>
-          <p className="mt-6 text-xs text-[#c8c4b8]">
+          <p className="mt-6 text-xs text-[#52706a]">
             Designs, orders, and assets are synced to your account.
           </p>
         </aside>

@@ -36,11 +36,11 @@ const RANGES: { key: RangeKey; label: string; days: number }[] = [
   { key: "90d", label: "90 days", days: 90 },
 ];
 
-const CHART_LIME = "#d6ff3c";
-const CHART_BONE = "#f3f0e8";
-const CHART_MUTED = "#8a877c";
-const CHART_GRID = "rgba(243,240,232,0.12)";
-const PIE_COLORS = ["#d6ff3c", "#7ec8e3", "#e8a87c", "#c8c4b8"];
+const CHART_LIME = "#5a8a7f";
+const CHART_BONE = "#0b1f1c";
+const CHART_MUTED = "#52706a";
+const CHART_GRID = "rgba(11,31,28,0.12)";
+const PIE_COLORS = ["#5a8a7f", "#7ec8e3", "#e8a87c", "#52706a"];
 
 function toDateKey(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -72,7 +72,7 @@ function ChartCard({
   return (
     <section
       className={cn(
-        "border border-[#f3f0e8]/12 bg-[#0c0e0c] p-4 md:p-5",
+        "border border-[#0b1f1c]/12 bg-white rounded-2xl shadow-[0_1px_2px_rgba(11,31,28,0.05)] p-4 md:p-5",
         className,
       )}
     >
@@ -80,7 +80,7 @@ function ChartCard({
         <h2 className="font-[family-name:var(--font-display)] text-lg font-bold tracking-[-0.03em]">
           {title}
         </h2>
-        {hint ? <p className="mt-1 text-xs text-[#c8c4b8]">{hint}</p> : null}
+        {hint ? <p className="mt-1 text-xs text-[#52706a]">{hint}</p> : null}
       </div>
       {children}
     </section>
@@ -90,15 +90,15 @@ function ChartCard({
 function chartTooltipProps() {
   return {
     contentStyle: {
-      background: "#121511",
-      border: "1px solid rgba(243,240,232,0.14)",
+      background: "#ffffff",
+      border: "1px solid rgba(11,31,28,0.14)",
       borderRadius: 0,
       color: CHART_BONE,
       boxShadow: "none",
     } satisfies React.CSSProperties,
     labelStyle: { color: CHART_BONE } satisfies React.CSSProperties,
     itemStyle: { color: CHART_BONE } satisfies React.CSSProperties,
-    cursor: { fill: "rgba(243,240,232,0.06)" },
+    cursor: { fill: "rgba(11,31,28,0.06)" },
   };
 }
 
@@ -108,7 +108,7 @@ function moneyTick(value: number): string {
 
 function EmptyChart({ label }: { label: string }) {
   return (
-    <div className="flex h-64 items-center justify-center text-sm text-[#8a877c]">
+    <div className="flex h-64 items-center justify-center text-sm text-[#52706a]">
       {label}
     </div>
   );
@@ -141,7 +141,7 @@ export default function AdminAnalyticsPage() {
 
   if (analyticsQuery.isError || !analyticsQuery.data) {
     return (
-      <p className="text-sm text-[#c8c4b8]">
+      <p className="text-sm text-[#52706a]">
         Could not load analytics. Try refreshing the page.
       </p>
     );
@@ -195,7 +195,7 @@ export default function AdminAnalyticsPage() {
         title="Analytics"
         description="Revenue, orders, users, and vendor performance."
         action={
-          <div className="flex gap-1 border border-[#f3f0e8]/15 p-1">
+          <div className="flex gap-1 border border-[#0b1f1c]/15 p-1">
             {RANGES.map((option) => (
               <button
                 key={option.key}
@@ -205,7 +205,7 @@ export default function AdminAnalyticsPage() {
                   "px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em] transition",
                   range === option.key
                     ? "bg-[#d6ff3c] text-[#070807]"
-                    : "text-[#c8c4b8] hover:text-[#f3f0e8]",
+                    : "text-[#52706a] hover:text-[#0b1f1c]",
                 )}
               >
                 {option.label}
@@ -485,9 +485,9 @@ export default function AdminAnalyticsPage() {
         <h2 className="mb-4 font-[family-name:var(--font-display)] text-xl font-bold tracking-[-0.03em]">
           Best-selling designs
         </h2>
-        <div className="overflow-x-auto border border-[#f3f0e8]/12">
+        <div className="overflow-x-auto rounded-2xl border border-[#0b1f1c]/12 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
           <table className="w-full min-w-[480px] text-left text-sm">
-            <thead className="border-b border-[#f3f0e8]/12 bg-[#0c0e0c] text-[0.65rem] uppercase tracking-[0.12em] text-[#c8c4b8]">
+            <thead className="border-b border-[#0b1f1c]/12 bg-white rounded-2xl shadow-[0_1px_2px_rgba(11,31,28,0.05)] text-[0.65rem] uppercase tracking-[0.12em] text-[#52706a]">
               <tr>
                 <th className="px-4 py-3 font-medium">#</th>
                 <th className="px-4 py-3 font-medium">Design</th>
@@ -496,12 +496,12 @@ export default function AdminAnalyticsPage() {
                 <th className="px-4 py-3 font-medium">Share</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f3f0e8]/10">
+            <tbody className="divide-y divide-[#0b1f1c]/10">
               {a.bestSelling.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-4 py-6 text-center text-[#8a877c]"
+                    className="px-4 py-6 text-center text-[#52706a]"
                   >
                     No bestsellers yet.
                   </td>
@@ -513,20 +513,20 @@ export default function AdminAnalyticsPage() {
                       ? Math.round((row.revenue / a.revenue) * 100)
                       : 0;
                   return (
-                    <tr key={`${row.title}-${index}`} className="hover:bg-[#f3f0e8]/4">
-                      <td className="px-4 py-3 text-[#8a877c]">{index + 1}</td>
+                    <tr key={`${row.title}-${index}`} className="hover:bg-[#0b1f1c]/4">
+                      <td className="px-4 py-3 text-[#52706a]">{index + 1}</td>
                       <td className="px-4 py-3 font-medium">{row.title}</td>
                       <td className="px-4 py-3">{row.units}</td>
                       <td className="px-4 py-3">{formatNaira(row.revenue)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <div className="h-1.5 w-20 overflow-hidden bg-[#f3f0e8]/10">
+                          <div className="h-1.5 w-20 overflow-hidden bg-[#0b1f1c]/10">
                             <div
                               className="h-full bg-[#d6ff3c]"
                               style={{ width: `${share}%` }}
                             />
                           </div>
-                          <span className="text-xs text-[#c8c4b8]">{share}%</span>
+                          <span className="text-xs text-[#52706a]">{share}%</span>
                         </div>
                       </td>
                     </tr>
@@ -542,9 +542,9 @@ export default function AdminAnalyticsPage() {
         <h2 className="mb-4 font-[family-name:var(--font-display)] text-xl font-bold tracking-[-0.03em]">
           Vendors
         </h2>
-        <div className="overflow-x-auto border border-[#f3f0e8]/12">
+        <div className="overflow-x-auto rounded-2xl border border-[#0b1f1c]/12 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
           <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="border-b border-[#f3f0e8]/12 bg-[#0c0e0c] text-[0.65rem] uppercase tracking-[0.12em] text-[#c8c4b8]">
+            <thead className="border-b border-[#0b1f1c]/12 bg-white rounded-2xl shadow-[0_1px_2px_rgba(11,31,28,0.05)] text-[0.65rem] uppercase tracking-[0.12em] text-[#52706a]">
               <tr>
                 <th className="px-4 py-3 font-medium">Vendor</th>
                 <th className="px-4 py-3 font-medium">Quality</th>
@@ -554,23 +554,23 @@ export default function AdminAnalyticsPage() {
                 <th className="px-4 py-3 font-medium">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f3f0e8]/10">
+            <tbody className="divide-y divide-[#0b1f1c]/10">
               {a.vendorPerformance.length === 0 ? (
                 <tr>
                   <td
                     colSpan={6}
-                    className="px-4 py-6 text-center text-[#8a877c]"
+                    className="px-4 py-6 text-center text-[#52706a]"
                   >
                     No vendors yet.
                   </td>
                 </tr>
               ) : (
                 a.vendorPerformance.map((v) => (
-                  <tr key={v.id} className="hover:bg-[#f3f0e8]/4">
+                  <tr key={v.id} className="hover:bg-[#0b1f1c]/4">
                     <td className="px-4 py-3 font-medium">{v.name}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-16 overflow-hidden bg-[#f3f0e8]/10">
+                        <div className="h-1.5 w-16 overflow-hidden bg-[#0b1f1c]/10">
                           <div
                             className="h-full bg-[#d6ff3c]"
                             style={{
@@ -583,7 +583,7 @@ export default function AdminAnalyticsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-16 overflow-hidden bg-[#f3f0e8]/10">
+                        <div className="h-1.5 w-16 overflow-hidden bg-[#0b1f1c]/10">
                           <div
                             className="h-full bg-[#7ec8e3]"
                             style={{
@@ -601,8 +601,8 @@ export default function AdminAnalyticsPage() {
                         className={cn(
                           "inline-flex px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.1em]",
                           v.active
-                            ? "bg-[#d6ff3c]/15 text-[#d6ff3c]"
-                            : "bg-[#f3f0e8]/8 text-[#c8c4b8]",
+                            ? "bg-[#d6ff3c]/15 text-[#3f4d0e]"
+                            : "bg-[#0b1f1c]/8 text-[#52706a]",
                         )}
                       >
                         {v.active ? "Active" : "Paused"}
