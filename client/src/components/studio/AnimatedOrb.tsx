@@ -31,9 +31,9 @@ export function AnimatedOrb({
         style={{
           width: size,
           height: size,
-          backgroundColor: "#0b1f1c",
+          backgroundColor: "#f3f0e8",
           boxShadow:
-            "0 0 0 1px rgba(11,31,28,0.15), 0 12px 32px rgba(11,31,28,0.25)",
+            "0 0 0 1px rgba(11,31,28,0.12), 0 12px 32px rgba(11,31,28,0.18)",
           animation: "driplap-orb-breathe 5s ease-in-out infinite",
         }}
         aria-hidden="true"
@@ -44,7 +44,7 @@ export function AnimatedOrb({
         >
           {[
             { size: 0.5, color: "#d6ff3c", opacity: 0.95, delay: "0s" },
-            { size: 0.38, color: "#f3f0e8", opacity: 0.9, delay: "-1.4s" },
+            { size: 0.38, color: "#9db8b0", opacity: 0.9, delay: "-1.4s" },
             { size: 0.3, color: "#5a8a7f", opacity: 0.9, delay: "-2.8s" },
             { size: 0.26, color: "#3f4d0e", opacity: 0.85, delay: "-4.2s" },
             { size: 0.2, color: "#e2ff6a", opacity: 0.9, delay: "-5.6s" },
