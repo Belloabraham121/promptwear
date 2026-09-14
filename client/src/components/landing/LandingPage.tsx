@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { HeroFan } from "@/components/landing/HeroFan";
 import { useAuth } from "@/providers/AuthProvider";
 import { cn } from "@/lib/utils";
 
@@ -326,9 +327,8 @@ export function LandingPage() {
           padX,
         )}
       >
-        <BrandLogo href="/" size="md" />
         <nav
-          className="hidden items-center gap-7 text-[0.78rem] tracking-[0.06em] text-[#5a574f] md:flex"
+          className="hidden items-center justify-self-start gap-7 text-[0.78rem] tracking-[0.06em] text-[#5a574f] md:flex"
           aria-label="Main"
         >
           <a href="#how" className="transition-colors hover:text-[#070807]">
@@ -344,6 +344,9 @@ export function LandingPage() {
             Pricing
           </a>
         </nav>
+        <div className="justify-self-start md:justify-self-center">
+          <BrandLogo href="/" size="md" />
+        </div>
         <div className="hidden items-center justify-end gap-3 md:flex">
           {showAuthedCtas ? (
             <LimeButton href="/dashboard" className="px-4 py-2">
@@ -404,69 +407,46 @@ export function LandingPage() {
       ) : null}
 
       <main>
-        <section className={cn("relative bg-[#070807] pt-10 pb-0 text-[#f3f0e8] md:pt-16", padX)}>
-          <div className="mx-auto flex max-w-[46rem] flex-col items-center text-center">
-            <h1 className="m-0 font-heading text-[clamp(2.35rem,8vw,4.6rem)] font-extrabold leading-[0.94] tracking-[-0.055em] text-[#c9dc4a]">
-              Create custom tees
+        <section className={cn("relative bg-[#f3f0e8] pt-10 pb-12 text-[#070807] md:pt-16 md:pb-16", padX)}>
+          <div className="mx-auto flex max-w-[52rem] flex-col items-center text-center">
+            <h1 className="m-0 font-heading text-[clamp(2.6rem,8vw,5rem)] font-extrabold leading-[0.98] tracking-[-0.055em]">
+              Wear what
               <br />
-              from a thought.
+              you imagine.
             </h1>
-            <ul className="mt-6 mb-0 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 p-0 text-[0.92rem] text-[#c9dc4a]">
+
+            <div className="mt-8 w-full md:mt-10">
+              <HeroFan />
+            </div>
+
+            <p className="mt-8 mb-0 max-w-[46ch] text-[0.98rem] leading-[1.55] text-[#5a574f]">
+              Turn your ideas into one-of-one custom apparel with AI, freehand
+              drawing, or both. Designed by you, made in Nigeria.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#070807] px-7 py-3.5 text-[0.85rem] font-bold tracking-[0.04em] text-[#f3f0e8] uppercase transition-transform duration-200 hover:-translate-y-px"
+              >
+                {showAuthedCtas ? "Open app" : "Start designing"}
+                <ArrowUpRight size={17} strokeWidth={2.25} />
+              </Link>
+              <a
+                href="#how"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[color-mix(in_oklab,#070807_6%,transparent)] px-7 py-3.5 text-[0.85rem] font-bold tracking-[0.04em] text-[#070807] uppercase transition-colors hover:bg-[color-mix(in_oklab,#070807_10%,transparent)]"
+              >
+                See how it works
+              </a>
+            </div>
+            <ul className="mt-7 mb-0 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 p-0 text-[0.85rem] text-[#5a574f]">
               {trustChecks.map((item) => (
                 <li key={item} className="flex items-center gap-2">
-                  <Check size={16} strokeWidth={2.75} className="text-[#d6ff3c]" />
+                  <Check size={15} strokeWidth={2.75} className="text-[#5a6b14]" />
                   {item}
                 </li>
               ))}
             </ul>
-            <LimeButton href="/dashboard" className="mt-7 px-7 py-3.5 text-[0.88rem]">
-              {showAuthedCtas ? "Open app" : "Start designing"}
-              <ArrowUpRight size={17} strokeWidth={2.25} />
-            </LimeButton>
-            {!showAuthedCtas ? (
-              <p className="mt-3 mb-0 text-[0.78rem] text-[#8a867c]">
-                No credit card required · guest checkout
-              </p>
-            ) : null}
           </div>
-
-          <div className="relative mx-auto mt-10 max-w-[68rem] md:mt-14">
-            <div className="grid overflow-hidden rounded-t-2xl bg-[#f3f0e8] shadow-[0_24px_80px_rgba(0,0,0,0.35)] md:grid-cols-2">
-              <figure className="relative m-0 aspect-[4/3] bg-[#f0c4a8]">
-                <Image
-                  src="/landing/landing-hero-editor.jpg"
-                  alt="Cream embroidered tee front with botanical print and Opium chest mark"
-                  fill
-                  priority
-                  sizes="(min-width: 768px) 50vw, 100vw"
-                  className="object-cover object-center"
-                />
-                <figcaption className="absolute bottom-3 left-3 rounded-full bg-[#070807]/88 px-3 py-1.5 text-[0.68rem] tracking-[0.1em] text-[#f3f0e8] uppercase">
-                  Prompt + draw
-                </figcaption>
-              </figure>
-              <figure className="relative m-0 aspect-[4/3] bg-[#1a1c18]">
-                <Image
-                  src="/landing/landing-hero-life.jpg"
-                  alt="Cream embroidered tee back with Opium mark, 19, and poppy embroidery"
-                  fill
-                  priority
-                  sizes="(min-width: 768px) 50vw, 100vw"
-                  className="object-cover object-center"
-                />
-                <span className="absolute top-4 right-4 rounded-full bg-[#d6ff3c] px-2.5 py-1 text-[0.68rem] font-bold tracking-[0.08em] text-[#070807] uppercase">
-                  Ready
-                </span>
-                <figcaption className="absolute right-4 bottom-4 rounded-md bg-[#070807] px-3 py-2 text-[0.68rem] tracking-[0.12em] text-[#f3f0e8] uppercase">
-                  Ordered · 7 days
-                </figcaption>
-              </figure>
-            </div>
-          </div>
-
-          <p className="mx-auto max-w-[68rem] py-5 text-center text-[0.78rem] tracking-[0.04em] text-[#8a867c]">
-            Quality-checked before it ships · Vetted Nigerian production partners
-          </p>
         </section>
 
         <div

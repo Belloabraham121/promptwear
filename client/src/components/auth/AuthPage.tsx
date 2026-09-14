@@ -46,8 +46,13 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: Mode }) {
 function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login, register, session, isAuthenticated, isLoading: authLoading } =
-    useAuth();
+  const {
+    login,
+    register,
+    session,
+    isAuthenticated,
+    isLoading: authLoading,
+  } = useAuth();
   const [mode, setMode] = useState<Mode>(initialMode);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -128,17 +133,17 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
 
   if (authLoading || isAuthenticated) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-[#070807] text-[#c8c4b8]">
+      <div className="flex min-h-dvh items-center justify-center bg-[#f3f0e8] text-[#52706a]">
         <p className="text-sm tracking-[0.08em] uppercase">Loading…</p>
       </div>
     );
   }
 
   return (
-    <div className="relative flex min-h-dvh flex-col overflow-x-clip bg-[#070807] text-[#f3f0e8]">
+    <div className="relative flex min-h-dvh flex-col overflow-x-clip bg-[#f3f0e8] text-[#0b1f1c]">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_65%_50%_at_80%_20%,rgba(214,255,60,0.1),transparent_55%),radial-gradient(ellipse_45%_40%_at_10%_85%,rgba(80,100,90,0.18),transparent_50%),linear-gradient(165deg,#0c0e0b_0%,#070807_48%,#10140f_100%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_65%_50%_at_80%_20%,rgba(214,255,60,0.28),transparent_55%),radial-gradient(ellipse_45%_40%_at_10%_85%,rgba(90,138,127,0.2),transparent_50%),linear-gradient(165deg,#faf8f3_0%,#f3f0e8_48%,#e9e4d6_100%)]"
       />
       <div
         aria-hidden="true"
@@ -146,7 +151,7 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
       />
 
       <header className="relative z-20 flex items-center justify-between px-[clamp(1.1rem,3vw,2.4rem)] py-5">
-        <BrandLogo href="/" variant="onDark" size="sm" />
+        <BrandLogo href="/" size="sm" />
         <Link
           href="/dashboard"
           className="inline-flex items-center gap-1.5 border-b border-current pb-0.5 text-[0.78rem] tracking-[0.06em] uppercase transition-opacity hover:opacity-80"
@@ -159,7 +164,7 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
       <main className="relative z-10 flex flex-1 items-center justify-center px-[clamp(1.1rem,3vw,2.4rem)] py-8">
         <section
           aria-label={isSignup ? "Sign up" : "Log in"}
-          className="relative w-full max-w-[26rem] border border-[color-mix(in_oklab,#f3f0e8_12%,transparent)] bg-[color-mix(in_oklab,#070807_78%,transparent)] p-6 backdrop-blur-sm sm:p-8 motion-safe:animate-[nf-fade-up_0.85s_ease-out_both]"
+          className="relative w-full max-w-[26rem] rounded-2xl border border-[#0b1f1c]/10 bg-white p-6 shadow-[0_24px_80px_rgba(11,31,28,0.12)] sm:p-8 motion-safe:animate-[nf-fade-up_0.85s_ease-out_both]"
         >
           <h1 className="sr-only">
             {isSignup ? "Create your Driplap account" : "Log in to Driplap"}
@@ -168,7 +173,7 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
           <div
             role="tablist"
             aria-label="Authentication mode"
-            className="mb-7 flex gap-6 border-b border-[color-mix(in_oklab,#f3f0e8_12%,transparent)]"
+            className="mb-7 flex gap-6 border-b border-[#0b1f1c]/10"
           >
             {(
               [
@@ -186,8 +191,8 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
                   onClick={() => switchMode(value)}
                   className={`relative pb-3 font-heading text-[0.78rem] font-bold tracking-[0.12em] uppercase transition-colors ${
                     active
-                      ? "text-[#f3f0e8]"
-                      : "text-[#c8c4b8] hover:text-[#f3f0e8]"
+                      ? "text-[#0b1f1c]"
+                      : "text-[#52706a] hover:text-[#0b1f1c]"
                   }`}
                 >
                   {label}
@@ -203,7 +208,7 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
             type="button"
             onClick={handleGoogle}
             disabled={loading !== null}
-            className="flex w-full items-center justify-center gap-3 border border-[color-mix(in_oklab,#f3f0e8_22%,transparent)] px-4 py-3.5 text-[0.82rem] font-bold tracking-[0.04em] uppercase transition-[border-color,background,transform] duration-200 hover:border-[color-mix(in_oklab,#f3f0e8_45%,transparent)] hover:bg-[color-mix(in_oklab,#f3f0e8_4%,transparent)] disabled:opacity-55"
+            className="flex w-full items-center justify-center gap-3 border border-[#0b1f1c]/15 px-4 py-3.5 text-[0.82rem] font-bold tracking-[0.04em] uppercase transition-[border-color,background,transform] duration-200 hover:border-[#0b1f1c]/30 hover:bg-[#0b1f1c]/5 disabled:opacity-55"
           >
             <GoogleIcon className="size-[1.15rem]" />
             {loading === "google"
@@ -213,16 +218,16 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
                 : "Continue with Google"}
           </button>
 
-          <div className="my-6 flex items-center gap-3 text-[0.68rem] tracking-[0.14em] text-[#c8c4b8] uppercase">
-            <span className="h-px flex-1 bg-[color-mix(in_oklab,#f3f0e8_12%,transparent)]" />
+          <div className="my-6 flex items-center gap-3 text-[0.68rem] tracking-[0.14em] text-[#52706a] uppercase">
+            <span className="h-px flex-1 bg-[#0b1f1c]/10" />
             or with email
-            <span className="h-px flex-1 bg-[color-mix(in_oklab,#f3f0e8_12%,transparent)]" />
+            <span className="h-px flex-1 bg-[#0b1f1c]/10" />
           </div>
 
           <form onSubmit={handleEmailSubmit} className="grid gap-5" noValidate>
             {isSignup ? (
               <label className="grid gap-2">
-                <span className="text-[0.68rem] tracking-[0.14em] text-[#c8c4b8] uppercase">
+                <span className="text-[0.68rem] tracking-[0.14em] text-[#52706a] uppercase">
                   Name
                 </span>
                 <input
@@ -232,13 +237,13 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Your name"
-                  className="w-full border border-[color-mix(in_oklab,#f3f0e8_16%,transparent)] bg-[color-mix(in_oklab,#f3f0e8_4%,transparent)] px-3.5 py-3 text-[1rem] text-[#f3f0e8] outline-none transition-colors placeholder:text-[#c8c4b8]/60 focus:border-[#d6ff3c]"
+                  className="w-full border border-[#0b1f1c]/15 bg-white px-3.5 py-3 text-[1rem] text-[#0b1f1c] outline-none transition-colors placeholder:text-[#52706a]/60 focus:border-[#0b1f1c]"
                 />
               </label>
             ) : null}
 
             <label className="grid gap-2">
-              <span className="text-[0.68rem] tracking-[0.14em] text-[#c8c4b8] uppercase">
+              <span className="text-[0.68rem] tracking-[0.14em] text-[#52706a] uppercase">
                 Email
               </span>
               <input
@@ -248,7 +253,7 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@email.com"
-                className="w-full border border-[color-mix(in_oklab,#f3f0e8_16%,transparent)] bg-[color-mix(in_oklab,#f3f0e8_4%,transparent)] px-3.5 py-3 text-[1rem] text-[#f3f0e8] outline-none transition-colors placeholder:text-[#c8c4b8]/60 focus:border-[#d6ff3c]"
+                className="w-full border border-[#0b1f1c]/15 bg-white px-3.5 py-3 text-[1rem] text-[#0b1f1c] outline-none transition-colors placeholder:text-[#52706a]/60 focus:border-[#0b1f1c]"
               />
             </label>
 
@@ -256,14 +261,14 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
               <div className="flex items-center justify-between">
                 <label
                   htmlFor="auth-password"
-                  className="text-[0.68rem] tracking-[0.14em] text-[#c8c4b8] uppercase"
+                  className="text-[0.68rem] tracking-[0.14em] text-[#52706a] uppercase"
                 >
                   Password
                 </label>
                 {!isSignup ? (
                   <button
                     type="button"
-                    className="text-[0.68rem] tracking-[0.08em] text-[#c8c4b8] transition-colors hover:text-[#d6ff3c]"
+                    className="text-[0.68rem] tracking-[0.08em] text-[#52706a] transition-colors hover:text-[#0b1f1c]"
                     onClick={() =>
                       toast.message(
                         "Password reset will be available once auth is connected.",
@@ -285,12 +290,12 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
                   placeholder={
                     isSignup ? "At least 8 characters" : "Your password"
                   }
-                  className="w-full border border-[color-mix(in_oklab,#f3f0e8_16%,transparent)] bg-[color-mix(in_oklab,#f3f0e8_4%,transparent)] px-3.5 py-3 pr-11 text-[1rem] text-[#f3f0e8] outline-none transition-colors placeholder:text-[#c8c4b8]/60 focus:border-[#d6ff3c]"
+                  className="w-full border border-[#0b1f1c]/15 bg-white px-3.5 py-3 pr-11 text-[1rem] text-[#0b1f1c] outline-none transition-colors placeholder:text-[#52706a]/60 focus:border-[#0b1f1c]"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute top-1/2 right-2.5 -translate-y-1/2 p-1 text-[#c8c4b8] transition-colors hover:text-[#f3f0e8]"
+                  className="absolute top-1/2 right-2.5 -translate-y-1/2 p-1 text-[#52706a] transition-colors hover:text-[#0b1f1c]"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
@@ -305,7 +310,7 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
             <button
               type="submit"
               disabled={loading !== null}
-              className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-[2px] bg-[#d6ff3c] px-5 py-3.5 text-[0.82rem] font-bold tracking-[0.04em] text-[#070807] uppercase transition-[transform,background] duration-200 hover:-translate-y-px hover:bg-[color-mix(in_oklab,#d6ff3c_88%,white)] disabled:translate-y-0 disabled:opacity-55"
+              className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#d6ff3c] px-5 py-3.5 text-[0.82rem] font-bold tracking-[0.04em] text-[#070807] uppercase transition-[transform,background] duration-200 hover:-translate-y-px hover:bg-[#e2ff6a] disabled:translate-y-0 disabled:opacity-55"
             >
               {loading === "email"
                 ? "Working…"
@@ -317,21 +322,10 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
               ) : null}
             </button>
           </form>
-
-          <p className="mt-6 text-[0.85rem] leading-relaxed text-[#c8c4b8]">
-            {isSignup ? "Already have an account?" : "New here?"}{" "}
-            <button
-              type="button"
-              onClick={() => switchMode(isSignup ? "signin" : "signup")}
-              className="text-[#f3f0e8] underline decoration-[color-mix(in_oklab,#f3f0e8_35%,transparent)] underline-offset-4 transition-colors hover:text-[#d6ff3c]"
-            >
-              {isSignup ? "Log in" : "Create one"}
-            </button>
-          </p>
         </section>
       </main>
 
-      <footer className="relative z-10 px-[clamp(1.1rem,3vw,2.4rem)] py-5 text-right text-[0.85rem] text-[#c8c4b8]">
+      <footer className="relative z-10 px-[clamp(1.1rem,3vw,2.4rem)] py-5 text-right text-[0.85rem] text-[#52706a]">
         <small className="opacity-65">© 2026 Driplap</small>
       </footer>
     </div>

@@ -66,7 +66,7 @@ export function ConfirmDialog({
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-description"
-        className="relative z-10 w-full max-w-md border border-[#f3f0e8]/15 bg-[#0c0e0c] p-5 text-[#f3f0e8] shadow-[0_24px_80px_rgba(0,0,0,0.45)]"
+        className="relative z-10 w-full max-w-md rounded-2xl border border-[#0b1f1c]/10 bg-white p-5 text-[#0b1f1c] shadow-[0_24px_80px_rgba(11,31,28,0.2)]"
       >
         <h2
           id="confirm-dialog-title"
@@ -76,7 +76,7 @@ export function ConfirmDialog({
         </h2>
         <div
           id="confirm-dialog-description"
-          className="mt-3 text-sm leading-relaxed text-[#c8c4b8]"
+          className="mt-3 text-sm leading-relaxed text-[#52706a]"
         >
           {description}
         </div>
@@ -85,7 +85,7 @@ export function ConfirmDialog({
             type="button"
             disabled={confirming}
             onClick={onCancel}
-            className="border border-[#f3f0e8]/20 px-3.5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-[#c8c4b8] transition hover:border-[#f3f0e8]/40 hover:text-[#f3f0e8] disabled:opacity-50"
+            className="rounded-full border border-[#0b1f1c]/15 px-3.5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-[#52706a] transition hover:border-[#0b1f1c]/30 hover:text-[#0b1f1c] disabled:opacity-50"
           >
             {cancelLabel}
           </button>
@@ -94,10 +94,10 @@ export function ConfirmDialog({
             disabled={confirming}
             onClick={onConfirm}
             className={cn(
-              "px-3.5 py-2 text-[0.65rem] font-bold uppercase tracking-[0.08em] transition disabled:opacity-50",
+              "rounded-full px-3.5 py-2 text-[0.65rem] font-bold uppercase tracking-[0.08em] transition disabled:opacity-50",
               tone === "danger"
-                ? "bg-red-400 text-[#070807] hover:bg-red-300"
-                : "bg-[#d6ff3c] text-[#070807] hover:bg-[#e2ff6a]",
+                ? "bg-red-600 text-white hover:bg-red-700"
+                : "bg-[#0b1f1c] text-white hover:bg-[#14322d]",
             )}
           >
             {confirming ? "Working…" : confirmLabel}

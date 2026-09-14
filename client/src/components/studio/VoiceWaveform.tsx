@@ -80,7 +80,7 @@ export function VoiceWaveform({
       {levels.map((level, i) => (
         <span
           key={i}
-          className="w-[2px] rounded-full bg-[#d6ff3c]/70"
+          className="w-[2px] rounded-full bg-[#0b1f1c]/60"
           style={{ height: `${Math.max(3, level * 20)}px` }}
         />
       ))}

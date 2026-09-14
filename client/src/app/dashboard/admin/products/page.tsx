@@ -20,8 +20,8 @@ function Toggle({
       className={cn(
         "px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em]",
         active
-          ? "bg-[#d6ff3c]/15 text-[#d6ff3c]"
-          : "bg-[#f3f0e8]/8 text-[#c8c4b8]",
+          ? "bg-[#d6ff3c]/15 text-[#3f4d0e]"
+          : "bg-[#0b1f1c]/8 text-[#52706a]",
       )}
     >
       {active ? "Active" : "Off"}
@@ -38,7 +38,7 @@ export default function AdminProductsPage() {
 
   if (error) {
     return (
-      <p className="text-sm text-red-300">
+      <p className="text-sm text-red-700">
         Failed to load catalog: {error.message}
       </p>
     );
@@ -58,9 +58,9 @@ export default function AdminProductsPage() {
         <h2 className="mb-4 font-[family-name:var(--font-display)] text-xl font-bold tracking-[-0.03em]">
           Materials
         </h2>
-        <div className="overflow-x-auto border border-[#f3f0e8]/12">
+        <div className="overflow-x-auto rounded-2xl border border-[#0b1f1c]/12 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
           <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="border-b border-[#f3f0e8]/12 bg-[#0c0e0c] text-[0.65rem] uppercase tracking-[0.12em] text-[#c8c4b8]">
+            <thead className="border-b border-[#0b1f1c]/12 bg-[#0b1f1c]/[0.03] text-[0.65rem] uppercase tracking-[0.12em] text-[#52706a]">
               <tr>
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">GSM</th>
@@ -69,12 +69,12 @@ export default function AdminProductsPage() {
                 <th className="px-4 py-3 font-medium">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f3f0e8]/10">
+            <tbody className="divide-y divide-[#0b1f1c]/10">
               {catalog.materials.map((m) => (
-                <tr key={m.id} className="hover:bg-[#f3f0e8]/4">
+                <tr key={m.id} className="hover:bg-[#0b1f1c]/4">
                   <td className="px-4 py-3 font-medium">{m.name}</td>
                   <td className="px-4 py-3">{m.gsm}</td>
-                  <td className="px-4 py-3 text-[#c8c4b8]">{m.composition}</td>
+                  <td className="px-4 py-3 text-[#52706a]">{m.composition}</td>
                   <td className="px-4 py-3">{formatNaira(m.costPerUnit)}</td>
                   <td className="px-4 py-3">
                     <Toggle
@@ -97,9 +97,9 @@ export default function AdminProductsPage() {
         <h2 className="mb-4 font-[family-name:var(--font-display)] text-xl font-bold tracking-[-0.03em]">
           Garments
         </h2>
-        <div className="overflow-x-auto border border-[#f3f0e8]/12">
+        <div className="overflow-x-auto rounded-2xl border border-[#0b1f1c]/12 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
           <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="border-b border-[#f3f0e8]/12 bg-[#0c0e0c] text-[0.65rem] uppercase tracking-[0.12em] text-[#c8c4b8]">
+            <thead className="border-b border-[#0b1f1c]/12 bg-[#0b1f1c]/[0.03] text-[0.65rem] uppercase tracking-[0.12em] text-[#52706a]">
               <tr>
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Silhouette</th>
@@ -108,11 +108,11 @@ export default function AdminProductsPage() {
                 <th className="px-4 py-3 font-medium">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f3f0e8]/10">
+            <tbody className="divide-y divide-[#0b1f1c]/10">
               {catalog.garments.map((g) => (
-                <tr key={g.id} className="hover:bg-[#f3f0e8]/4">
+                <tr key={g.id} className="hover:bg-[#0b1f1c]/4">
                   <td className="px-4 py-3 font-medium">{g.name}</td>
-                  <td className="px-4 py-3 capitalize text-[#c8c4b8]">
+                  <td className="px-4 py-3 capitalize text-[#52706a]">
                     {g.silhouette}
                   </td>
                   <td className="px-4 py-3">{materialName(g.materialId)}</td>
@@ -139,7 +139,7 @@ export default function AdminProductsPage() {
           <h2 className="mb-4 font-[family-name:var(--font-display)] text-xl font-bold tracking-[-0.03em]">
             Colors
           </h2>
-          <ul className="divide-y divide-[#f3f0e8]/10 border border-[#f3f0e8]/12">
+          <ul className="divide-y divide-[#0b1f1c]/10 rounded-2xl border border-[#0b1f1c]/12 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
             {catalog.colors.map((c) => (
               <li
                 key={c.id}
@@ -147,12 +147,12 @@ export default function AdminProductsPage() {
               >
                 <div className="flex items-center gap-3">
                   <span
-                    className="size-8 border border-[#f3f0e8]/20"
+                    className="size-8 border border-[#0b1f1c]/20"
                     style={{ backgroundColor: c.hex }}
                   />
                   <div>
                     <p className="text-sm font-medium">{c.name}</p>
-                    <p className="text-xs text-[#c8c4b8]">{c.hex}</p>
+                    <p className="text-xs text-[#52706a]">{c.hex}</p>
                   </div>
                 </div>
                 <Toggle
@@ -172,7 +172,7 @@ export default function AdminProductsPage() {
           <h2 className="mb-4 font-[family-name:var(--font-display)] text-xl font-bold tracking-[-0.03em]">
             Sizes
           </h2>
-          <ul className="divide-y divide-[#f3f0e8]/10 border border-[#f3f0e8]/12">
+          <ul className="divide-y divide-[#0b1f1c]/10 rounded-2xl border border-[#0b1f1c]/12 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
             {[...catalog.sizes]
               .sort((a, b) => a.sortOrder - b.sortOrder)
               .map((s) => (

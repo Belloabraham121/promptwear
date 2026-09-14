@@ -31,7 +31,7 @@ export function DashboardAuthGate({ children }: { children: ReactNode }) {
     (session.role === "admin" && !isAdminRoute)
   ) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-[#070807] text-[#c8c4b8]">
+      <div className="flex min-h-dvh items-center justify-center bg-transparent text-[#52706a]">
         <p className="text-sm tracking-[0.08em] uppercase">Loading…</p>
       </div>
     );

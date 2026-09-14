@@ -4,13 +4,13 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { useDashboard } from "@/components/dashboard/DashboardProvider";
 import {
-  DesignSwatch,
   GhostLink,
   PageHeader,
   PrimaryLink,
   StatCard,
   StatusPill,
 } from "@/components/dashboard/ui";
+import { ChatGarmentCard } from "@/components/dashboard/GarmentArt";
 import { formatNaira, totalQuantity } from "@/lib/dashboard/pricing";
 
 export default function DashboardOverviewPage() {
@@ -18,7 +18,7 @@ export default function DashboardOverviewPage() {
 
   if (!ready) {
     return (
-      <p className="text-sm text-[#c8c4b8]">Loading your studio…</p>
+      <p className="text-sm text-[#52706a]">Loading your studio…</p>
     );
   }
 
@@ -59,9 +59,9 @@ export default function DashboardOverviewPage() {
           <GhostLink href="/dashboard/studio">View all</GhostLink>
         </div>
         {recentDesigns.length === 0 ? (
-          <p className="text-sm text-[#c8c4b8]">
+          <p className="text-sm text-[#52706a]">
             No designs yet.{" "}
-            <Link href="/dashboard/studio" className="text-[#d6ff3c] underline">
+            <Link href="/dashboard/studio" className="text-[#3f4d0e] underline">
               Open the studio
             </Link>
             .
@@ -74,10 +74,12 @@ export default function DashboardOverviewPage() {
                 href={`/dashboard/studio/${design.id}`}
                 className="group block transition hover:opacity-95"
               >
-                <DesignSwatch color={design.color} title={design.title} />
-                <p className="mt-2 truncate text-xs text-[#c8c4b8]">
-                  {design.method} · {design.prompt}
-                </p>
+                <ChatGarmentCard
+                  title={design.title}
+                  text={design.prompt}
+                  method={design.method}
+                  messageCount={design.chat.length}
+                />
               </Link>
             ))}
           </div>
@@ -92,24 +94,24 @@ export default function DashboardOverviewPage() {
           <GhostLink href="/dashboard/orders">View all</GhostLink>
         </div>
         {recentOrders.length === 0 ? (
-          <p className="text-sm text-[#c8c4b8]">No orders yet.</p>
+          <p className="text-sm text-[#52706a]">No orders yet.</p>
         ) : (
-          <div className="divide-y divide-[#f3f0e8]/10 border border-[#f3f0e8]/12">
+          <div className="divide-y divide-[#0b1f1c]/10 rounded-2xl border border-[#0b1f1c]/12 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
             {recentOrders.map((order) => (
               <Link
                 key={order.id}
                 href={`/dashboard/orders/${order.id}`}
-                className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 transition hover:bg-[#f3f0e8]/4"
+                className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 transition hover:bg-[#0b1f1c]/4"
               >
                 <div>
                   <p className="font-medium">{order.line.designTitle}</p>
-                  <p className="mt-1 text-xs text-[#c8c4b8]">
+                  <p className="mt-1 text-xs text-[#52706a]">
                     {totalQuantity(order.line.sizes)} pcs · {formatNaira(order.total)}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <StatusPill status={order.status} />
-                  <ArrowUpRight size={16} className="text-[#c8c4b8]" />
+                  <ArrowUpRight size={16} className="text-[#52706a]" />
                 </div>
               </Link>
             ))}

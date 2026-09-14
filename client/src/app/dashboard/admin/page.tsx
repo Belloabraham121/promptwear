@@ -60,7 +60,7 @@ export default function AdminOverviewPage() {
 
   if (error) {
     return (
-      <p className="text-sm text-red-300">
+      <p className="text-sm text-red-700">
         Failed to load admin data: {error.message}
       </p>
     );
@@ -116,7 +116,7 @@ export default function AdminOverviewPage() {
           <Link
             key={link.href}
             href={link.href}
-            className="group border border-[#f3f0e8]/12 bg-[#0c0e0c] p-5 transition hover:border-[#d6ff3c]/40"
+            className="group border border-[#0b1f1c]/12 bg-white rounded-2xl shadow-[0_1px_2px_rgba(11,31,28,0.05)] p-5 transition hover:border-[#d6ff3c]/40"
           >
             <div className="flex items-start justify-between gap-3">
               <h2 className="font-[family-name:var(--font-display)] text-xl font-bold tracking-[-0.03em]">
@@ -124,10 +124,10 @@ export default function AdminOverviewPage() {
               </h2>
               <ArrowUpRight
                 size={16}
-                className="mt-1 text-[#c8c4b8] transition group-hover:text-[#d6ff3c]"
+                className="mt-1 text-[#52706a] transition group-hover:text-[#3f4d0e]"
               />
             </div>
-            <p className="mt-2 text-sm text-[#c8c4b8]">{link.body}</p>
+            <p className="mt-2 text-sm text-[#52706a]">{link.body}</p>
           </Link>
         ))}
       </section>
@@ -140,18 +140,18 @@ export default function AdminOverviewPage() {
           <GhostLink href="/dashboard/admin/orders">Manage all</GhostLink>
         </div>
         {recent.length === 0 ? (
-          <p className="text-sm text-[#c8c4b8]">No orders yet.</p>
+          <p className="text-sm text-[#52706a]">No orders yet.</p>
         ) : (
-          <div className="divide-y divide-[#f3f0e8]/10 border border-[#f3f0e8]/12">
+          <div className="divide-y divide-[#0b1f1c]/10 rounded-2xl border border-[#0b1f1c]/12 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
             {recent.map((order) => (
               <Link
                 key={order.id}
                 href={`/dashboard/admin/orders/${order.id}`}
-                className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 transition hover:bg-[#f3f0e8]/4"
+                className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 transition hover:bg-[#0b1f1c]/4"
               >
                 <div>
                   <p className="font-medium">{order.line.designTitle}</p>
-                  <p className="mt-1 text-xs text-[#c8c4b8]">
+                  <p className="mt-1 text-xs text-[#52706a]">
                     {order.id} · {formatNaira(order.total)}
                   </p>
                 </div>

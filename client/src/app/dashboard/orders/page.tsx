@@ -41,7 +41,7 @@ export default function OrdersPage() {
   }, [ready]);
 
   if (!ready || loading) {
-    return <p className="text-sm text-[#c8c4b8]">Loading orders…</p>;
+    return <p className="text-sm text-[#52706a]">Loading orders…</p>;
   }
 
   return (
@@ -55,7 +55,7 @@ export default function OrdersPage() {
       />
 
       {error ? (
-        <p className="mb-4 text-sm text-red-300">{error}</p>
+        <p className="mb-4 text-sm text-red-700">{error}</p>
       ) : null}
 
       {orders.length === 0 ? (
@@ -67,9 +67,9 @@ export default function OrdersPage() {
           }
         />
       ) : (
-        <div className="overflow-x-auto border border-[#f3f0e8]/12">
+        <div className="overflow-x-auto rounded-2xl border border-[#0b1f1c]/12 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
           <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="border-b border-[#f3f0e8]/12 bg-[#0c0e0c] text-[0.65rem] uppercase tracking-[0.12em] text-[#c8c4b8]">
+            <thead className="border-b border-[#0b1f1c]/12 bg-[#0b1f1c]/[0.03] text-[0.65rem] uppercase tracking-[0.12em] text-[#52706a]">
               <tr>
                 <th className="px-4 py-3 font-medium">Order</th>
                 <th className="px-4 py-3 font-medium">Design</th>
@@ -78,17 +78,17 @@ export default function OrdersPage() {
                 <th className="px-4 py-3 font-medium">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f3f0e8]/10">
+            <tbody className="divide-y divide-[#0b1f1c]/10">
               {orders.map((order) => (
-                <tr key={order.id} className="hover:bg-[#f3f0e8]/4">
+                <tr key={order.id} className="hover:bg-[#0b1f1c]/4">
                   <td className="px-4 py-4">
                     <Link
                       href={`/dashboard/orders/${order.id}`}
-                      className="font-medium text-[#d6ff3c] hover:underline"
+                      className="font-medium text-[#3f4d0e] hover:underline"
                     >
                       {order.id}
                     </Link>
-                    <p className="mt-1 text-xs text-[#c8c4b8]">
+                    <p className="mt-1 text-xs text-[#52706a]">
                       {new Date(order.createdAt).toLocaleDateString("en-NG")}
                     </p>
                   </td>

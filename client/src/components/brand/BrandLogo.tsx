@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -8,8 +7,8 @@ type BrandLogoProps = {
   /** Accessible name for the link/mark */
   label?: string;
   /**
-   * `onLight` — black mark on light UI (default).
-   * `onDark` — inverted so the mark reads light on dark UI.
+   * `onLight` — ink wordmark on light UI (default).
+   * `onDark` — bone wordmark on dark UI.
    */
   variant?: "onLight" | "onDark";
   /** Visual scale for nav / footer / auth */
@@ -17,33 +16,31 @@ type BrandLogoProps = {
 };
 
 const SIZE_CLASS = {
-  sm: "h-8 w-auto max-w-[9.5rem]",
-  md: "h-10 w-auto max-w-[11rem]",
-  lg: "h-14 w-auto max-w-[18rem] sm:h-16",
+  sm: "text-[1.15rem]",
+  md: "text-[1.35rem]",
+  lg: "text-[1.9rem] sm:text-[2.3rem]",
 } as const;
 
-/** Shared Driplab logo used in nav, auth, dashboard, and footer. */
+/** Font wordmark used in nav, auth, dashboard, and footer. */
 export function BrandLogo({
   href = "/",
   className,
-  label = "Driplab home",
+  label = "Driplap home",
   variant = "onLight",
   size = "sm",
 }: BrandLogoProps) {
   const mark = (
-    <Image
-      src="/brand/driplab-logo.jpg"
-      alt="Driplab"
-      width={240}
-      height={160}
-      priority={size !== "lg"}
+    <span
+      aria-hidden="true"
       className={cn(
+        "font-heading font-extrabold lowercase leading-none tracking-[-0.05em]",
         SIZE_CLASS[size],
-        "object-contain object-left",
-        variant === "onDark" && "rounded-sm invert",
+        variant === "onDark" ? "text-[#f3f0e8]" : "text-[#0b1f1c]",
         className,
       )}
-    />
+    >
+      driplap<span className="text-[#5a6b14]">.</span>
+    </span>
   );
 
   if (href == null || href === "") {
