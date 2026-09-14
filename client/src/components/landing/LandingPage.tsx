@@ -327,9 +327,8 @@ export function LandingPage() {
           padX,
         )}
       >
-        <BrandLogo href="/" size="md" />
         <nav
-          className="hidden items-center gap-7 text-[0.78rem] tracking-[0.06em] text-[#5a574f] md:flex"
+          className="hidden items-center justify-self-start gap-7 text-[0.78rem] tracking-[0.06em] text-[#5a574f] md:flex"
           aria-label="Main"
         >
           <a href="#how" className="transition-colors hover:text-[#070807]">
@@ -345,6 +344,9 @@ export function LandingPage() {
             Pricing
           </a>
         </nav>
+        <div className="justify-self-start md:justify-self-center">
+          <BrandLogo href="/" size="md" />
+        </div>
         <div className="hidden items-center justify-end gap-3 md:flex">
           {showAuthedCtas ? (
             <LimeButton href="/dashboard" className="px-4 py-2">
