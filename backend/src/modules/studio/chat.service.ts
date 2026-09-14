@@ -68,6 +68,8 @@ type ChatContentMessage = {
 const TEXT_ONLY_MODELS = new Set(['o3-mini']);
 const MAX_REF_IMAGES = 3;
 const MAX_REF_BYTES = 10 * 1024 * 1024;
+/** Fresh presigned URLs for generated previews (fixes expired imageUrl on reload). */
+const GENERATED_URL_TTL_SECONDS = 3_600;
 const ALLOWED_REF_MIMES = new Set([
   'image/jpeg',
   'image/png',
@@ -99,7 +101,9 @@ export class ChatService {
   ): Promise<ChatHistoryResponse> {
     const design = await this.findOwnedDesign(userId, designId);
     const chat = normalizeChat(design.chat);
-    return { chat: await this.withAttachmentUrls(userId, chat) };
+    return {
+      chat: await this.withFreshUrls(userId, chat),
+    };
   }
 
   async sendMessage(
@@ -190,7 +194,7 @@ export class ChatService {
       }
       return {
         reply,
-        chat: await this.withAttachmentUrls(userId, chat),
+        chat: await this.withFreshUrls(userId, chat),
         model: model.id,
         generateJobId,
       };
@@ -227,7 +231,7 @@ export class ChatService {
 
     return {
       reply,
-      chat: await this.withAttachmentUrls(userId, chat),
+      chat: await this.withFreshUrls(userId, chat),
       model: model.id,
     };
   }
@@ -302,6 +306,31 @@ export class ChatService {
   }
 
   /** Persisted chat stores assetIds only — resolve fresh presigned URLs per read. */
+  private async withFreshUrls(
+    userId: string,
+    chat: DesignChatMessage[],
+  ): Promise<DesignChatMessage[]> {
+    const withAttachments = await this.withAttachmentUrls(userId, chat);
+    return Promise.all(
+      withAttachments.map(async (message) => {
+        if (!message.imageAssetId) return message;
+        try {
+          const asset = await this.prisma.asset.findFirst({
+            where: { id: message.imageAssetId, userId },
+          });
+          if (!asset) return message;
+          const url = await this.storageService.createPresignedDownloadUrl(
+            asset.storageKey,
+            GENERATED_URL_TTL_SECONDS,
+          );
+          return { ...message, imageUrl: url };
+        } catch {
+          return message;
+        }
+      }),
+    );
+  }
+
   private async withAttachmentUrls(
     userId: string,
     chat: DesignChatMessage[],
