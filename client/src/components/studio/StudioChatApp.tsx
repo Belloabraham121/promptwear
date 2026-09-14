@@ -515,7 +515,7 @@ export function StudioChatApp() {
         )}
       >
         <div className="flex items-center justify-between gap-2 border-b border-[#0b1f1c]/10 px-3 py-3">
-          <BrandLogo href="/dashboard" variant="onDark" size="sm" />
+          <BrandLogo href="/dashboard" size="sm" />
           <button
             type="button"
             className="grid size-9 place-items-center rounded-lg text-[#52706a] transition hover:bg-[#0b1f1c]/5 hover:text-[#0b1f1c] md:hidden"
