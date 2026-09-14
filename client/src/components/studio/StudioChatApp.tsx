@@ -475,7 +475,7 @@ export function StudioChatApp() {
 
   if (!ready) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-[#070807] text-[#c8c4b8]">
+      <div className="flex min-h-dvh items-center justify-center bg-[#f3f0e8] text-[#52706a]">
         <p className="text-sm tracking-[0.08em] uppercase">Loading studio…</p>
       </div>
     );
@@ -484,7 +484,7 @@ export function StudioChatApp() {
   const busy = chatSending || generating;
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-[#070807] text-[#f3f0e8] font-[family-name:var(--font-body)]">
+    <div className="flex h-dvh overflow-hidden bg-[#f3f0e8] text-[#0b1f1c] font-[family-name:var(--font-body)]">
       {/* Mobile overlay */}
       {sidebarOpen ? (
         <button
@@ -502,23 +502,23 @@ export function StudioChatApp() {
           onClick={() => setSidebarCollapsed(false)}
           aria-label="Expand chats sidebar"
           title="Expand chats sidebar"
-          className="mt-3 ml-3 hidden size-11 shrink-0 place-items-center self-start rounded-2xl border border-[#f3f0e8]/10 bg-[#0c0e0c] text-[#c8c4b8] shadow-[0_8px_30px_rgba(0,0,0,0.45)] transition hover:text-[#d6ff3c] md:grid"
+          className="mt-3 ml-3 hidden size-11 shrink-0 place-items-center self-start rounded-2xl border border-[#0b1f1c]/10 bg-white text-[#52706a] shadow-[0_8px_30px_rgba(11,31,28,0.12)] transition hover:text-[#0b1f1c] md:grid"
         >
           <PanelLeftOpen size={19} strokeWidth={2} />
         </button>
       ) : null}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-[18.5rem] flex-col border-r border-[#f3f0e8]/10 bg-[#0c0e0c] transition-transform md:static md:m-3 md:h-[calc(100dvh-1.5rem)] md:shrink-0 md:translate-x-0 md:rounded-2xl md:border md:shadow-[0_8px_30px_rgba(0,0,0,0.45)]",
+          "fixed inset-y-0 left-0 z-40 flex w-[18.5rem] flex-col border-r border-[#0b1f1c]/10 bg-white transition-transform md:static md:m-3 md:h-[calc(100dvh-1.5rem)] md:shrink-0 md:translate-x-0 md:rounded-2xl md:border md:shadow-[0_8px_30px_rgba(11,31,28,0.12)]",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
           sidebarCollapsed && "md:hidden",
         )}
       >
-        <div className="flex items-center justify-between gap-2 border-b border-[#f3f0e8]/10 px-3 py-3">
+        <div className="flex items-center justify-between gap-2 border-b border-[#0b1f1c]/10 px-3 py-3">
           <BrandLogo href="/dashboard" variant="onDark" size="sm" />
           <button
             type="button"
-            className="grid size-9 place-items-center rounded-lg text-[#c8c4b8] transition hover:bg-[#f3f0e8]/8 hover:text-[#f3f0e8] md:hidden"
+            className="grid size-9 place-items-center rounded-lg text-[#52706a] transition hover:bg-[#0b1f1c]/5 hover:text-[#0b1f1c] md:hidden"
             aria-label="Close sidebar"
             onClick={() => setSidebarOpen(false)}
           >
@@ -526,7 +526,7 @@ export function StudioChatApp() {
           </button>
           <button
             type="button"
-            className="hidden size-9 place-items-center rounded-lg text-[#c8c4b8] transition hover:bg-[#f3f0e8]/8 hover:text-[#d6ff3c] md:grid"
+            className="hidden size-9 place-items-center rounded-lg text-[#52706a] transition hover:bg-[#0b1f1c]/5 hover:text-[#0b1f1c] md:grid"
             aria-label="Collapse sidebar"
             title="Collapse sidebar"
             onClick={() => setSidebarCollapsed(true)}
@@ -552,7 +552,7 @@ export function StudioChatApp() {
           aria-label="Chats"
         >
           {sortedDesigns.length === 0 ? (
-            <p className="px-2 py-4 text-sm text-[#c8c4b8]">
+            <p className="px-2 py-4 text-sm text-[#52706a]">
                 No chats yet. Start one to talk through an apparel idea.
             </p>
           ) : (
@@ -564,8 +564,8 @@ export function StudioChatApp() {
                   className={cn(
                     "group flex items-stretch gap-1 rounded-md transition",
                     active
-                      ? "bg-[#d6ff3c]/12 text-[#f3f0e8]"
-                      : "text-[#c8c4b8] hover:bg-[#f3f0e8]/6 hover:text-[#f3f0e8]",
+                      ? "bg-[#d6ff3c]/12 text-[#0b1f1c]"
+                      : "text-[#52706a] hover:bg-[#0b1f1c]/5 hover:text-[#0b1f1c]",
                   )}
                 >
                   <Link
@@ -573,10 +573,10 @@ export function StudioChatApp() {
                     onClick={() => setSidebarOpen(false)}
                     className="min-w-0 flex-1 px-3 py-2.5"
                   >
-                    <p className="truncate text-sm font-medium text-[#f3f0e8]">
+                    <p className="truncate text-sm font-medium text-[#0b1f1c]">
                       {design.title || "Untitled chat"}
                     </p>
-                    <p className="mt-0.5 line-clamp-1 text-xs text-[#8a867c]">
+                    <p className="mt-0.5 line-clamp-1 text-xs text-[#52706a]">
                       {chatPreview(design)}
                     </p>
                   </Link>
@@ -588,7 +588,7 @@ export function StudioChatApp() {
                       event.stopPropagation();
                       setDeleteTarget(design);
                     }}
-                    className="mr-1 grid size-9 shrink-0 place-items-center self-center text-[#8a867c] opacity-100 transition hover:text-red-300 md:opacity-0 md:group-hover:opacity-100"
+                    className="mr-1 grid size-9 shrink-0 place-items-center self-center text-[#52706a] opacity-100 transition hover:text-red-600 md:opacity-0 md:group-hover:opacity-100"
                   >
                     <Trash2 size={14} strokeWidth={2.25} />
                   </button>
@@ -598,10 +598,10 @@ export function StudioChatApp() {
           )}
         </nav>
 
-        <div className="border-t border-[#f3f0e8]/10 p-3">
+        <div className="border-t border-[#0b1f1c]/10 p-3">
           <Link
             href="/dashboard"
-            className="text-xs font-semibold uppercase tracking-[0.08em] text-[#c8c4b8] hover:text-[#f3f0e8]"
+            className="text-xs font-semibold uppercase tracking-[0.08em] text-[#52706a] hover:text-[#0b1f1c]"
           >
             ← Dashboard
           </Link>
@@ -610,10 +610,10 @@ export function StudioChatApp() {
 
       {/* Main chat pane */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex shrink-0 items-center gap-3 border-b border-[#f3f0e8]/10 px-3 py-3 md:px-5">
+        <header className="flex shrink-0 items-center gap-3 border-b border-[#0b1f1c]/10 px-3 py-3 md:px-5">
           <button
             type="button"
-            className="grid size-10 place-items-center border border-[#f3f0e8]/20 text-[#f3f0e8] md:hidden"
+            className="grid size-10 place-items-center border border-[#0b1f1c]/15 text-[#0b1f1c] md:hidden"
             aria-label="Open chats"
             onClick={() => setSidebarOpen(true)}
           >
@@ -623,7 +623,7 @@ export function StudioChatApp() {
             <p className="truncate font-[family-name:var(--font-display)] text-lg font-bold tracking-[-0.03em]">
               {activeDesign?.title ?? "Studio agent"}
             </p>
-            <p className="text-xs text-[#c8c4b8]">
+            <p className="text-xs text-[#52706a]">
                 Talk through ideas, then generate a design concept.
             </p>
           </div>
@@ -631,14 +631,14 @@ export function StudioChatApp() {
             <button
               type="button"
               onClick={() => setDeleteTarget(activeDesign)}
-              className="inline-flex items-center gap-1.5 border border-[#f3f0e8]/20 px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-[#c8c4b8] transition hover:border-red-300 hover:text-red-300"
+              className="inline-flex items-center gap-1.5 border border-[#0b1f1c]/15 px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-[#52706a] transition hover:border-red-400 hover:text-red-600"
             >
               <Trash2 size={13} strokeWidth={2.25} />
               Delete
             </button>
           ) : null}
           {!openaiConfigured ? (
-            <span className="hidden text-[0.65rem] uppercase tracking-[0.1em] text-[#ff8f7a] sm:inline">
+            <span className="hidden text-[0.65rem] uppercase tracking-[0.1em] text-red-700 sm:inline">
               AI offline
             </span>
           ) : null}
@@ -647,11 +647,11 @@ export function StudioChatApp() {
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-3 py-6 md:px-8">
           {!activeId ? (
             <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center text-center">
-              <Sparkles className="text-[#d6ff3c]" size={28} />
+              <Sparkles className="text-[#5a6b14]" size={28} />
               <h1 className="mt-4 font-[family-name:var(--font-display)] text-3xl font-extrabold tracking-[-0.04em]">
                 What should we design?
               </h1>
-              <p className="mt-3 max-w-md text-sm leading-relaxed text-[#c8c4b8]">
+              <p className="mt-3 max-w-md text-sm leading-relaxed text-[#52706a]">
                 Start a chat to brainstorm apparel & merch concepts with your agent. Switch
                 to image mode when you’re ready to generate artwork.
               </p>
@@ -665,13 +665,13 @@ export function StudioChatApp() {
               </button>
             </div>
           ) : chatLoading && chat.length === 0 ? (
-            <p className="text-center text-sm text-[#c8c4b8]">Loading chat…</p>
+            <p className="text-center text-sm text-[#52706a]">Loading chat…</p>
           ) : chat.length === 0 ? (
             <div className="mx-auto max-w-2xl pt-16 text-center">
               <h2 className="font-[family-name:var(--font-display)] text-2xl font-bold tracking-[-0.03em]">
                 Describe the vibe
               </h2>
-              <p className="mt-2 text-sm text-[#c8c4b8]">
+              <p className="mt-2 text-sm text-[#52706a]">
                 Ask for directions, iterate on copy, or generate a design image.
               </p>
             </div>
@@ -690,11 +690,11 @@ export function StudioChatApp() {
                       isUser ? "items-end" : "items-start",
                     )}
                   >
-                    <span className="px-1 text-[0.65rem] font-medium tracking-[0.08em] text-[#8a877c] uppercase">
+                    <span className="px-1 text-[0.65rem] font-medium tracking-[0.08em] text-[#52706a] uppercase">
                       {isUser ? "You" : "Driplap"}
                     </span>
                     {isUser ? (
-                      <div className="max-w-[min(100%,34rem)] rounded-2xl rounded-br-md bg-[#d6ff3c]/15 px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words text-[#f3f0e8]">
+                      <div className="max-w-[min(100%,34rem)] rounded-2xl rounded-br-md bg-[#d6ff3c] px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words text-[#070807]">
                         {message.attachments?.length ? (
                           <span className="mb-2 flex flex-wrap gap-1.5">
                             {message.attachments.map((a) =>
@@ -704,19 +704,19 @@ export function StudioChatApp() {
                                   key={a.assetId}
                                   src={a.url}
                                   alt="Reference"
-                                  className="size-16 rounded-lg border border-[#f3f0e8]/20 object-cover"
+                                  className="size-16 rounded-lg border border-[#0b1f1c]/15 object-cover"
                                 />
                               ) : null,
                             )}
                           </span>
                         ) : null}
                         {message.text ? <p>{message.text}</p> : null}
-                        <p className="mt-2 text-[0.65rem] text-[#8a867c]">
+                        <p className="mt-2 text-[0.65rem] text-[#52706a]">
                           {formatChatTime(message.at)}
                         </p>
                       </div>
                     ) : (
-                      <div className="max-w-[min(100%,34rem)] text-sm leading-relaxed whitespace-pre-wrap break-words text-[#e8e4d8]">
+                      <div className="max-w-[min(100%,34rem)] text-sm leading-relaxed whitespace-pre-wrap break-words text-[#0b1f1c]">
                         {message.text ? <p>{message.text}</p> : null}
                         {message.imageUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -736,7 +736,7 @@ export function StudioChatApp() {
               })}
               {busy ? (
                 <div className="flex flex-col items-start gap-2">
-                  <span className="px-1 text-[0.65rem] font-medium tracking-[0.08em] text-[#8a877c] uppercase">
+                  <span className="px-1 text-[0.65rem] font-medium tracking-[0.08em] text-[#52706a] uppercase">
                     Driplap
                   </span>
                   {generating ? (
@@ -745,7 +745,7 @@ export function StudioChatApp() {
                         {Array.from({ length: 24 }).map((_, i) => (
                           <span
                             key={i}
-                            className="w-[3px] origin-center animate-pulse rounded-full bg-[#d6ff3c]/70"
+                            className="w-[3px] origin-center animate-pulse rounded-full bg-[#0b1f1c]/50"
                             style={{
                               height: `${8 + 14 * Math.abs(Math.sin(i / 3))}px`,
                               animationDelay: `${(i % 8) * 120}ms`,
@@ -753,13 +753,13 @@ export function StudioChatApp() {
                           />
                         ))}
                       </div>
-                      <div className="mt-2 aspect-square max-h-80 w-full animate-pulse rounded-xl bg-gradient-to-br from-[#f3f0e8]/15 via-[#d6ff3c]/10 to-[#f3f0e8]/5" />
-                      <p className="mt-2 animate-pulse text-xs text-[#8a877c]">
+                      <div className="mt-2 aspect-square max-h-80 w-full animate-pulse rounded-xl bg-gradient-to-br from-[#0b1f1c]/10 via-[#d6ff3c]/40 to-[#0b1f1c]/5" />
+                      <p className="mt-2 animate-pulse text-xs text-[#52706a]">
                         Composing design…
                       </p>
                     </div>
                   ) : (
-                    <p className="animate-pulse text-sm text-[#8a877c]">
+                    <p className="animate-pulse text-sm text-[#52706a]">
                       Thinking…
                     </p>
                   )}
@@ -773,7 +773,7 @@ export function StudioChatApp() {
           <div className="shrink-0 px-3 pb-5 pt-3 md:px-8">
             <div className="mx-auto w-[min(100%,36rem)]">
               {!openaiConfigured ? (
-                <p className="mb-2 px-1 text-xs text-[#c8c4b8]">
+                <p className="mb-2 px-1 text-xs text-[#52706a]">
                   Live AI needs OPENAI_API_KEY in backend/.env — using local
                   fallback replies for now.
                 </p>
@@ -781,14 +781,14 @@ export function StudioChatApp() {
 
               <form
                 onSubmit={(e) => void onSubmit(e)}
-                className="relative w-full rounded-2xl border border-[#f3f0e8]/14 bg-[#121511]/95 shadow-[0_0_0_1px_rgba(214,255,60,0.04),0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-md"
+                className="relative w-full rounded-2xl border border-[#0b1f1c]/10 bg-white shadow-[0_0_0_1px_rgba(11,31,28,0.04),0_12px_40px_rgba(11,31,28,0.12)] backdrop-blur-md"
               >
                 {pendingRefs.length > 0 || uploadingRef ? (
                   <div className="flex flex-wrap items-center gap-2 px-4 pt-3">
                     {pendingRefs.map((ref) => (
                       <span
                         key={ref.assetId}
-                        className="relative inline-block size-14 overflow-hidden rounded-lg border border-[#d6ff3c]/30"
+                        className="relative inline-block size-14 overflow-hidden rounded-lg border border-[#0b1f1c]/15"
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
@@ -811,7 +811,7 @@ export function StudioChatApp() {
                       </span>
                     ))}
                     {uploadingRef ? (
-                      <span className="animate-pulse px-1 text-xs text-[#8a877c]">
+                      <span className="animate-pulse px-1 text-xs text-[#52706a]">
                         Uploading…
                       </span>
                     ) : null}
@@ -836,7 +836,7 @@ export function StudioChatApp() {
                         ? "Describe the design to generate…"
                         : "Ask about your design…"
                   }
-                  className="min-h-[3.25rem] w-full resize-none bg-transparent px-4 pt-3.5 pb-1 text-[0.95rem] leading-relaxed text-[#f3f0e8] outline-none placeholder:text-[#8a877c] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="min-h-[3.25rem] w-full resize-none bg-transparent px-4 pt-3.5 pb-1 text-[0.95rem] leading-relaxed text-[#0b1f1c] outline-none placeholder:text-[#52706a] disabled:cursor-not-allowed disabled:opacity-50"
                 />
 
                 <div className="flex items-center justify-between gap-3 px-2.5 pb-2.5 pt-1">
@@ -858,8 +858,8 @@ export function StudioChatApp() {
                       className={cn(
                         "grid size-8 place-items-center rounded-lg transition",
                         pendingRefs.length
-                          ? "bg-[#d6ff3c]/15 text-[#d6ff3c]"
-                          : "text-[#f3f0e8]/80 hover:bg-[#f3f0e8]/8 hover:text-[#d6ff3c]",
+                          ? "bg-[#0b1f1c] text-white"
+                          : "text-[#0b1f1c]/70 hover:bg-[#0b1f1c]/5 hover:text-[#0b1f1c]",
                       )}
                     >
                       <Plus size={18} strokeWidth={2} />
@@ -876,18 +876,18 @@ export function StudioChatApp() {
                       className={cn(
                         "grid size-8 place-items-center rounded-lg transition",
                         isImageMode
-                          ? "bg-[#d6ff3c]/15 text-[#d6ff3c]"
-                          : "text-[#c8c4b8] hover:bg-[#f3f0e8]/8 hover:text-[#d6ff3c]",
+                          ? "bg-[#0b1f1c] text-white"
+                          : "text-[#52706a] hover:bg-[#0b1f1c]/5 hover:text-[#0b1f1c]",
                       )}
                     >
                       <ImageIcon size={16} strokeWidth={2} />
                     </button>
                     {imagePickerOpen ? (
-                      <div className="absolute bottom-[calc(100%+0.5rem)] left-0 z-40 max-h-[min(16rem,42vh)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-xl border border-[#f3f0e8]/14 bg-[#121511] p-2 shadow-[0_16px_40px_rgba(0,0,0,0.55)]">
-                        <p className="px-2 pb-1 text-[0.65rem] font-semibold tracking-[0.12em] text-[#8a877c] uppercase">
+                      <div className="absolute bottom-[calc(100%+0.5rem)] left-0 z-40 max-h-[min(16rem,42vh)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-xl border border-[#0b1f1c]/10 bg-white p-2 shadow-[0_16px_40px_rgba(11,31,28,0.16)]">
+                        <p className="px-2 pb-1 text-[0.65rem] font-semibold tracking-[0.12em] text-[#52706a] uppercase">
                           Image models
                         </p>
-                        <p className="px-2 pb-1.5 text-[0.7rem] text-[#8a877c]">
+                        <p className="px-2 pb-1.5 text-[0.7rem] text-[#52706a]">
                           gpt-image-1 — pick a price, then describe the design
                         </p>
                         <button
@@ -899,15 +899,15 @@ export function StudioChatApp() {
                           className={cn(
                             "mb-1.5 flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition",
                             !isImageMode
-                              ? "bg-[#d6ff3c]/12 text-[#d6ff3c]"
-                              : "text-[#f3f0e8] hover:bg-[#f3f0e8]/8",
+                              ? "bg-[#0b1f1c]/[0.06] text-[#0b1f1c]"
+                              : "text-[#0b1f1c] hover:bg-[#0b1f1c]/5",
                           )}
                         >
                           <span>Chat only (no image)</span>
                         </button>
                         {imageOptionsByQuality.map(({ quality, options }) => (
                           <div key={quality} className="mb-1.5 last:mb-0">
-                            <p className="px-2 pb-0.5 text-[0.6rem] tracking-[0.1em] text-[#8a877c] uppercase">
+                            <p className="px-2 pb-0.5 text-[0.6rem] tracking-[0.1em] text-[#52706a] uppercase">
                               {quality}
                             </p>
                             {options.map((option) => {
@@ -928,12 +928,12 @@ export function StudioChatApp() {
                                   className={cn(
                                     "flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition",
                                     active
-                                      ? "bg-[#d6ff3c]/12 text-[#d6ff3c]"
-                                      : "text-[#f3f0e8] hover:bg-[#f3f0e8]/8",
+                                      ? "bg-[#0b1f1c]/[0.06] text-[#0b1f1c]"
+                                      : "text-[#0b1f1c] hover:bg-[#0b1f1c]/5",
                                   )}
                                 >
                                   <span>{option.size}</span>
-                                  <span className="text-[0.7rem] text-[#8a877c]">
+                                  <span className="text-[0.7rem] text-[#52706a]">
                                     ${option.priceUsd.toFixed(3)}
                                   </span>
                                 </button>
@@ -947,10 +947,10 @@ export function StudioChatApp() {
 
                   <div className="relative flex items-center gap-0.5 sm:gap-1">
                     {modelPickerOpen ? (
-                      <div className="absolute bottom-[calc(100%+0.5rem)] right-0 z-40 max-h-[min(16rem,42vh)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-xl border border-[#f3f0e8]/14 bg-[#121511] p-2 shadow-[0_16px_40px_rgba(0,0,0,0.55)]">
+                      <div className="absolute bottom-[calc(100%+0.5rem)] right-0 z-40 max-h-[min(16rem,42vh)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-xl border border-[#0b1f1c]/10 bg-white p-2 shadow-[0_16px_40px_rgba(11,31,28,0.16)]">
                         {modelsByGroup.map(({ group, models }) => (
                           <div key={group} className="mb-2 last:mb-0">
-                            <p className="px-2 pb-1 text-[0.65rem] font-semibold tracking-[0.12em] text-[#8a877c] uppercase">
+                            <p className="px-2 pb-1 text-[0.65rem] font-semibold tracking-[0.12em] text-[#52706a] uppercase">
                               {group}
                             </p>
                             {models.map((model) => {
@@ -966,14 +966,14 @@ export function StudioChatApp() {
                                   className={cn(
                                     "flex w-full flex-col items-start rounded-lg px-2 py-1.5 text-left transition",
                                     active
-                                      ? "bg-[#d6ff3c]/12 text-[#d6ff3c]"
-                                      : "text-[#f3f0e8] hover:bg-[#f3f0e8]/8",
+                                      ? "bg-[#0b1f1c]/[0.06] text-[#0b1f1c]"
+                                      : "text-[#0b1f1c] hover:bg-[#0b1f1c]/5",
                                   )}
                                 >
                                   <span className="text-sm font-medium">
                                     {model.label}
                                   </span>
-                                  <span className="text-[0.7rem] text-[#8a877c]">
+                                  <span className="text-[0.7rem] text-[#52706a]">
                                     {model.description}
                                   </span>
                                 </button>
@@ -990,7 +990,7 @@ export function StudioChatApp() {
                         setModelPickerOpen((open) => !open);
                         setImagePickerOpen(false);
                       }}
-                      className="inline-flex max-w-[14rem] items-center gap-1 rounded-lg px-2 py-1.5 text-sm text-[#f3f0e8] transition hover:bg-[#f3f0e8]/8"
+                      className="inline-flex max-w-[14rem] items-center gap-1 rounded-lg px-2 py-1.5 text-sm text-[#0b1f1c] transition hover:bg-[#0b1f1c]/5"
                       aria-label="Choose chat model"
                       aria-expanded={modelPickerOpen}
                     >
@@ -1009,8 +1009,8 @@ export function StudioChatApp() {
                       className={cn(
                         "grid size-8 place-items-center rounded-lg transition",
                         isListening
-                          ? "bg-[#d6ff3c]/15 text-[#d6ff3c]"
-                          : "text-[#c8c4b8] hover:bg-[#f3f0e8]/8 hover:text-[#d6ff3c]",
+                          ? "bg-[#0b1f1c] text-white"
+                          : "text-[#52706a] hover:bg-[#0b1f1c]/5 hover:text-[#0b1f1c]",
                       )}
                     >
                       <AudioLines size={16} strokeWidth={2} />
@@ -1019,7 +1019,7 @@ export function StudioChatApp() {
                       type="submit"
                       aria-label="Send prompt"
                       disabled={busy || !chatInput.trim()}
-                      className="grid size-8 place-items-center rounded-lg text-[#d6ff3c] transition hover:bg-[#d6ff3c]/15 disabled:cursor-not-allowed disabled:opacity-35"
+                      className="grid size-8 place-items-center rounded-lg bg-[#0b1f1c] text-white transition hover:bg-[#14322d] disabled:cursor-not-allowed disabled:opacity-35"
                     >
                       <Send size={16} strokeWidth={2} />
                     </button>
@@ -1038,7 +1038,7 @@ export function StudioChatApp() {
           deleteTarget ? (
             <>
               This permanently deletes{" "}
-              <span className="text-[#f3f0e8]">
+              <span className="text-[#0b1f1c]">
                 {deleteTarget.title || "Untitled chat"}
               </span>{" "}
               and its messages. This cannot be undone.
