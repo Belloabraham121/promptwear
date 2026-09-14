@@ -8,6 +8,8 @@ import {
   Image as ImageIcon,
   Menu,
   MessageSquarePlus,
+  PanelLeftClose,
+  PanelLeftOpen,
   Plus,
   Send,
   Sparkles,
@@ -124,6 +126,7 @@ export function StudioChatApp() {
     useDashboard();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [creating, setCreating] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Design | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -492,22 +495,43 @@ export function StudioChatApp() {
         />
       ) : null}
 
-      {/* Left chat list */}
+      {/* Left chat list — floating detached card on desktop */}
+      {sidebarCollapsed ? (
+        <button
+          type="button"
+          onClick={() => setSidebarCollapsed(false)}
+          aria-label="Expand chats sidebar"
+          title="Expand chats sidebar"
+          className="mt-3 ml-3 hidden size-11 shrink-0 place-items-center self-start rounded-2xl border border-[#f3f0e8]/10 bg-[#0c0e0c] text-[#c8c4b8] shadow-[0_8px_30px_rgba(0,0,0,0.45)] transition hover:text-[#d6ff3c] md:grid"
+        >
+          <PanelLeftOpen size={19} strokeWidth={2} />
+        </button>
+      ) : null}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-[18.5rem] flex-col border-r border-[#f3f0e8]/10 bg-[#0c0e0c] transition-transform md:static md:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex w-[18.5rem] flex-col border-r border-[#f3f0e8]/10 bg-[#0c0e0c] transition-transform md:static md:m-3 md:h-[calc(100dvh-1.5rem)] md:shrink-0 md:translate-x-0 md:rounded-2xl md:border md:shadow-[0_8px_30px_rgba(0,0,0,0.45)]",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
+          sidebarCollapsed && "md:hidden",
         )}
       >
         <div className="flex items-center justify-between gap-2 border-b border-[#f3f0e8]/10 px-3 py-3">
           <BrandLogo href="/dashboard" variant="onDark" size="sm" />
           <button
             type="button"
-            className="grid size-9 place-items-center text-[#c8c4b8] md:hidden"
+            className="grid size-9 place-items-center rounded-lg text-[#c8c4b8] transition hover:bg-[#f3f0e8]/8 hover:text-[#f3f0e8] md:hidden"
             aria-label="Close sidebar"
             onClick={() => setSidebarOpen(false)}
           >
             <X size={18} />
+          </button>
+          <button
+            type="button"
+            className="hidden size-9 place-items-center rounded-lg text-[#c8c4b8] transition hover:bg-[#f3f0e8]/8 hover:text-[#d6ff3c] md:grid"
+            aria-label="Collapse sidebar"
+            title="Collapse sidebar"
+            onClick={() => setSidebarCollapsed(true)}
+          >
+            <PanelLeftClose size={18} strokeWidth={2} />
           </button>
         </div>
 

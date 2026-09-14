@@ -17,43 +17,43 @@ const CARDS: FanCard[] = [
     src: "/landing/cutouts/landing-tee-campus.png",
     alt: "Lime campus tee, background removed",
     tint: "bg-[#070807]",
-    rotate: "md:-rotate-[9deg] -rotate-[7deg]",
-    lift: "md:translate-y-6 translate-y-3",
-  },
-  {
-    src: "/landing/cutouts/landing-hero-2.png",
-    alt: "Black Icarus polo with gold embroidery, background removed",
-    tint: "bg-white",
-    rotate: "md:-rotate-[5deg] -rotate-[4deg]",
-    lift: "md:translate-y-2 translate-y-1",
+    rotate: "md:-rotate-[9deg]",
+    lift: "md:translate-y-6",
   },
   {
     src: "/landing/cutouts/landing-tee-oversized.png",
     alt: "Black oversized tee, background removed",
     tint: "bg-[#e9e4d6]",
-    rotate: "md:-rotate-[2deg] -rotate-[1deg]",
+    rotate: "md:-rotate-[5deg]",
+    lift: "md:translate-y-2",
+  },
+  {
+    src: "/landing/cutouts/landing-hero-2.png",
+    alt: "Black Icarus polo with gold embroidery, background removed",
+    tint: "bg-white",
+    rotate: "md:-rotate-[2deg]",
     lift: "",
   },
   {
     src: "/landing/cutouts/landing-hero-1.png",
     alt: "Black dragon polo, background removed",
     tint: "bg-white",
-    rotate: "md:rotate-[2deg] rotate-[1deg]",
+    rotate: "md:rotate-[2deg]",
     lift: "",
   },
   {
     src: "/landing/cutouts/landing-hero-editor.png",
     alt: "Cream embroidered Opium polo front, background removed",
     tint: "bg-[#070807]",
-    rotate: "md:rotate-[5deg] rotate-[4deg]",
-    lift: "md:translate-y-2 translate-y-1",
+    rotate: "md:rotate-[5deg]",
+    lift: "md:translate-y-2",
   },
   {
     src: "/landing/cutouts/landing-hero-life.png",
     alt: "Cream embroidered Opium polo back, background removed",
     tint: "bg-[#e9e4d6]",
-    rotate: "md:rotate-[9deg] rotate-[7deg]",
-    lift: "md:translate-y-6 translate-y-3",
+    rotate: "md:rotate-[9deg]",
+    lift: "md:translate-y-6",
   },
 ];
 
@@ -61,7 +61,7 @@ const CARDS: FanCard[] = [
 export function HeroFan() {
   return (
     <div
-      className="flex flex-nowrap items-start justify-start overflow-x-auto px-6 pt-4 pb-8 md:justify-center md:overflow-visible md:px-0"
+      className="grid grid-cols-3 gap-3 px-1 md:flex md:flex-nowrap md:items-start md:justify-center md:gap-0 md:overflow-visible md:px-0 md:pt-4 md:pb-8"
       aria-label="Garments designed on Driplap"
     >
       {CARDS.map((card, index) => (
@@ -69,8 +69,8 @@ export function HeroFan() {
           key={card.src}
           style={{ zIndex: index }}
           className={cn(
-            "w-32 shrink-0 overflow-hidden rounded-3xl shadow-[0_18px_50px_rgba(7,8,7,0.18)] ring-1 ring-[#070807]/10 transition-transform duration-300 hover:z-30 hover:scale-[1.04] hover:rotate-0 sm:w-40 md:w-52",
-            "-ml-7 sm:-ml-9 md:-ml-12 first:ml-0",
+            "overflow-hidden rounded-2xl shadow-[0_18px_50px_rgba(7,8,7,0.18)] ring-1 ring-[#070807]/10 transition-transform duration-300 hover:z-30 hover:scale-[1.04] hover:rotate-0 md:w-36 md:shrink-0 md:rounded-3xl lg:w-48 xl:w-52",
+            "md:-ml-10 md:first:ml-0 lg:-ml-12",
             card.tint,
             card.rotate,
             card.lift,
@@ -82,7 +82,7 @@ export function HeroFan() {
               alt={card.alt}
               fill
               priority={index < 3}
-              sizes="(min-width: 768px) 13rem, 8rem"
+              sizes="(min-width: 1280px) 13rem, (min-width: 1024px) 12rem, (min-width: 768px) 9rem, 33vw"
               className="object-contain p-2"
             />
           </div>
