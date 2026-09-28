@@ -1,45 +1,23 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
-import { OrderStatus, UserRole } from '@prisma/client';
-import cookieParser from 'cookie-parser';
+import { INestApplication } from '@nestjs/common';
+import { OrderStatus } from '@prisma/client';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from '../src/app.module';
-import { PasswordService } from '../src/modules/auth/password.service';
+import {
+  createTestApp,
+  makeAdmin,
+  newAgent,
+  setTestEnv,
+  signIn,
+  signUp,
+  type TestAgent,
+} from './helpers';
 import { PrismaService } from '../src/modules/prisma/prisma.service';
 import { RedisService } from '../src/modules/redis/redis.service';
-
-function setTestEnv(): void {
-  process.env.NODE_ENV = 'test';
-  process.env.DATABASE_URL ??=
-    'postgresql://promptwear:promptwear@localhost:5433/promptwear';
-  process.env.REDIS_URL ??= 'redis://localhost:6379';
-  process.env.JWT_SECRET ??=
-    'test-jwt-secret-at-least-32-characters-long';
-  process.env.JWT_ACCESS_TTL ??= '15m';
-  process.env.JWT_REFRESH_TTL ??= '7d';
-  process.env.APP_URL ??= 'http://localhost:3000';
-  process.env.PORT ??= '3001';
-  process.env.S3_ENDPOINT ??= 'http://localhost:9000';
-  process.env.S3_REGION ??= 'us-east-1';
-  process.env.S3_ACCESS_KEY_ID ??= 'minioadmin';
-  process.env.S3_SECRET_ACCESS_KEY ??= 'minioadmin';
-  process.env.S3_BUCKET ??= 'promptwear-assets';
-  process.env.S3_FORCE_PATH_STYLE ??= 'true';
-}
-
-async function fetchCsrfToken(
-  agent: ReturnType<typeof request.agent>,
-): Promise<string> {
-  const csrfResponse = await agent.get('/api/v1/auth/csrf').expect(200);
-  return csrfResponse.body.data.token as string;
-}
 
 describe('Admin Analytics (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
   let redis: RedisService;
-  let passwordService: PasswordService;
 
   const runId = Date.now();
   const adminEmail = `analytics-admin-${runId}@example.com`;
@@ -51,7 +29,7 @@ describe('Admin Analytics (e2e)', () => {
   let customerUserId = '';
   let repeatUserId = '';
   let vendorId = '';
-  let adminAgent: ReturnType<typeof request.agent> | null = null;
+  let adminAgent: TestAgent | null = null;
   const orderIds: string[] = [];
   const designIds: string[] = [];
 
@@ -60,54 +38,42 @@ describe('Admin Analytics (e2e)', () => {
 
   beforeAll(async () => {
     setTestEnv();
-
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    prisma = app.get(PrismaService);
+    ({ app, prisma } = await createTestApp());
     redis = app.get(RedisService);
-    passwordService = app.get(PasswordService);
 
-    app.setGlobalPrefix('api/v1');
-    app.use(cookieParser());
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-      }),
-    );
-    await app.init();
-
-    const passwordHash = await passwordService.hash(testPassword);
-
-    const admin = await prisma.user.create({
-      data: {
-        email: adminEmail,
-        name: 'Analytics Admin',
-        passwordHash,
-        role: UserRole.admin,
-      },
+    // Users register through Better Auth (creates credential accounts);
+    // the admin is promoted afterwards.
+    const setupAgent = newAgent(app);
+    await signUp(setupAgent, {
+      email: adminEmail,
+      name: 'Analytics Admin',
+      password: testPassword,
+    });
+    await makeAdmin(prisma, adminEmail);
+    const admin = await prisma.user.findUniqueOrThrow({
+      where: { email: adminEmail },
     });
     adminUserId = admin.id;
 
-    const customer = await prisma.user.create({
-      data: {
-        email: customerEmail,
-        name: 'Analytics Customer',
-        passwordHash,
-      },
+    const customerAgent = newAgent(app);
+    await signUp(customerAgent, {
+      email: customerEmail,
+      name: 'Analytics Customer',
+      password: testPassword,
+    });
+    const customer = await prisma.user.findUniqueOrThrow({
+      where: { email: customerEmail },
     });
     customerUserId = customer.id;
 
-    const repeatCustomer = await prisma.user.create({
-      data: {
-        email: repeatEmail,
-        name: 'Repeat Customer',
-        passwordHash,
-      },
+    const repeatAgent = newAgent(app);
+    await signUp(repeatAgent, {
+      email: repeatEmail,
+      name: 'Repeat Customer',
+      password: testPassword,
+    });
+    const repeatCustomer = await prisma.user.findUniqueOrThrow({
+      where: { email: repeatEmail },
     });
     repeatUserId = repeatCustomer.id;
 
@@ -229,11 +195,8 @@ describe('Admin Analytics (e2e)', () => {
 
     orderIds.push(orderA.id, orderB.id, orderC.id, orderD.id, cancelled.id);
 
-    adminAgent = request.agent(app.getHttpServer());
-    await adminAgent
-      .post('/api/v1/auth/login')
-      .send({ email: adminEmail, password: testPassword })
-      .expect(201);
+    adminAgent = newAgent(app);
+    await signIn(adminAgent, { email: adminEmail, password: testPassword });
   });
 
   afterAll(async () => {
@@ -261,11 +224,8 @@ describe('Admin Analytics (e2e)', () => {
   });
 
   async function loginAs(email: string) {
-    const agent = request.agent(app.getHttpServer());
-    await agent
-      .post('/api/v1/auth/login')
-      .send({ email, password: testPassword })
-      .expect(201);
+    const agent = newAgent(app);
+    await signIn(agent, { email, password: testPassword });
     return agent;
   }
 

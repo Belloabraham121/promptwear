@@ -110,24 +110,46 @@ enum DiscountType {
 }
 
 // ─── Auth & users ────────────────────────────────────────────────────────────
+//
+// TODO(better-auth-phase-2): this model is converging toward the Better Auth
+// schema (see docs/BETTER_AUTH_MIGRATION.md §6). `passwordHash`, `googleId`
+// and `RefreshToken` are legacy and will be dropped at cutover in favor of
+// the `Account` (credential/google) and `Session` tables below. `role` will
+// be converted from the `UserRole` enum to a plain String to match the
+// Better Auth admin plugin (`customer` stays the default).
 
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
   name         String
+  /// TODO(better-auth-phase-6): drop — replaced by Account.providerId="credential".
   passwordHash String?
+  /// TODO(better-auth-phase-6): keep enum until Phase 2 converts role to String.
   role         UserRole @default(customer)
   guest        Boolean  @default(false)
+  /// TODO(better-auth-phase-6): drop — replaced by Account.providerId="google".
   googleId     String?  @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  /// Better Auth core fields (added Phase 1; backfilled Phase 2).
+  emailVerified Boolean   @default(false)
+  image         String?
+  /// Better Auth admin plugin fields (added Phase 1; backfilled Phase 2).
+  banned     Boolean   @default(false)
+  banReason  String?
+  banExpires DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   designs           Design[]
   assets            Asset[]
   orders            Order[]
   payments          Payment[]
   couponRedemptions CouponRedemption[]
+  /// TODO(better-auth-phase-6): drop — replaced by Session.
   refreshTokens     RefreshToken[]
+  sessions          Session[]
+  accounts          Account[]
+  members           Member[]
+  invitations       Invitation[]
 
   @@index([role])
   @@index([guest])
@@ -144,6 +166,107 @@ model RefreshToken {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+// ─── Better Auth tables (Phase 1 scaffold — NOT yet migrated) ───────────────
+// Canonical output of `npx @better-auth/cli generate` against
+// `src/lib/auth.ts`. These tables are created by the Phase 2 migration
+// (`prisma migrate dev --name better-auth-core`); until then the legacy
+// auth module above keeps serving and these delegates are unused.
+
+model Session {
+  id                   String   @id
+  expiresAt            DateTime
+  token                String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  ipAddress            String?
+  userAgent            String?
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  impersonatedBy       String?
+  activeOrganizationId String?
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model Organization {
+  id          String       @id
+  name        String
+  slug        String
+  logo        String?
+  createdAt   DateTime
+  metadata    String?
+  members     Member[]
+  invitations Invitation[]
+
+  @@unique([slug])
+  @@map("organization")
+}
+
+model Member {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String       @default("member")
+  createdAt      DateTime
+
+  @@index([organizationId])
+  @@index([userId])
+  @@map("member")
+}
+
+model Invitation {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  role           String?
+  status         String       @default("pending")
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+  inviterId      String
+  user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([email])
+  @@map("invitation")
 }
 
 // ─── Designs & assets ────────────────────────────────────────────────────────

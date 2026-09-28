@@ -473,7 +473,7 @@ export function LandingPage() {
                 Start with one idea.
               </h2>
               <p className="mt-3 mb-0 max-w-[42ch] leading-[1.55] text-[#5a574f]">
-                We are not a bulk merch factory. Driplap is for original tees —
+                We are not a bulk merch factory. Driblab is for original tees —
                 a thought, a sketch, a small drop — printed and delivered.
               </p>
             </div>
@@ -794,8 +794,8 @@ export function LandingPage() {
             {showAuthedCtas ? "Open app" : "Start designing"}
           </Link>
           {!showAuthedCtas ? <Link href="/login">Log in</Link> : null}
-          <a href="mailto:hello@driplap.ng">hello@driplap.ng</a>
-          <small className="mt-4 opacity-70">© 2026 Driplap</small>
+          <a href="mailto:hello@driblab.ng">hello@driblab.ng</a>
+          <small className="mt-4 opacity-70">© 2026 Driblab</small>
         </div>
       </footer>
     </div>

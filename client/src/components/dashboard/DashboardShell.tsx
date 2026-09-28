@@ -9,6 +9,7 @@ import {
   PenTool,
   Plus,
   UserRound,
+  Users,
 } from "lucide-react";
 import { AppShell } from "@/components/dashboard/AppShell";
 import { useDashboard } from "@/components/dashboard/DashboardProvider";
@@ -20,6 +21,7 @@ const NAV = [
   { href: "/dashboard/designs", label: "Designs", icon: Palette },
   { href: "/dashboard/studio", label: "Studio", icon: PenTool },
   { href: "/dashboard/orders", label: "Orders", icon: Package },
+  { href: "/dashboard/team", label: "Team", icon: Users },
   { href: "/dashboard/account", label: "Account", icon: UserRound },
 ] as const;
 
@@ -56,7 +58,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       nav={NAV}
       eyebrow="Studio & orders"
       brandHref="/"
-      brandLabel="Driplap home"
+      brandLabel="Driblab home"
       headerMeta="Design · Quote · Order"
       headerAction={
         <Link

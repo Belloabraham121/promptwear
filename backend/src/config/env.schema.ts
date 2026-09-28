@@ -18,6 +18,9 @@ export const envSchema = z.object({
   JWT_ACCESS_TTL: z.string().min(1),
   JWT_REFRESH_TTL: z.string().min(1),
   APP_URL: z.string().url(),
+  // Local web origin when it differs from APP_URL (e.g. :3002 because :3000
+  // is taken). Included in CORS + Better Auth trustedOrigins.
+  CLIENT_URL: optionalUrl,
   PORT: z.coerce.number().int().positive().default(3001),
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
@@ -37,6 +40,14 @@ export const envSchema = z.object({
   GOOGLE_CLIENT_ID: optionalNonEmpty,
   GOOGLE_CLIENT_SECRET: optionalNonEmpty,
   GOOGLE_CALLBACK_URL: optionalUrl,
+  // ─── Better Auth (Phase 1 scaffold; required at Phase 3 cutover) ─────────
+  // TODO(better-auth-phase-3): promote BETTER_AUTH_SECRET to required and
+  // remove JWT_* once the legacy auth module is retired.
+  BETTER_AUTH_SECRET: optionalNonEmpty,
+  BETTER_AUTH_URL: optionalUrl,
+  // ─── Email (Resend; unset = dev log-fallback in src/lib/email.ts) ─────────
+  RESEND_API_KEY: optionalNonEmpty,
+  EMAIL_FROM: optionalNonEmpty,
 });
 
 export type EnvSchema = z.infer<typeof envSchema>;
