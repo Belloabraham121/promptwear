@@ -144,6 +144,14 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-}
+      # Better Auth (required — legacy JWT auth is deleted)
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET (fresh `openssl rand -base64 32`, not the dev value)}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?Set BETTER_AUTH_URL to your public API URL}
+      # Extra browser origin (only if the web app runs on a second origin)
+      CLIENT_URL: ${CLIENT_URL:-}
+      # Email delivery (Resend) — unset = nothing sends
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-Promptwear <noreply@team.locimind.org>}
     expose:
       - "3001"
     healthcheck:

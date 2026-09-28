@@ -76,7 +76,7 @@ export function HeroFan() {
             card.lift,
           )}
         >
-          <div className="relative aspect-[3/4] w-full">
+          <div className="relative aspect-3/4 w-full">
             <Image
               src={card.src}
               alt={card.alt}
