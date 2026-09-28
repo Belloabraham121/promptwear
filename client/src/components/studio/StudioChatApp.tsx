@@ -691,7 +691,7 @@ export function StudioChatApp() {
                     )}
                   >
                     <span className="px-1 text-[0.65rem] font-medium tracking-[0.08em] text-[#52706a] uppercase">
-                      {isUser ? "You" : "Driplap"}
+                      {isUser ? "You" : "Driblab"}
                     </span>
                     {isUser ? (
                       <div className="max-w-[min(100%,34rem)] rounded-2xl rounded-br-md bg-[#d6ff3c] px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words text-[#070807]">
@@ -737,7 +737,7 @@ export function StudioChatApp() {
               {busy ? (
                 <div className="flex flex-col items-start gap-2">
                   <span className="px-1 text-[0.65rem] font-medium tracking-[0.08em] text-[#52706a] uppercase">
-                    Driplap
+                    Driblab
                   </span>
                   {generating ? (
                     <div className="w-full max-w-[min(100%,34rem)]">

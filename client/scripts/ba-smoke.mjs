@@ -81,8 +81,29 @@ try {
     `status=${sessionState.status}`,
   );
 
-  // 4. Google button target (fresh profile → Google sign-in or mismatch page).
+  // 4. Forgot? → dedicated page → reset email requested (throwaway address
+  // so no real inbox gets mail; the server still exercises validation + send).
   await page.goto(`${WEB_URL}/login`, { waitUntil: 'networkidle' });
+  await page.context().clearCookies();
+  await page.goto(`${WEB_URL}/login`, { waitUntil: 'networkidle' });
+  await page.getByRole('button', { name: /^forgot\?$/i }).click();
+  try {
+    await page.waitForURL(/\/forgot-password/, { timeout: 10000 });
+    check('forgot-password page opens', true);
+  } catch {
+    check('forgot-password page opens', false, page.url());
+  }
+  await page.locator('input[name="email"]').fill(`pw-forgot-${Date.now()}@example.com`);
+  await page.getByRole('button', { name: /send reset link/i }).click();
+  try {
+    await page.getByText('Check your inbox').waitFor({ timeout: 10000 });
+    check('forgot-password requests reset email', true);
+  } catch {
+    check('forgot-password requests reset email', false, 'no success state');
+  }
+  await page.screenshot({ path: new URL('03-forgot.png', SHOT_DIR).pathname });
+
+  // 5. Google button target (fresh profile → Google sign-in or mismatch page).  await page.goto(`${WEB_URL}/login`, { waitUntil: 'networkidle' });
   // Already authenticated → app redirects to /dashboard; use a fresh context
   // state by clearing cookies first so the login form shows.
   await page.context().clearCookies();

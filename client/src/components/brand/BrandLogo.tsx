@@ -25,7 +25,7 @@ const SIZE_CLASS = {
 export function BrandLogo({
   href = "/",
   className,
-  label = "Driplap home",
+  label = "Driblab home",
   variant = "onLight",
   size = "sm",
 }: BrandLogoProps) {
@@ -39,7 +39,7 @@ export function BrandLogo({
         className,
       )}
     >
-      driplap<span className="text-[#5a6b14]">.</span>
+      driblab<span className="text-[#5a6b14]">.</span>
     </span>
   );
 

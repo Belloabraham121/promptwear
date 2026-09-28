@@ -140,26 +140,6 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
     }
   }
 
-  async function handleForgotPassword() {
-    if (!email.trim()) {
-      toast.error("Enter your email above first, then use Forgot.");
-      return;
-    }
-    try {
-      const { error } = await authClient.requestPasswordReset({
-        email: email.trim(),
-        redirectTo: "/reset-password",
-      });
-      if (error) {
-        toast.error("Could not send a reset email. Try again in a moment.");
-        return;
-      }
-      toast.success("Check your inbox for a reset link");
-    } catch {
-      toast.error("Could not send a reset email. Try again in a moment.");
-    }
-  }
-
   if (authLoading || isAuthenticated) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-[#f3f0e8] text-[#52706a]">
@@ -196,7 +176,7 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
           className="relative w-full max-w-[26rem] rounded-2xl border border-[#0b1f1c]/10 bg-white p-6 shadow-[0_24px_80px_rgba(11,31,28,0.12)] sm:p-8 motion-safe:animate-[nf-fade-up_0.85s_ease-out_both]"
         >
           <h1 className="sr-only">
-            {isSignup ? "Create your Driplap account" : "Log in to Driplap"}
+            {isSignup ? "Create your Driblab account" : "Log in to Driblab"}
           </h1>
 
           <div
@@ -298,7 +278,7 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
                   <button
                     type="button"
                     className="text-[0.68rem] tracking-[0.08em] text-[#52706a] transition-colors hover:text-[#0b1f1c]"
-                    onClick={() => void handleForgotPassword()}
+                    onClick={() => router.push("/forgot-password")}
                   >
                     Forgot?
                   </button>
@@ -351,7 +331,7 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
       </main>
 
       <footer className="relative z-10 px-[clamp(1.1rem,3vw,2.4rem)] py-5 text-right text-[0.85rem] text-[#52706a]">
-        <small className="opacity-65">© 2026 Driplap</small>
+        <small className="opacity-65">© 2026 Driblab</small>
       </footer>
     </div>
   );

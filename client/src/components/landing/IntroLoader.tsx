@@ -125,7 +125,7 @@ export function IntroLoader({
       role="status"
       aria-live="polite"
       aria-busy={phase !== "exit"}
-      aria-label="Loading Driplap"
+      aria-label="Loading Driblab"
     >
       <div
         className="pointer-events-none absolute inset-0"
@@ -211,7 +211,7 @@ export function IntroLoader({
         />
 
         <h1 className="relative max-w-full px-4 text-center font-[family-name:var(--font-display)] text-[clamp(2rem,11vw,5.5rem)] font-extrabold lowercase tracking-[-0.06em] text-[#f3f0e8]">
-          {"driplap".split("").map((letter, i) => (
+          {"driblab".split("").map((letter, i) => (
             <span
               key={`${letter}-${i}`}
               className="inline-block overflow-hidden align-bottom"

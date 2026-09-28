@@ -170,7 +170,7 @@ Migration strategy — **alter in place, backfill, then drop legacy columns**:
 - [x] CLI `generate` output hand-merged into `schema.prisma` (legacy columns kept, `TODO(better-auth)` markers)
 - [x] `prisma validate` + `prisma generate` pass
 - [x] Migration `20260928155910_better_auth_core` applied to dev DB (additive; 3 legacy users intact)
-- [ ] Backfill script: Google `account` rows + `emailVerified` flags (Phase 2 — 2 legacy Google users + 1 password user can't sign in until then)
+- [x] Backfill script (`prisma/backfill-better-auth.ts`, dry-run default, `--live` writes, idempotent) — **run on dev 2026-09-28**: 2 Google users linked + verified, 3 personal workspaces created, 1 password user (admin) routed to reset flow
 - [ ] Convert `User.role` enum → String `customer/admin` (deferred; enum values match so runtime is fine)
 - [ ] Drop `passwordHash`, `googleId`, `RefreshToken` after backfill verified (Phase 6)
 
@@ -216,7 +216,7 @@ Behavioral notes (verified 2026-09-28): `get-session` signed-out returns **200 +
 - [x] 8.4 `AuthPage` Google via `signIn.social`, working Forgot? (`requestPasswordReset`), `?error=` toasts
 - [x] 8.5 Local absolute API URL (proxy `Set-Cookie` check still open for Vercel→Coolify prod)
 - [x] 8.6 `SafeUser` mapping from BA session user (role/guest via defensive runtime map)
-- [x] 8.7 `/reset-password` route built; `/verify-email` + `/accept-invitation/[id]` still Phase 5
+- [x] 8.7 `/reset-password` + `/forgot-password` (email input, sending/sent/error states) + `/verify-email` routes; `/accept-invitation/[id]` (Phase 5, done)
 
 ## 9. Email (Resend) — forgot-password, verification, invites
 
@@ -232,7 +232,7 @@ No OTP plugin involved. This is also the recovery path for password users at cut
 
 ### 9b. Verification — link, not OTP
 
-`emailVerification.sendVerificationEmail` is wired the same way. Login is **not** gated on verification yet; `authClient.sendVerificationEmail()` works whenever we need it. Gating (`requireEmailVerification`) is a Phase 5 call.
+`emailVerification.sendVerificationEmail` is wired the same way, with `sendOnSignUp: true` so every signup sends the welcome/verify email (proven live 2026-09-28). Login is **not** gated on verification yet; `authClient.sendVerificationEmail()` works whenever needed. Gating (`requireEmailVerification`) is a Phase 5 call.
 
 ### 9c. Org invites — link, not OTP
 
@@ -249,6 +249,8 @@ Six-digit codes (passwordless sign-in, code verification) come from the separate
 | `RESEND_API_KEY` | staging/prod | unset → dev log-fallback, nothing sends |
 | `EMAIL_FROM` | staging/prod | must be a Resend-verified domain in prod (default `Promptwear <noreply@promptwear.app>`) |
 
+**Link host rule:** emailed links are built against the WEB origin (`CLIENT_URL ?? APP_URL`) — never Better Auth's `baseURL`, which points at the API and 404s on page paths. Applies to reset, verification, and invite links alike.
+
 **To-dos:**
 
 - [x] 9.0 Provider decision: Resend
@@ -258,9 +260,9 @@ Six-digit codes (passwordless sign-in, code verification) come from the separate
 - [x] 9.4 `sendInvitationEmail` wired in `auth.ts`
 - [x] 9.5 Env vars (`RESEND_API_KEY`, `EMAIL_FROM`) in schema + config + `.env.example`
 - [x] 9.6 `nest build` passes with email module
-- [ ] 9.7 Verify Resend delivery with real key on staging (Phase 3 — needs key + verified domain)
-- [ ] 9.8 Branded HTML templates (plain-text + `<pre>` wrapper today) (Phase 4 polish)
-- [ ] 9.9 Failure alerting / dead-letter on repeated send failures (Phase 3 hardening)
+- [x] 9.7 Real delivery proven 2026-09-28: send-only key `promptwear-dev` scoped to verified domain `team.locimind.org`; CLI test email **delivered** to Gmail; app forgot-password for the admin account sent branded template (no longer dev-logged). Key lives only in gitignored `backend/.env` (`RESEND_API_KEY`, `EMAIL_FROM=noreply@team.locimind.org`).
+- [x] 9.8 Branded HTML templates (Bone/lime shell shared by reset/verify/invite + plain-text fallbacks; `email.ts` exposes typed senders)
+- [ ] 9.9 Failure alerting / dead-letter on repeated send failures
 
 ## 10. Rollout phases on this branch
 
@@ -285,7 +287,7 @@ Six-digit codes (passwordless sign-in, code verification) come from the separate
 - [x] e2e **18/19 pass** (`auth` 3/3 incl. signup→session→guarded `/users/me`→signout, duplicate 422, wrong-pw 401, reset→new-pw signin; `admin`/`analytics`/`orders`/`designs`/`app` green). Jest needed ESM transform rules for better-auth/jose/rou3/ohash (`test/jest-e2e.json` + `test/tsconfig.e2e-esm.json`).
 - [x] curl: same flows green; Google `sign-in/social` returns correct `accounts.google.com` URL with `redirect_uri=http://localhost:3001/api/v1/auth/callback/google`.
 - [x] Client `:3002` serves `/login` + `/reset-password` 200, no compile errors (`tsc` clean).
-- [x] **Real-Chrome smoke** (`client/scripts/ba-smoke.mjs`, `playwright-core` + system Chrome, isolated profile): login renders, Google button present, **email signup → `/dashboard`** with `promptwear.session_token` set and `get-session` returning the user, dashboard screenshot verified. Rerun: `TEST_EMAIL=you@x.com node scripts/ba-smoke.mjs`.
+- [x] **Real-Chrome smoke** (`client/scripts/ba-smoke.mjs`, `playwright-core` + system Chrome, isolated profile): login renders, Google button present, **email signup → `/dashboard`** with `promptwear.session_token` set and `get-session` returning the user, **Forgot? → reset email** (success toast; invalid addresses get a specific message instead of a generic error), dashboard screenshot verified. Rerun: `TEST_EMAIL=you@x.com node scripts/ba-smoke.mjs`.
 - [x] **Org e2e** (`test/org.e2e-spec.ts` 4/4): personal workspace on signup, create + invite, signup + accept → member, member-invite 403. Full suite 22/23 (studio excluded, see below).
 - [x] **CORS multi-origin**: `:3000` is taken by another project, so the web app runs on `:3002`; `CLIENT_URL` env added (CORS + `trustedOrigins` + `OriginGuard` allowlist). Preflight from `:3002` verified. (Note: `CLIENT_URL` once vanished from local `.env` — origin unknown; re-added. Keep an eye on it.)
 - [ ] **Studio e2e fails pre-existing**: `chat` → 502, reproduced on pristine pre-cutover code — OpenAI account has **no credits** (`credit_balance_exhausted`). Needs billing top-up, unrelated to auth.

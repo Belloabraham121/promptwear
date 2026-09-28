@@ -7,7 +7,11 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { admin, organization } from 'better-auth/plugins';
 import { Logger } from '@nestjs/common';
 import { prisma } from './prisma';
-import { sendEmail } from './email';
+import {
+  sendInvitationEmail,
+  sendPasswordResetEmail,
+  sendVerificationEmail,
+} from './email';
 
 const logger = new Logger('BetterAuth');
 
@@ -39,6 +43,11 @@ interface CreateOrganizationBody {
  */
 const appUrl = process.env.APP_URL ?? 'http://localhost:3000';
 const clientUrl = process.env.CLIENT_URL?.trim();
+// User-facing pages live on the WEB origin (local :3002, prod same-origin).
+// Emailed links must point there — never at the API baseURL, which has no
+// pages and 404s (e.g. /reset-password?token=...).
+const webOrigin =
+  clientUrl && clientUrl !== appUrl ? clientUrl : appUrl;
 const trustedOrigins = [
   appUrl,
   ...(clientUrl && clientUrl !== appUrl ? [clientUrl] : []),
@@ -63,18 +72,17 @@ const options: BetterAuthOptions = {
     enabled: true,
     minPasswordLength: 8,
     autoSignIn: true,
+    resetPasswordTokenExpiresIn: 600, // 10 minutes
     // Forgot-password is a MAGIC LINK (not OTP): Better Auth stores a token
-    // in `verification`, builds `url`, and calls this. The /reset-password
-    // page (Phase 4) completes it via authClient.resetPassword().
+    // in `verification` and calls this. We email a link to the WEB
+    // reset page (the /reset-password page completes it via
+    // authClient.resetPassword()). Never email BA's own `url` — it points
+    // at the API origin, which has no pages.
     // Fire-and-forget per upstream guidance (avoid timing attacks).
-    sendResetPassword: async ({ user, url }) => {
-      void sendEmail({
+    sendResetPassword: async ({ user, url, token }) => {
+      void sendPasswordResetEmail({
         to: user.email,
-        subject: 'Reset your Promptwear password',
-        text:
-          `You asked to reset your Promptwear password.\n\n` +
-          `Reset it here: ${url}\n\n` +
-          `This link expires in 1 hour. If you didn't ask for this, ignore this email.`,
+        url: `${webOrigin}/reset-password?token=${token}`,
       });
     },
   },
@@ -83,14 +91,14 @@ const options: BetterAuthOptions = {
   // verification yet — this just makes `sendVerificationEmail` usable.
   // TODO(better-auth-phase-5): decide on requireEmailVerification.
   emailVerification: {
-    sendVerificationEmail: async ({ user, url }) => {
-      void sendEmail({
+    // Welcome email on every signup (login stays ungated until
+    // requireEmailVerification is ever enabled).
+    sendOnSignUp: true,
+    sendVerificationEmail: async ({ user, url, token }) => {
+      void sendVerificationEmail({
         to: user.email,
-        subject: 'Verify your Promptwear email',
-        text:
-          `Welcome to Promptwear, ${user.name}.\n\n` +
-          `Verify your email here: ${url}\n\n` +
-          `If you didn't create this account, ignore this email.`,
+        name: user.name,
+        url: `${webOrigin}/verify-email?token=${token}`,
       });
     },
   },
@@ -175,15 +183,13 @@ const options: BetterAuthOptions = {
       allowUserToCreateOrganization: true,
       requireEmailVerificationOnInvitation: false, // TODO(better-auth-phase-5): true + verify flow
       async sendInvitationEmail(data) {
-        const inviteLink = `${appUrl}/accept-invitation/${data.id}`;
-        void sendEmail({
+        const inviteLink = `${webOrigin}/accept-invitation/${data.id}`;
+        void sendInvitationEmail({
           to: data.email,
-          subject: `You've been invited to ${data.organization.name} on Promptwear`,
-          text:
-            `${data.inviter.user.name} (${data.inviter.user.email}) invited you to join ` +
-            `${data.organization.name} on Promptwear.\n\n` +
-            `Accept here: ${inviteLink}\n\n` +
-            `If you weren't expecting this, ignore this email.`,
+          organizationName: data.organization.name,
+          inviterName: data.inviter.user.name,
+          inviterEmail: data.inviter.user.email,
+          url: inviteLink,
         });
       },
     }),
