@@ -919,7 +919,7 @@ export function StudioWorkspace({ design: initial }: Props) {
                           )}
                         >
                           <span className="px-1 text-[0.65rem] font-medium tracking-[0.08em] text-[#8a877c] uppercase">
-                            {isUser ? "You" : "Driplap"}
+                            {isUser ? "You" : "Driblab"}
                           </span>
                           <div
                             className={cn(
@@ -945,7 +945,7 @@ export function StudioWorkspace({ design: initial }: Props) {
                     {chatSending || generating ? (
                       <div className="flex flex-col items-start gap-1">
                         <span className="px-1 text-[0.65rem] font-medium tracking-[0.08em] text-[#8a877c] uppercase">
-                          Driplap
+                          Driblab
                         </span>
                         <div className="rounded-2xl rounded-bl-md bg-[#f3f0e8]/8 px-3.5 py-2.5 text-sm text-[#8a877c]">
                           {generating

@@ -1,0 +1,14 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "target": "ES2021",
+    "esModuleInterop": true,
+    "declaration": false,
+    "incremental": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false
+  }
+}

@@ -1,5 +1,5 @@
 import { notifyAuthFailure } from "./auth-events";
-import { clearCsrfToken, fetchCsrfToken, getApiBaseUrl } from "./csrf";
+import { getApiBaseUrl } from "./csrf";
 import { ApiError } from "./errors";
 import type { ApiEnvelope } from "./types";
 
@@ -9,42 +9,8 @@ export interface RequestOptions {
   method?: HttpMethod;
   body?: unknown;
   headers?: Record<string, string>;
-  /** Skip 401 refresh retry (e.g. session bootstrap). */
-  skipAuthRetry?: boolean;
   /** Skip redirect to /login on auth failure. */
   skipAuthRedirect?: boolean;
-}
-
-let refreshInFlight: Promise<boolean> | null = null;
-
-function isMutation(method: HttpMethod): boolean {
-  return method !== "GET";
-}
-
-async function tryRefresh(): Promise<boolean> {
-  if (refreshInFlight) {
-    return refreshInFlight;
-  }
-
-  refreshInFlight = (async () => {
-    try {
-      const token = await fetchCsrfToken();
-      const response = await fetch(`${getApiBaseUrl()}/auth/refresh`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "X-CSRF-Token": token,
-        },
-      });
-      return response.ok;
-    } catch {
-      return false;
-    } finally {
-      refreshInFlight = null;
-    }
-  })();
-
-  return refreshInFlight;
 }
 
 function redirectToLogin(): void {
@@ -78,7 +44,6 @@ async function request<T>(
     method = "GET",
     body,
     headers = {},
-    skipAuthRetry = false,
     skipAuthRedirect = false,
   } = options;
 
@@ -88,10 +53,9 @@ async function request<T>(
     requestHeaders["Content-Type"] = "application/json";
   }
 
-  if (isMutation(method)) {
-    requestHeaders["X-CSRF-Token"] = await fetchCsrfToken();
-  }
-
+  // No X-CSRF-Token: Better Auth relies on Origin verification instead
+  // (backend OriginGuard). No manual refresh endpoint either — the Better Auth
+  // session cookie slides automatically; an expired session is a plain 401.
   const response = await fetch(`${getApiBaseUrl()}${path}`, {
     method,
     credentials: "include",
@@ -99,20 +63,9 @@ async function request<T>(
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  if (response.status === 401 && !skipAuthRetry) {
-    const refreshed = await tryRefresh();
-    if (refreshed) {
-      return request<T>(path, { ...options, skipAuthRetry: true });
-    }
-
-    clearCsrfToken();
+  if (response.status === 401 && !skipAuthRedirect) {
     notifyAuthFailure();
-
-    if (!skipAuthRedirect) {
-      redirectToLogin();
-    }
-
-    throw await ApiError.fromResponse(response);
+    redirectToLogin();
   }
 
   return parseEnvelope<T>(response);
@@ -151,8 +104,6 @@ export const api = {
     return request<T>(path, { ...options, method: "DELETE" });
   },
 };
-
-export { clearCsrfToken };
 
 function withQuery(
   path: string,

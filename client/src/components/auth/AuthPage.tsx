@@ -6,7 +6,7 @@ import { ArrowUpRight, Eye, EyeOff } from "lucide-react";
 import { FormEvent, Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { BrandLogo } from "@/components/brand/BrandLogo";
-import { getApiBaseUrl } from "@/lib/api/csrf";
+import { authClient } from "@/lib/api/auth-client";
 import { ApiError } from "@/lib/api/errors";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -110,7 +110,6 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
         await login({
           email: email.trim(),
           password,
-          portal: "creator",
         });
       }
       toast.success(isSignup ? "Account created" : "Welcome back");
@@ -127,8 +126,18 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
 
   async function handleGoogle() {
     setLoading("google");
-    // Full-page redirect into Nest Google OAuth (sets cookies on callback).
-    window.location.assign(`${getApiBaseUrl()}/auth/google`);
+    try {
+      // Better Auth redirects the browser to Google; on return the session
+      // cookie is set and useSession picks it up (same verified email links
+      // to an existing password account instead of conflicting).
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/dashboard",
+      });
+    } catch {
+      toast.error("Google sign-in failed. Try again in a moment.");
+      setLoading(null);
+    }
   }
 
   if (authLoading || isAuthenticated) {
@@ -167,7 +176,7 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
           className="relative w-full max-w-[26rem] rounded-2xl border border-[#0b1f1c]/10 bg-white p-6 shadow-[0_24px_80px_rgba(11,31,28,0.12)] sm:p-8 motion-safe:animate-[nf-fade-up_0.85s_ease-out_both]"
         >
           <h1 className="sr-only">
-            {isSignup ? "Create your Driplap account" : "Log in to Driplap"}
+            {isSignup ? "Create your Driblab account" : "Log in to Driblab"}
           </h1>
 
           <div
@@ -269,11 +278,7 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
                   <button
                     type="button"
                     className="text-[0.68rem] tracking-[0.08em] text-[#52706a] transition-colors hover:text-[#0b1f1c]"
-                    onClick={() =>
-                      toast.message(
-                        "Password reset will be available once auth is connected.",
-                      )
-                    }
+                    onClick={() => router.push("/forgot-password")}
                   >
                     Forgot?
                   </button>
@@ -326,7 +331,7 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
       </main>
 
       <footer className="relative z-10 px-[clamp(1.1rem,3vw,2.4rem)] py-5 text-right text-[0.85rem] text-[#52706a]">
-        <small className="opacity-65">© 2026 Driplap</small>
+        <small className="opacity-65">© 2026 Driblab</small>
       </footer>
     </div>
   );

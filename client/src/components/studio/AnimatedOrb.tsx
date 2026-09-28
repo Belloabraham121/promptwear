@@ -17,12 +17,12 @@ export function AnimatedOrb({
 
   return (
     <>
-      <style>{`@keyframes driplap-orb-drift {
+      <style>{`@keyframes driblab-orb-drift {
   0%, 100% { transform: translate(0, 0) scale(1); }
   33% { transform: translate(8%, -6%) scale(1.12); }
   66% { transform: translate(-7%, 7%) scale(0.94); }
 }
-@keyframes driplap-orb-breathe {
+@keyframes driblab-orb-breathe {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.06); }
 }`}</style>
@@ -33,7 +33,7 @@ export function AnimatedOrb({
           height: size,
           backgroundColor: "#f3f0e8",
           boxShadow: "0 8px 24px rgba(11,31,28,0.10)",
-          animation: "driplap-orb-breathe 5s ease-in-out infinite",
+          animation: "driblab-orb-breathe 5s ease-in-out infinite",
         }}
         aria-hidden="true"
       >
@@ -56,7 +56,7 @@ export function AnimatedOrb({
                 height: size * c.size,
                 opacity: c.opacity,
                 backgroundColor: c.color,
-                animation: `driplap-orb-drift 7s ease-in-out infinite`,
+                animation: `driblab-orb-drift 7s ease-in-out infinite`,
                 animationDelay: c.delay,
               }}
             />

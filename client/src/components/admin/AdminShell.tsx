@@ -49,7 +49,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       nav={NAV}
       eyebrow="Admin"
       brandHref="/dashboard/admin"
-      brandLabel="Driplap admin"
+      brandLabel="Driblab admin"
       headerMeta="Orders · Catalog · Vendors · Margin"
       userName={session.name}
       userEmail={session.email}
