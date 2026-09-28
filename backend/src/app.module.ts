@@ -6,8 +6,8 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import configuration from './config/configuration';
 import { envSchema } from './config/env.schema';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
-import { CsrfGuard } from './common/guards/csrf.guard';
-import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { BetterAuthGuard } from './common/guards/better-auth.guard';
+import { OriginGuard } from './common/guards/origin.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -84,11 +84,11 @@ import { PricingModule } from './pricing/pricing.module';
     },
     {
       provide: APP_GUARD,
-      useClass: JwtAuthGuard,
+      useClass: BetterAuthGuard,
     },
     {
       provide: APP_GUARD,
-      useClass: CsrfGuard,
+      useClass: OriginGuard,
     },
     {
       provide: APP_GUARD,

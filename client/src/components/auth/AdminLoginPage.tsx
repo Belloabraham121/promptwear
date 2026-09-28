@@ -10,7 +10,7 @@ import { useAuth } from "@/providers/AuthProvider";
 
 export function AdminLoginPage() {
   const router = useRouter();
-  const { login, session, isAuthenticated, isLoading: authLoading } =
+  const { login, logout, session, isAuthenticated, isLoading: authLoading } =
     useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,8 +41,14 @@ export function AdminLoginPage() {
       const user = await login({
         email: email.trim(),
         password,
-        portal: "admin",
       });
+      // Portal gating is client-side post-cutover: only staff roles proceed.
+      if (user.role !== "admin") {
+        toast.error("This account does not have admin access");
+        await logout();
+        setLoading(false);
+        return;
+      }
       toast.success("Welcome back");
       router.push("/dashboard/admin");
     } catch (err) {

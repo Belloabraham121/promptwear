@@ -1,36 +1,14 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
-import cookieParser from 'cookie-parser';
-import request from 'supertest';
+import { INestApplication } from '@nestjs/common';
 import { App } from 'supertest/types';
-import { AppModule } from '../src/app.module';
+import {
+  createTestApp,
+  makeAdmin,
+  newAgent,
+  setTestEnv,
+  signIn,
+  signUp,
+} from './helpers';
 import { PrismaService } from '../src/modules/prisma/prisma.service';
-
-function setTestEnv(): void {
-  process.env.NODE_ENV = 'test';
-  process.env.DATABASE_URL ??=
-    'postgresql://promptwear:promptwear@localhost:5433/promptwear';
-  process.env.REDIS_URL ??= 'redis://localhost:6379';
-  process.env.JWT_SECRET ??=
-    'test-jwt-secret-at-least-32-characters-long';
-  process.env.JWT_ACCESS_TTL ??= '15m';
-  process.env.JWT_REFRESH_TTL ??= '7d';
-  process.env.APP_URL ??= 'http://localhost:3000';
-  process.env.PORT ??= '3001';
-  process.env.S3_ENDPOINT ??= 'http://localhost:9000';
-  process.env.S3_REGION ??= 'us-east-1';
-  process.env.S3_ACCESS_KEY_ID ??= 'minioadmin';
-  process.env.S3_SECRET_ACCESS_KEY ??= 'minioadmin';
-  process.env.S3_BUCKET ??= 'promptwear-assets';
-  process.env.S3_FORCE_PATH_STYLE ??= 'true';
-}
-
-async function fetchCsrfToken(
-  agent: ReturnType<typeof request.agent>,
-): Promise<string> {
-  const csrfResponse = await agent.get('/api/v1/auth/csrf').expect(200);
-  return csrfResponse.body.data.token as string;
-}
 
 const ALL_QUALITIES = ['standard', 'premium', 'heavy'] as const;
 const ALL_PRINTS = ['dtf', 'screen'] as const;
@@ -125,23 +103,7 @@ describe('Orders (e2e)', () => {
 
   beforeAll(async () => {
     setTestEnv();
-
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    prisma = app.get(PrismaService);
-    app.setGlobalPrefix('api/v1');
-    app.use(cookieParser());
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-      }),
-    );
-    await app.init();
+    ({ app, prisma } = await createTestApp());
     await seedPricingData(prisma);
   });
 
@@ -165,22 +127,16 @@ describe('Orders (e2e)', () => {
   });
 
   it('quote -> coupon validate -> place order -> list/get/patch -> admin status', async () => {
-    const agent = request.agent(app.getHttpServer());
+    const agent = newAgent(app);
 
-    await agent
-      .post('/api/v1/auth/register')
-      .send({
-        email: testEmail,
-        password: testPassword,
-        name: testName,
-      })
-      .expect(201);
-
-    let csrfToken = await fetchCsrfToken(agent);
+    await signUp(agent, {
+      email: testEmail,
+      password: testPassword,
+      name: testName,
+    });
 
     const createDesignResponse = await agent
       .post('/api/v1/designs')
-      .set('X-CSRF-Token', csrfToken)
       .send({
         title: 'Order Tee',
         color: '#1a1a1a',
@@ -192,10 +148,8 @@ describe('Orders (e2e)', () => {
 
     createdDesignId = createDesignResponse.body.data.id as string;
 
-    csrfToken = await fetchCsrfToken(agent);
     const quoteResponse = await agent
       .post('/api/v1/orders/quote')
-      .set('X-CSRF-Token', csrfToken)
       .send({
         quality: 'standard',
         print: 'dtf',
@@ -209,7 +163,7 @@ describe('Orders (e2e)', () => {
     expect(quoteResponse.body.data.total).toBeGreaterThan(0);
     expect(quoteResponse.body.data.vendor).toBeTruthy();
 
-    const couponResponse = await request(app.getHttpServer())
+    const couponResponse = await newAgent(app)
       .post('/api/v1/coupons/validate')
       .send({
         code: 'WELCOME10',
@@ -220,10 +174,8 @@ describe('Orders (e2e)', () => {
     expect(couponResponse.body.data.valid).toBe(true);
     expect(couponResponse.body.data.discountAmount).toBeGreaterThan(0);
 
-    csrfToken = await fetchCsrfToken(agent);
     const orderResponse = await agent
       .post('/api/v1/orders')
-      .set('X-CSRF-Token', csrfToken)
       .set('Idempotency-Key', `orders-e2e-${Date.now()}`)
       .send({
         designId: createdDesignId,
@@ -273,41 +225,24 @@ describe('Orders (e2e)', () => {
       .expect(200);
     expect(getResponse.body.data.note).toBe('Leave at reception');
 
-    csrfToken = await fetchCsrfToken(agent);
     const patchResponse = await agent
       .patch(`/api/v1/orders/${createdOrderId}`)
-      .set('X-CSRF-Token', csrfToken)
       .send({ note: 'Updated delivery note' })
       .expect(200);
     expect(patchResponse.body.data.note).toBe('Updated delivery note');
 
     await agent.get('/api/v1/admin/orders').expect(403);
 
-    const { PasswordService } = await import(
-      '../src/modules/auth/password.service'
-    );
-    const passwordService = new PasswordService();
-    const passwordHash = await passwordService.hash(testPassword);
-
-    await prisma.user.upsert({
-      where: { email: adminEmail },
-      create: {
-        email: adminEmail,
-        name: 'Orders Admin',
-        passwordHash,
-        role: 'admin',
-      },
-      update: {
-        passwordHash,
-        role: 'admin',
-      },
+    const setupAgent = newAgent(app);
+    await signUp(setupAgent, {
+      email: adminEmail,
+      name: 'Orders Admin',
+      password: testPassword,
     });
+    await makeAdmin(prisma, adminEmail);
 
-    const adminAgent = request.agent(app.getHttpServer());
-    await adminAgent
-      .post('/api/v1/auth/login')
-      .send({ email: adminEmail, password: testPassword })
-      .expect(201);
+    const adminAgent = newAgent(app);
+    await signIn(adminAgent, { email: adminEmail, password: testPassword });
 
     const adminList = await adminAgent.get('/api/v1/admin/orders').expect(200);
     expect(adminList.body.data.items).toEqual(
@@ -316,17 +251,14 @@ describe('Orders (e2e)', () => {
       ]),
     );
 
-    const adminCsrf = await fetchCsrfToken(adminAgent);
     const statusResponse = await adminAgent
       .patch(`/api/v1/admin/orders/${createdOrderId}/status`)
-      .set('X-CSRF-Token', adminCsrf)
       .send({ status: 'design_confirmed' })
       .expect(200);
     expect(statusResponse.body.data.status).toBe('design_confirmed');
 
     await adminAgent
       .patch(`/api/v1/admin/orders/${createdOrderId}/status`)
-      .set('X-CSRF-Token', adminCsrf)
       .send({ status: 'shipped' })
       .expect(400);
 

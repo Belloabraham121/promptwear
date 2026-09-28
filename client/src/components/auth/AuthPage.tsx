@@ -6,7 +6,7 @@ import { ArrowUpRight, Eye, EyeOff } from "lucide-react";
 import { FormEvent, Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { BrandLogo } from "@/components/brand/BrandLogo";
-import { getApiBaseUrl } from "@/lib/api/csrf";
+import { authClient } from "@/lib/api/auth-client";
 import { ApiError } from "@/lib/api/errors";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -110,7 +110,6 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
         await login({
           email: email.trim(),
           password,
-          portal: "creator",
         });
       }
       toast.success(isSignup ? "Account created" : "Welcome back");
@@ -127,8 +126,38 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
 
   async function handleGoogle() {
     setLoading("google");
-    // Full-page redirect into Nest Google OAuth (sets cookies on callback).
-    window.location.assign(`${getApiBaseUrl()}/auth/google`);
+    try {
+      // Better Auth redirects the browser to Google; on return the session
+      // cookie is set and useSession picks it up (same verified email links
+      // to an existing password account instead of conflicting).
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/dashboard",
+      });
+    } catch {
+      toast.error("Google sign-in failed. Try again in a moment.");
+      setLoading(null);
+    }
+  }
+
+  async function handleForgotPassword() {
+    if (!email.trim()) {
+      toast.error("Enter your email above first, then use Forgot.");
+      return;
+    }
+    try {
+      const { error } = await authClient.requestPasswordReset({
+        email: email.trim(),
+        redirectTo: "/reset-password",
+      });
+      if (error) {
+        toast.error("Could not send a reset email. Try again in a moment.");
+        return;
+      }
+      toast.success("Check your inbox for a reset link");
+    } catch {
+      toast.error("Could not send a reset email. Try again in a moment.");
+    }
   }
 
   if (authLoading || isAuthenticated) {
@@ -269,11 +298,7 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
                   <button
                     type="button"
                     className="text-[0.68rem] tracking-[0.08em] text-[#52706a] transition-colors hover:text-[#0b1f1c]"
-                    onClick={() =>
-                      toast.message(
-                        "Password reset will be available once auth is connected.",
-                      )
-                    }
+                    onClick={() => void handleForgotPassword()}
                   >
                     Forgot?
                   </button>
