@@ -4,6 +4,10 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+# Finding files and code
+
+- Use `jg "question"` (source retrieval for coding agents) to find files and code. Reach for `grep`/`rg` only when exact regex matching is needed.
+
 # Styling
 
 - **Use Tailwind CSS for all styling** (utility classes in components). The project already has Tailwind v4 via `@import "tailwindcss"` in `src/app/globals.css`.
