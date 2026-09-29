@@ -20,3 +20,5 @@ coverage/
 # Temp
 .tmp-*
 *.tsbuildinfo
+.vercel
+.env*

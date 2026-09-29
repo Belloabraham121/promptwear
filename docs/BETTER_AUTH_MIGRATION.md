@@ -280,6 +280,7 @@ Six-digit codes (passwordless sign-in, code verification) come from the separate
 - `client`: login/signup/Google redirect, session bootstrap 401→null, admin gate redirects, per-user cache purge on user switch.
 - Email: dev-fallback log assertion (no key); staging end-to-end (reset → inbox → new password login; invite → accept) once key + domain exist.
 - Staging checklist: Google Cloud **Authorized redirect URI** updated to Better Auth callback; `BETTER_AUTH_URL` = public API URL; cross-site cookie check (Vercel → Coolify); old JWTs rejected post-cutover.
+- Deploy runtime: Node **>=22.12 required** (`engines` pinned in `backend/package.json`) — better-auth ships ESM-only dist and our CommonJS build needs `require(esm)`; older runtimes (e.g. Nixpacks' 22.11) crash at boot with `ERR_REQUIRE_ESM`. Prefer the `backend/Dockerfile` builder over Nixpacks where possible.
 - Rollback: keep pre-migration DB snapshot; legacy code path tagged `pre-better-auth` (this branch base); rollback = revert deploy + restore snapshot (sessions lost — acceptable, document it).
 
 **Results 2026-09-28 (dev, all live):**
