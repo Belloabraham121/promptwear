@@ -2,6 +2,9 @@
   "name": "promptwear-api",
   "version": "0.0.1",
   "private": true,
+  "engines": {
+    "node": ">=22.12"
+  },
   "scripts": {
     "build": "rm -rf dist tsconfig.tsbuildinfo tsconfig.build.tsbuildinfo && nest build",
     "start": "prisma migrate deploy && node dist/main.js",
