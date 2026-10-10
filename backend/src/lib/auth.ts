@@ -117,6 +117,7 @@ const options: BetterAuthOptions = {
       // Google only issues verified emails, so same-email Google sign-in
       // safely links to an existing password account (one email = one user).
       trustedProviders: ['google'],
+      requireLocalEmailVerified: false,
       allowDifferentEmails: false,
     },
   },

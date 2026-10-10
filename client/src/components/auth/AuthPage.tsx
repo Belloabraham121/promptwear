@@ -132,7 +132,7 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
       // to an existing password account instead of conflicting).
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/dashboard",
+        callbackURL: `${window.location.origin}/dashboard`,
       });
     } catch {
       toast.error("Google sign-in failed. Try again in a moment.");
