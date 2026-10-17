@@ -69,7 +69,7 @@ function escapeHtml(value: string): string {
     .replace(/"/g, '&quot;');
 }
 
-/** Brand shell (Driblab Bone + lime) shared by every template. */
+/** Brand shell (Driplab Bone + lime) shared by every template. */
 function layout(params: {
   heading: string;
   intro: string;
@@ -82,14 +82,14 @@ function layout(params: {
   return `<!doctype html>
 <html><body style="margin:0;padding:0;background:#f3f0e8;font-family:-apple-system,Segoe UI,Roboto,sans-serif;">
 <div style="max-width:560px;margin:0 auto;padding:32px 24px;">
-<p style="font-weight:800;font-size:20px;letter-spacing:-0.05em;color:#0b1f1c;margin:0 0 4px;">driblab<span style="color:#5a6b14;">.</span></p>
+<p style="font-weight:800;font-size:20px;letter-spacing:-0.05em;color:#0b1f1c;margin:0 0 4px;">driplab<span style="color:#5a6b14;">.</span></p>
 <div style="background:#ffffff;border:1px solid rgba(11,31,28,0.1);border-radius:16px;padding:32px;margin-top:16px;">
 <h1 style="font-size:22px;color:#0b1f1c;margin:0 0 16px;">${escapeHtml(params.heading)}</h1>
 <p style="font-size:15px;line-height:1.6;color:#0b1f1c;margin:0;">${params.intro}</p>
 ${button}
 <p style="font-size:13px;line-height:1.6;color:#52706a;margin:16px 0 0;">${params.outro}</p>
 </div>
-<p style="font-size:12px;color:#52706a;opacity:0.7;margin:16px 0 0;">© 2026 Driblab</p>
+<p style="font-size:12px;color:#52706a;opacity:0.7;margin:16px 0 0;">© 2026 Driplab</p>
 </div>
 </body></html>`;
 }

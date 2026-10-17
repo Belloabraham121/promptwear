@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { AuthPage } from "@/components/auth/AuthPage";
 
 export const metadata: Metadata = {
-  title: "Log in — Driblab",
+  title: "Log in — Driplab",
   description:
-    "Sign in or create a Driblab account with Google or email. Keep your designs and orders in one place.",
+    "Sign in or create a Driplab account with Google or email. Keep your designs and orders in one place.",
 };
 
 type LoginPageProps = {

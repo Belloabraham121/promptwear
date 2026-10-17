@@ -58,7 +58,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       nav={NAV}
       eyebrow="Studio & orders"
       brandHref="/"
-      brandLabel="Driblab home"
+      brandLabel="Driplab home"
       headerMeta="Design · Quote · Order"
       headerAction={
         <Link

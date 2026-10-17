@@ -41,7 +41,7 @@ export function HeroFan() {
   return (
     <div
       className="grid grid-cols-3 gap-3 px-1 md:flex md:flex-nowrap md:items-start md:justify-center md:gap-0 md:overflow-visible md:px-0 md:pt-4 md:pb-8"
-      aria-label="Garments designed on Driblab"
+      aria-label="Garments designed on Driplab"
     >
       {CARDS.map((card, index) => (
         <div
