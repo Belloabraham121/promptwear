@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { AdminLoginPage } from "@/components/auth/AdminLoginPage";
 
 export const metadata: Metadata = {
-  title: "Admin login — Driblab",
-  description: "Sign in to the Driblab admin console.",
+  title: "Admin login — Driplab",
+  description: "Sign in to the Driplab admin console.",
   robots: { index: false, follow: false },
 };
 

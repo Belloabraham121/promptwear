@@ -176,7 +176,7 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
           className="relative w-full max-w-[26rem] rounded-2xl border border-[#0b1f1c]/10 bg-white p-6 shadow-[0_24px_80px_rgba(11,31,28,0.12)] sm:p-8 motion-safe:animate-[nf-fade-up_0.85s_ease-out_both]"
         >
           <h1 className="sr-only">
-            {isSignup ? "Create your Driblab account" : "Log in to Driblab"}
+            {isSignup ? "Create your Driplab account" : "Log in to Driplab"}
           </h1>
 
           <div
@@ -331,7 +331,7 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
       </main>
 
       <footer className="relative z-10 px-[clamp(1.1rem,3vw,2.4rem)] py-5 text-right text-[0.85rem] text-[#52706a]">
-        <small className="opacity-65">© 2026 Driblab</small>
+        <small className="opacity-65">© 2026 Driplab</small>
       </footer>
     </div>
   );

@@ -139,7 +139,7 @@ export default function ForgotPasswordPage() {
       </main>
 
       <footer className="relative z-10 px-[clamp(1.1rem,3vw,2.4rem)] py-5 text-right text-[0.85rem] text-[#52706a]">
-        <small className="opacity-65">© 2026 Driblab</small>
+        <small className="opacity-65">© 2026 Driplab</small>
       </footer>
     </div>
   );
