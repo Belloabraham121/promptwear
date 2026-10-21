@@ -35,7 +35,7 @@ export function BrandLogo({
       className={cn(
         "font-heading font-extrabold lowercase leading-none tracking-[-0.05em]",
         SIZE_CLASS[size],
-        variant === "onDark" ? "text-[#f3f0e8]" : "text-[#0b1f1c]",
+        variant === "onDark" ? "text-bone" : "text-ink",
         className,
       )}
     >
