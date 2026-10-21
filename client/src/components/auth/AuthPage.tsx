@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
 import { FormEvent, Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { AuthLayout } from "@/components/auth/AuthLayout";
-import { BrandButton, FieldLabel, Kicker, Rule, TextInput } from "@/components/brand/ui";
+import { AuthHeading, AuthLayout } from "@/components/auth/AuthLayout";
+import { PasswordInput } from "@/components/auth/PasswordInput";
+import { BrandButton, FieldLabel, Rule, TextInput } from "@/components/brand/ui";
 import { authClient } from "@/lib/api/auth-client";
 import { ApiError } from "@/lib/api/errors";
 import { useAuth } from "@/providers/AuthProvider";
@@ -59,7 +59,6 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState<"email" | "google" | null>(null);
 
   const isSignup = mode === "signup";
@@ -153,17 +152,16 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
   return (
     <AuthLayout panel={isSignup ? "street" : "studio"}>
       <section aria-label={isSignup ? "Sign up" : "Log in"}>
-        <Kicker index={isSignup ? "02" : "01"} className="text-olive">
-          {isSignup ? "Join the community" : "Members"}
-        </Kicker>
-        <h1 className="mt-5 mb-0 font-heading text-[clamp(2.4rem,6vw,3.4rem)] leading-[0.92] font-extrabold tracking-[-0.055em]">
-          {isSignup ? "Join Driplab." : "Welcome back."}
-        </h1>
-        <p className="mt-4 mb-0 max-w-[36ch] text-[0.95rem] leading-[1.55] text-mute">
-          {isSignup
-            ? "Save your designs, track your orders and earn when the community wears your work."
-            : "Pick up where you left off — your designs and orders are waiting."}
-        </p>
+        <AuthHeading
+          index={isSignup ? "02" : "01"}
+          kicker={isSignup ? "Join the community" : "Members"}
+          title={isSignup ? "Join Driplab." : "Welcome back."}
+          lead={
+            isSignup
+              ? "Save your designs, track your orders and earn when the community wears your work."
+              : "Pick up where you left off — your designs and orders are waiting."
+          }
+        />
 
         <div
           role="tablist"
@@ -253,30 +251,14 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
                 </Link>
               ) : null}
             </div>
-            <div className="relative">
-              <TextInput
-                id="auth-password"
-                type={showPassword ? "text" : "password"}
-                name="password"
-                autoComplete={isSignup ? "new-password" : "current-password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={isSignup ? "At least 8 characters" : "Your password"}
-                className="pr-12"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-mute transition-colors hover:text-ink"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? (
-                  <EyeOff size={18} strokeWidth={1.75} />
-                ) : (
-                  <Eye size={18} strokeWidth={1.75} />
-                )}
-              </button>
-            </div>
+            <PasswordInput
+              id="auth-password"
+              name="password"
+              autoComplete={isSignup ? "new-password" : "current-password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={isSignup ? "At least 8 characters" : "Your password"}
+            />
           </div>
 
           <BrandButton

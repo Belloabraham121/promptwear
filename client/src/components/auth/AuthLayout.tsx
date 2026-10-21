@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Kicker, TextLink } from "@/components/brand/ui";
+import { cn } from "@/lib/utils";
 
 const PANELS = {
   studio: {
@@ -12,6 +13,11 @@ const PANELS = {
     src: "/landing/v2/campaign-street-mobile.jpg",
     alt: "Three friends laughing on a Lagos street at golden hour in Driplab tees",
     lines: ["Discover", "your people."],
+  },
+  workshop: {
+    src: "/landing/v2/process-02-make.jpg",
+    alt: "Printer pulling lime ink across a screen in a Lagos print workshop",
+    lines: ["Make it", "real."],
   },
 } as const;
 
@@ -27,7 +33,8 @@ export function AuthLayout({
   children,
 }: {
   panel?: AuthPanel;
-  headerLink?: { href: string; label: string };
+  /** Link in the top-right corner; pass null to hide it. */
+  headerLink?: { href: string; label: string } | null;
   children: React.ReactNode;
 }) {
   const art = PANELS[panel];
@@ -40,9 +47,10 @@ export function AuthLayout({
           aria-hidden
           className="absolute inset-0 bg-[linear-gradient(to_top,rgba(7,8,7,0.78),rgba(7,8,7,0)_48%)]"
         />
+        {/* Bone tags keep the masthead legible over light and dark photos alike. */}
         <div className="absolute inset-x-0 top-0 flex justify-between p-8 text-ink">
-          <Kicker>Issue 01 — AW26</Kicker>
-          <Kicker>Lagos, Nigeria</Kicker>
+          <Kicker className="bg-bone px-2.5 py-1.5">Issue 01 — AW26</Kicker>
+          <Kicker className="bg-bone px-2.5 py-1.5">Lagos, Nigeria</Kicker>
         </div>
         <div className="absolute inset-x-0 bottom-0 p-8 text-bone xl:p-12">
           <p
@@ -62,7 +70,7 @@ export function AuthLayout({
       <div className="flex min-h-dvh flex-col">
         <header className="flex items-center justify-between px-[clamp(1.15rem,4vw,3rem)] py-5">
           <BrandLogo href="/" size="md" />
-          <TextLink href={headerLink.href}>{headerLink.label}</TextLink>
+          {headerLink ? <TextLink href={headerLink.href}>{headerLink.label}</TextLink> : null}
         </header>
 
         <div aria-hidden className="relative h-36 overflow-hidden bg-sand sm:h-44 lg:hidden">
@@ -80,6 +88,59 @@ export function AuthLayout({
           <span>Made in Lagos</span>
         </footer>
       </div>
+    </div>
+  );
+}
+
+/** Kicker, display title and lead line that open every auth form. */
+export function AuthHeading({
+  kicker,
+  index,
+  title,
+  lead,
+}: {
+  kicker: string;
+  index?: string;
+  title: string;
+  lead?: React.ReactNode;
+}) {
+  return (
+    <>
+      <Kicker index={index} className="text-olive">
+        {kicker}
+      </Kicker>
+      <h1 className="mt-5 mb-0 font-heading text-[clamp(2.4rem,6vw,3.4rem)] leading-[0.92] font-extrabold tracking-[-0.055em]">
+        {title}
+      </h1>
+      {lead ? (
+        <p className="mt-4 mb-0 max-w-[36ch] text-[0.95rem] leading-[1.55] text-mute">{lead}</p>
+      ) : null}
+    </>
+  );
+}
+
+/** Flat status panel with a coloured edge: lime for success, red for errors. */
+export function AuthNotice({
+  tone = "success",
+  children,
+  className,
+}: {
+  tone?: "success" | "error" | "info";
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      role={tone === "error" ? "alert" : "status"}
+      className={cn(
+        "border-l-4 bg-paper px-5 py-4 text-[0.95rem] leading-[1.55]",
+        tone === "success" && "border-lime",
+        tone === "error" && "border-red-600 text-red-800",
+        tone === "info" && "border-ink/20 text-mute",
+        className,
+      )}
+    >
+      {children}
     </div>
   );
 }
