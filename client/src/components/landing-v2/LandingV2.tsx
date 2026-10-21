@@ -60,7 +60,7 @@ function Header({ authed }: { authed: boolean }) {
           ))}
         </nav>
         <div className="lg:justify-self-center">
-          <BrandLogo href="/v2" size="md" />
+          <BrandLogo href="/" size="md" />
         </div>
         <div className="flex items-center justify-end gap-5">
           {authed ? null : (
