@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
+  ArrowLeft,
   AudioLines,
   ChevronDown,
   Image as ImageIcon,
@@ -25,11 +27,12 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { useVoiceDictation } from "@/hooks/useVoiceDictation";
-import { AnimatedOrb } from "@/components/studio/AnimatedOrb";
 import { VoiceWaveform } from "@/components/studio/VoiceWaveform";
 import { uploadAsset } from "@/lib/api/assets";
 import { useDashboard } from "@/components/dashboard/DashboardProvider";
-import { BrandLogo } from "@/components/brand/BrandLogo";
+import { BrandLogo, BrandMark } from "@/components/brand/BrandLogo";
+import { BrandButton, Kicker } from "@/components/brand/ui";
+import { Bone } from "@/components/dashboard/Skeletons";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ApiError } from "@/lib/api/errors";
 import type { DesignChatMessage } from "@/lib/api/designs";
@@ -475,7 +478,7 @@ export function StudioChatApp() {
 
   if (!ready) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-[#f3f0e8] text-[#52706a]">
+      <div className="flex min-h-dvh items-center justify-center bg-bone text-mute">
         <p className="text-sm tracking-[0.08em] uppercase">Loading studio…</p>
       </div>
     );
@@ -484,7 +487,7 @@ export function StudioChatApp() {
   const busy = chatSending || generating;
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-[#f3f0e8] text-[#0b1f1c] font-[family-name:var(--font-body)]">
+    <div className="flex h-dvh overflow-hidden bg-bone text-ink font-sans">
       {/* Mobile overlay */}
       {sidebarOpen ? (
         <button
@@ -495,30 +498,39 @@ export function StudioChatApp() {
         />
       ) : null}
 
-      {/* Left chat list — floating detached card on desktop */}
-      {sidebarCollapsed ? (
-        <button
-          type="button"
-          onClick={() => setSidebarCollapsed(false)}
-          aria-label="Expand chats sidebar"
-          title="Expand chats sidebar"
-          className="mt-3 ml-3 hidden size-11 shrink-0 place-items-center self-start rounded-2xl border border-[#0b1f1c]/10 bg-white text-[#52706a] shadow-[0_8px_30px_rgba(11,31,28,0.12)] transition hover:text-[#0b1f1c] md:grid"
-        >
-          <PanelLeftOpen size={19} strokeWidth={2} />
-        </button>
-      ) : null}
+      {/*
+        Chat list. Desktop: flat paper column that collapses to an icon rail
+        (same behaviour as the dashboard sidebar). Mobile: slide-over drawer.
+      */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-[18.5rem] flex-col border-r border-[#0b1f1c]/10 bg-white transition-transform md:static md:m-3 md:h-[calc(100dvh-1.5rem)] md:shrink-0 md:translate-x-0 md:rounded-2xl md:border md:shadow-[0_8px_30px_rgba(11,31,28,0.12)]",
+          "fixed inset-y-0 left-0 z-40 flex w-[18.5rem] flex-col overflow-hidden border-r border-ink/12 bg-paper transition-[transform,width] duration-300 ease-[cubic-bezier(.2,.8,.2,1)] motion-reduce:transition-none md:static md:h-dvh md:shrink-0 md:translate-x-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
-          sidebarCollapsed && "md:hidden",
+          sidebarCollapsed ? "md:w-[4.5rem]" : "md:w-[18.5rem]",
         )}
       >
-        <div className="flex items-center justify-between gap-2 border-b border-[#0b1f1c]/10 px-3 py-3">
-          <BrandLogo href="/dashboard" size="sm" />
+        <div
+          className={cn(
+            "flex gap-2 pt-5",
+            sidebarCollapsed ? "md:flex-col md:items-center md:px-0" : "",
+            "items-center justify-between px-5",
+          )}
+        >
+          {sidebarCollapsed ? (
+            <>
+              <span className="md:hidden">
+                <BrandLogo href="/dashboard" size="md" />
+              </span>
+              <span className="hidden md:inline-flex">
+                <BrandMark href="/dashboard" label="Back to dashboard" />
+              </span>
+            </>
+          ) : (
+            <BrandLogo href="/dashboard" size="md" />
+          )}
           <button
             type="button"
-            className="grid size-9 place-items-center rounded-lg text-[#52706a] transition hover:bg-[#0b1f1c]/5 hover:text-[#0b1f1c] md:hidden"
+            className="grid size-9 place-items-center text-mute transition-colors hover:bg-ink/5 hover:text-ink md:hidden"
             aria-label="Close sidebar"
             onClick={() => setSidebarOpen(false)}
           >
@@ -526,34 +538,59 @@ export function StudioChatApp() {
           </button>
           <button
             type="button"
-            className="hidden size-9 place-items-center rounded-lg text-[#52706a] transition hover:bg-[#0b1f1c]/5 hover:text-[#0b1f1c] md:grid"
-            aria-label="Collapse sidebar"
-            title="Collapse sidebar"
-            onClick={() => setSidebarCollapsed(true)}
+            className={cn(
+              "hidden size-9 place-items-center text-mute transition-colors hover:bg-ink/5 hover:text-ink md:grid",
+              sidebarCollapsed && "md:mt-2",
+            )}
+            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-expanded={!sidebarCollapsed}
+            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            onClick={() => setSidebarCollapsed((v) => !v)}
           >
-            <PanelLeftClose size={18} strokeWidth={2} />
+            {sidebarCollapsed ? (
+              <PanelLeftOpen size={18} strokeWidth={2} />
+            ) : (
+              <PanelLeftClose size={18} strokeWidth={2} />
+            )}
           </button>
         </div>
+        <Kicker
+          className={cn(
+            "mt-3 px-5 whitespace-nowrap text-olive",
+            sidebarCollapsed && "md:hidden",
+          )}
+        >
+          Studio · Chats
+        </Kicker>
 
-        <div className="p-3">
+        <div className={cn("p-5 pb-4", sidebarCollapsed && "md:flex md:justify-center md:px-0")}>
           <button
             type="button"
             disabled={creating}
             onClick={() => void createChat()}
-            className="flex w-full items-center justify-center gap-2 bg-[#d6ff3c] px-3 py-2.5 text-xs font-bold uppercase tracking-[0.08em] text-[#070807] transition hover:bg-[#e2ff6a] disabled:opacity-50"
+            title={sidebarCollapsed ? "New chat" : undefined}
+            className={cn(
+              "flex w-full items-center justify-center gap-2 bg-lime px-3 py-3 text-[0.7rem] font-bold tracking-[0.16em] whitespace-nowrap text-ink uppercase transition-colors hover:bg-ink hover:text-lime disabled:opacity-50",
+              sidebarCollapsed && "md:size-10 md:p-0",
+            )}
           >
-            <MessageSquarePlus size={15} strokeWidth={2.25} />
-            {creating ? "Creating…" : "New chat"}
+            <MessageSquarePlus size={15} strokeWidth={2.25} aria-hidden />
+            <span className={cn(sidebarCollapsed && "md:sr-only")}>
+              {creating ? "Creating…" : "New chat"}
+            </span>
           </button>
         </div>
 
         <nav
-          className="min-h-0 flex-1 space-y-1 overflow-y-auto px-2 pb-4"
+          className={cn(
+            "min-h-0 flex-1 overflow-y-auto border-t border-ink/12",
+            sidebarCollapsed && "md:invisible",
+          )}
           aria-label="Chats"
         >
           {sortedDesigns.length === 0 ? (
-            <p className="px-2 py-4 text-sm text-[#52706a]">
-                No chats yet. Start one to talk through an apparel idea.
+            <p className="px-5 py-4 text-sm text-mute">
+              No chats yet. Start one to talk through an apparel idea.
             </p>
           ) : (
             sortedDesigns.map((design) => {
@@ -562,21 +599,25 @@ export function StudioChatApp() {
                 <div
                   key={design.id}
                   className={cn(
-                    "group flex items-stretch gap-1 rounded-md transition",
-                    active
-                      ? "bg-[#d6ff3c]/12 text-[#0b1f1c]"
-                      : "text-[#52706a] hover:bg-[#0b1f1c]/5 hover:text-[#0b1f1c]",
+                    "group flex items-stretch gap-1 border-b border-ink/12 transition-colors",
+                    active ? "bg-ink text-bone" : "text-ink hover:bg-ink/5",
                   )}
                 >
                   <Link
                     href={`/dashboard/studio/${design.id}`}
                     onClick={() => setSidebarOpen(false)}
-                    className="min-w-0 flex-1 px-3 py-2.5"
+                    aria-current={active ? "page" : undefined}
+                    className="min-w-0 flex-1 py-3.5 pl-5"
                   >
-                    <p className="truncate text-sm font-medium text-[#0b1f1c]">
+                    <p className="m-0 truncate font-heading text-[0.95rem] font-bold tracking-[-0.02em]">
                       {design.title || "Untitled chat"}
                     </p>
-                    <p className="mt-0.5 line-clamp-1 text-xs text-[#52706a]">
+                    <p
+                      className={cn(
+                        "mt-1 mb-0 line-clamp-1 text-xs",
+                        active ? "text-mist" : "text-mute",
+                      )}
+                    >
                       {chatPreview(design)}
                     </p>
                   </Link>
@@ -588,7 +629,10 @@ export function StudioChatApp() {
                       event.stopPropagation();
                       setDeleteTarget(design);
                     }}
-                    className="mr-1 grid size-9 shrink-0 place-items-center self-center text-[#52706a] opacity-100 transition hover:text-red-600 md:opacity-0 md:group-hover:opacity-100"
+                    className={cn(
+                      "mr-2 grid size-9 shrink-0 place-items-center self-center opacity-100 transition hover:text-red-500 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100",
+                      active ? "text-mist" : "text-mute",
+                    )}
                   >
                     <Trash2 size={14} strokeWidth={2.25} />
                   </button>
@@ -598,40 +642,40 @@ export function StudioChatApp() {
           )}
         </nav>
 
-        <div className="border-t border-[#0b1f1c]/10 p-3">
+        <div className={cn("border-t border-ink/12 p-5", sidebarCollapsed && "md:flex md:justify-center md:px-0")}>
           <Link
             href="/dashboard"
-            className="text-xs font-semibold uppercase tracking-[0.08em] text-[#52706a] hover:text-[#0b1f1c]"
+            title={sidebarCollapsed ? "Back to dashboard" : undefined}
+            className="inline-flex items-center gap-1.5 border-b border-current pb-0.5 text-[0.66rem] font-semibold tracking-[0.18em] whitespace-nowrap text-mute uppercase transition-colors hover:text-ink"
           >
-            ← Dashboard
+            <ArrowLeft size={13} strokeWidth={2.25} aria-hidden />
+            <span className={cn(sidebarCollapsed && "md:sr-only")}>Dashboard</span>
           </Link>
         </div>
       </aside>
 
       {/* Main chat pane */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex shrink-0 items-center gap-3 border-b border-[#0b1f1c]/10 px-3 py-3 md:px-5">
+        <header className="flex shrink-0 items-center gap-3 border-b border-ink/12 px-4 py-4 md:px-8">
           <button
             type="button"
-            className="grid size-10 place-items-center border border-[#0b1f1c]/15 text-[#0b1f1c] md:hidden"
+            className="grid size-10 place-items-center border border-ink/15 text-ink md:hidden"
             aria-label="Open chats"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu size={18} />
           </button>
           <div className="min-w-0 flex-1">
-            <p className="truncate font-[family-name:var(--font-display)] text-lg font-bold tracking-[-0.03em]">
+            <Kicker className="text-olive">{activeDesign ? "Studio chat" : "Studio"}</Kicker>
+            <p className="mt-1.5 mb-0 truncate font-heading text-[1.35rem] leading-none font-extrabold tracking-[-0.04em]">
               {activeDesign?.title ?? "Studio agent"}
-            </p>
-            <p className="text-xs text-[#52706a]">
-                Talk through ideas, then generate a design concept.
             </p>
           </div>
           {activeDesign ? (
             <button
               type="button"
               onClick={() => setDeleteTarget(activeDesign)}
-              className="inline-flex items-center gap-1.5 border border-[#0b1f1c]/15 px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-[#52706a] transition hover:border-red-400 hover:text-red-600"
+              className="inline-flex items-center gap-1.5 border border-ink/15 px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-mute transition hover:border-red-400 hover:text-red-600"
             >
               <Trash2 size={13} strokeWidth={2.25} />
               Delete
@@ -647,31 +691,48 @@ export function StudioChatApp() {
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-3 py-6 md:px-8">
           {!activeId ? (
             <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center text-center">
-              <AnimatedOrb size={64} />
-              <h1 className="mt-4 font-[family-name:var(--font-display)] text-3xl font-extrabold tracking-[-0.04em]">
+              <div aria-hidden className="flex items-end justify-center">
+                {["hero-cutout-02.png", "hero-cutout-01.png", "hero-cutout-05.png"].map((file, i) => (
+                  <Image
+                    key={file}
+                    src={`/landing/v2/${file}`}
+                    alt=""
+                    width={240}
+                    height={256}
+                    className={cn(
+                      "h-auto w-24 drop-shadow-[0_16px_20px_rgba(7,8,7,0.2)] sm:w-28",
+                      i === 0 && "-mr-5 rotate-[-9deg]",
+                      i === 1 && "relative z-10 -mb-1",
+                      i === 2 && "-ml-5 rotate-[9deg]",
+                    )}
+                  />
+                ))}
+              </div>
+              <Kicker className="mt-8 text-olive">Studio agent</Kicker>
+              <h1 className="mt-4 mb-0 font-heading text-[clamp(2.4rem,5vw,3.8rem)] leading-[0.92] font-extrabold tracking-[-0.055em]">
                 What should we design?
               </h1>
-              <p className="mt-3 max-w-md text-sm leading-relaxed text-[#52706a]">
-                Start a chat to brainstorm apparel & merch concepts with your agent. Switch
-                to image mode when you’re ready to generate artwork.
+              <p className="mt-4 mb-0 max-w-md text-[0.95rem] leading-relaxed text-mute">
+                Start a chat to brainstorm apparel and merch with your agent. Switch to image mode
+                when you’re ready to generate artwork.
               </p>
-              <button
-                type="button"
+              <BrandButton
                 disabled={creating}
                 onClick={() => void createChat()}
-                className="mt-8 bg-[#d6ff3c] px-5 py-3 text-xs font-bold uppercase tracking-[0.08em] text-[#070807] hover:bg-[#e2ff6a] disabled:opacity-50"
+                className="mt-8"
               >
                 {creating ? "Creating…" : "New chat"}
-              </button>
+              </BrandButton>
             </div>
           ) : chatLoading && chat.length === 0 ? (
-            <p className="text-center text-sm text-[#52706a]">Loading chat…</p>
+            <ChatSkeleton />
           ) : chat.length === 0 ? (
             <div className="mx-auto max-w-2xl pt-16 text-center">
-              <h2 className="font-[family-name:var(--font-display)] text-2xl font-bold tracking-[-0.03em]">
-                Describe the vibe
+              <Kicker className="justify-center text-olive">New chat</Kicker>
+              <h2 className="mt-4 mb-0 font-heading text-[clamp(2rem,4vw,2.8rem)] leading-[0.95] font-extrabold tracking-[-0.05em]">
+                Describe the vibe.
               </h2>
-              <p className="mt-2 text-sm text-[#52706a]">
+              <p className="mt-3 mb-0 text-[0.95rem] text-mute">
                 Ask for directions, iterate on copy, or generate a design image.
               </p>
             </div>
@@ -690,11 +751,16 @@ export function StudioChatApp() {
                       isUser ? "items-end" : "items-start",
                     )}
                   >
-                    <span className="px-1 text-[0.65rem] font-medium tracking-[0.08em] text-[#52706a] uppercase">
+                    <span
+                      className={cn(
+                        "px-0.5 text-[0.62rem] font-semibold tracking-[0.2em] uppercase",
+                        isUser ? "text-mute" : "text-olive",
+                      )}
+                    >
                       {isUser ? "You" : "Driplab"}
                     </span>
                     {isUser ? (
-                      <div className="max-w-[min(100%,34rem)] rounded-2xl rounded-br-md bg-[#d6ff3c] px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words text-[#070807]">
+                      <div className="max-w-[min(100%,34rem)] bg-lime px-4 py-3 text-[0.95rem] leading-relaxed whitespace-pre-wrap break-words text-ink">
                         {message.attachments?.length ? (
                           <span className="mb-2 flex flex-wrap gap-1.5">
                             {message.attachments.map((a) =>
@@ -704,19 +770,19 @@ export function StudioChatApp() {
                                   key={a.assetId}
                                   src={a.url}
                                   alt="Reference"
-                                  className="size-16 rounded-lg border border-[#0b1f1c]/15 object-cover"
+                                  className="size-16 border border-ink/15 object-cover"
                                 />
                               ) : null,
                             )}
                           </span>
                         ) : null}
                         {message.text ? <p>{message.text}</p> : null}
-                        <p className="mt-2 text-[0.65rem] text-[#52706a]">
+                        <p className="mt-2 text-[0.62rem] tracking-[0.08em] text-ink/55 uppercase">
                           {formatChatTime(message.at)}
                         </p>
                       </div>
                     ) : (
-                      <div className="max-w-[min(100%,34rem)] text-sm leading-relaxed whitespace-pre-wrap break-words text-[#0b1f1c]">
+                      <div className="max-w-[min(100%,34rem)] border-l-2 border-ink pl-4 text-[0.95rem] leading-relaxed whitespace-pre-wrap break-words text-ink">
                         {message.text ? <p>{message.text}</p> : null}
                         {message.imageUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -724,7 +790,7 @@ export function StudioChatApp() {
                             src={message.imageUrl}
                             alt="Generated design concept"
                             className={cn(
-                              "max-h-80 w-full rounded-xl object-contain",
+                              "max-h-80 w-full object-contain",
                               message.text ? "mt-2" : "mt-0",
                             )}
                           />
@@ -736,7 +802,7 @@ export function StudioChatApp() {
               })}
               {busy ? (
                 <div className="flex flex-col items-start gap-2">
-                  <span className="px-1 text-[0.65rem] font-medium tracking-[0.08em] text-[#52706a] uppercase">
+                  <span className="px-0.5 text-[0.62rem] font-semibold tracking-[0.2em] text-olive uppercase">
                     Driplab
                   </span>
                   {generating ? (
@@ -745,7 +811,7 @@ export function StudioChatApp() {
                         {Array.from({ length: 24 }).map((_, i) => (
                           <span
                             key={i}
-                            className="w-[3px] origin-center animate-pulse rounded-full bg-[#0b1f1c]/50"
+                            className="w-[3px] origin-center animate-pulse rounded-full bg-ink/50"
                             style={{
                               height: `${8 + 14 * Math.abs(Math.sin(i / 3))}px`,
                               animationDelay: `${(i % 8) * 120}ms`,
@@ -753,13 +819,13 @@ export function StudioChatApp() {
                           />
                         ))}
                       </div>
-                      <div className="mt-2 aspect-square max-h-80 w-full animate-pulse rounded-xl bg-gradient-to-br from-[#0b1f1c]/10 via-[#d6ff3c]/40 to-[#0b1f1c]/5" />
-                      <p className="mt-2 animate-pulse text-xs text-[#52706a]">
+                      <div className="mt-2 aspect-square max-h-80 w-full animate-pulse bg-gradient-to-br from-ink/10 via-lime/40 to-ink/5" />
+                      <p className="mt-2 animate-pulse text-xs text-mute">
                         Composing design…
                       </p>
                     </div>
                   ) : (
-                    <p className="animate-pulse text-sm text-[#52706a]">
+                    <p className="animate-pulse text-sm text-mute">
                       Thinking…
                     </p>
                   )}
@@ -773,7 +839,7 @@ export function StudioChatApp() {
           <div className="shrink-0 px-3 pb-5 pt-3 md:px-8">
             <div className="mx-auto w-[min(100%,36rem)]">
               {!openaiConfigured ? (
-                <p className="mb-2 px-1 text-xs text-[#52706a]">
+                <p className="mb-2 px-1 text-xs text-mute">
                   Live AI needs OPENAI_API_KEY in backend/.env — using local
                   fallback replies for now.
                 </p>
@@ -781,14 +847,14 @@ export function StudioChatApp() {
 
               <form
                 onSubmit={(e) => void onSubmit(e)}
-                className="relative w-full rounded-2xl border border-[#0b1f1c]/10 bg-white shadow-[0_0_0_1px_rgba(11,31,28,0.04),0_12px_40px_rgba(11,31,28,0.12)] backdrop-blur-md"
+                className="relative w-full border border-ink/20 bg-paper transition-colors focus-within:border-ink"
               >
                 {pendingRefs.length > 0 || uploadingRef ? (
                   <div className="flex flex-wrap items-center gap-2 px-4 pt-3">
                     {pendingRefs.map((ref) => (
                       <span
                         key={ref.assetId}
-                        className="relative inline-block size-14 overflow-hidden rounded-lg border border-[#0b1f1c]/15"
+                        className="relative inline-block size-14 overflow-hidden border border-ink/15"
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
@@ -804,14 +870,14 @@ export function StudioChatApp() {
                               prev.filter((r) => r.assetId !== ref.assetId),
                             )
                           }
-                          className="absolute top-0.5 right-0.5 grid size-5 place-items-center rounded-full bg-black/70 text-white hover:bg-black/90"
+                          className="absolute top-0.5 right-0.5 grid size-5 place-items-center rounded-full bg-black/70 text-bone hover:bg-black/90"
                         >
                           <X size={12} />
                         </button>
                       </span>
                     ))}
                     {uploadingRef ? (
-                      <span className="animate-pulse px-1 text-xs text-[#52706a]">
+                      <span className="animate-pulse px-1 text-xs text-mute">
                         Uploading…
                       </span>
                     ) : null}
@@ -836,7 +902,7 @@ export function StudioChatApp() {
                         ? "Describe the design to generate…"
                         : "Ask about your design…"
                   }
-                  className="min-h-[3.25rem] w-full resize-none bg-transparent px-4 pt-3.5 pb-1 text-[0.95rem] leading-relaxed text-[#0b1f1c] outline-none placeholder:text-[#52706a] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="min-h-[3.25rem] w-full resize-none bg-transparent px-4 pt-3.5 pb-1 text-[0.95rem] leading-relaxed text-ink outline-none placeholder:text-mute disabled:cursor-not-allowed disabled:opacity-50"
                 />
 
                 <div className="flex items-center justify-between gap-3 px-2.5 pb-2.5 pt-1">
@@ -856,10 +922,10 @@ export function StudioChatApp() {
                       onClick={() => imageInputRef.current?.click()}
                       disabled={busy || uploadingRef}
                       className={cn(
-                        "grid size-8 place-items-center rounded-lg transition",
+                        "grid size-8 place-items-center transition",
                         pendingRefs.length
-                          ? "bg-[#0b1f1c] text-white"
-                          : "text-[#0b1f1c]/70 hover:bg-[#0b1f1c]/5 hover:text-[#0b1f1c]",
+                          ? "bg-ink text-bone"
+                          : "text-ink/70 hover:bg-ink/5 hover:text-ink",
                       )}
                     >
                       <Plus size={18} strokeWidth={2} />
@@ -874,20 +940,20 @@ export function StudioChatApp() {
                         setModelPickerOpen(false);
                       }}
                       className={cn(
-                        "grid size-8 place-items-center rounded-lg transition",
+                        "grid size-8 place-items-center transition",
                         isImageMode
-                          ? "bg-[#0b1f1c] text-white"
-                          : "text-[#52706a] hover:bg-[#0b1f1c]/5 hover:text-[#0b1f1c]",
+                          ? "bg-ink text-bone"
+                          : "text-mute hover:bg-ink/5 hover:text-ink",
                       )}
                     >
                       <ImageIcon size={16} strokeWidth={2} />
                     </button>
                     {imagePickerOpen ? (
-                      <div className="absolute bottom-[calc(100%+0.5rem)] left-0 z-40 max-h-[min(16rem,42vh)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-xl border border-[#0b1f1c]/10 bg-white p-2 shadow-[0_16px_40px_rgba(11,31,28,0.16)]">
-                        <p className="px-2 pb-1 text-[0.65rem] font-semibold tracking-[0.12em] text-[#52706a] uppercase">
+                      <div className="absolute bottom-[calc(100%+0.5rem)] left-0 z-40 max-h-[min(16rem,42vh)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto overscroll-contain border border-ink/10 bg-paper p-2">
+                        <p className="px-2 pb-1 text-[0.65rem] font-semibold tracking-[0.12em] text-mute uppercase">
                           Image models
                         </p>
-                        <p className="px-2 pb-1.5 text-[0.7rem] text-[#52706a]">
+                        <p className="px-2 pb-1.5 text-[0.7rem] text-mute">
                           gpt-image-1 — pick a price, then describe the design
                         </p>
                         <button
@@ -897,17 +963,17 @@ export function StudioChatApp() {
                             setImagePickerOpen(false);
                           }}
                           className={cn(
-                            "mb-1.5 flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition",
+                            "mb-1.5 flex w-full items-center justify-between gap-2 px-2 py-1.5 text-left text-sm transition",
                             !isImageMode
-                              ? "bg-[#0b1f1c]/[0.06] text-[#0b1f1c]"
-                              : "text-[#0b1f1c] hover:bg-[#0b1f1c]/5",
+                              ? "bg-ink/[0.06] text-ink"
+                              : "text-ink hover:bg-ink/5",
                           )}
                         >
                           <span>Chat only (no image)</span>
                         </button>
                         {imageOptionsByQuality.map(({ quality, options }) => (
                           <div key={quality} className="mb-1.5 last:mb-0">
-                            <p className="px-2 pb-0.5 text-[0.6rem] tracking-[0.1em] text-[#52706a] uppercase">
+                            <p className="px-2 pb-0.5 text-[0.6rem] tracking-[0.1em] text-mute uppercase">
                               {quality}
                             </p>
                             {options.map((option) => {
@@ -926,14 +992,14 @@ export function StudioChatApp() {
                                     setImagePickerOpen(false);
                                   }}
                                   className={cn(
-                                    "flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition",
+                                    "flex w-full items-center justify-between gap-2 px-2 py-1.5 text-left text-sm transition",
                                     active
-                                      ? "bg-[#0b1f1c]/[0.06] text-[#0b1f1c]"
-                                      : "text-[#0b1f1c] hover:bg-[#0b1f1c]/5",
+                                      ? "bg-ink/[0.06] text-ink"
+                                      : "text-ink hover:bg-ink/5",
                                   )}
                                 >
                                   <span>{option.size}</span>
-                                  <span className="text-[0.7rem] text-[#52706a]">
+                                  <span className="text-[0.7rem] text-mute">
                                     ${option.priceUsd.toFixed(3)}
                                   </span>
                                 </button>
@@ -947,10 +1013,10 @@ export function StudioChatApp() {
 
                   <div className="relative flex items-center gap-0.5 sm:gap-1">
                     {modelPickerOpen ? (
-                      <div className="absolute bottom-[calc(100%+0.5rem)] right-0 z-40 max-h-[min(16rem,42vh)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-xl border border-[#0b1f1c]/10 bg-white p-2 shadow-[0_16px_40px_rgba(11,31,28,0.16)]">
+                      <div className="absolute bottom-[calc(100%+0.5rem)] right-0 z-40 max-h-[min(16rem,42vh)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto overscroll-contain border border-ink/10 bg-paper p-2">
                         {modelsByGroup.map(({ group, models }) => (
                           <div key={group} className="mb-2 last:mb-0">
-                            <p className="px-2 pb-1 text-[0.65rem] font-semibold tracking-[0.12em] text-[#52706a] uppercase">
+                            <p className="px-2 pb-1 text-[0.65rem] font-semibold tracking-[0.12em] text-mute uppercase">
                               {group}
                             </p>
                             {models.map((model) => {
@@ -964,16 +1030,16 @@ export function StudioChatApp() {
                                     setModelPickerOpen(false);
                                   }}
                                   className={cn(
-                                    "flex w-full flex-col items-start rounded-lg px-2 py-1.5 text-left transition",
+                                    "flex w-full flex-col items-start px-2 py-1.5 text-left transition",
                                     active
-                                      ? "bg-[#0b1f1c]/[0.06] text-[#0b1f1c]"
-                                      : "text-[#0b1f1c] hover:bg-[#0b1f1c]/5",
+                                      ? "bg-ink/[0.06] text-ink"
+                                      : "text-ink hover:bg-ink/5",
                                   )}
                                 >
                                   <span className="text-sm font-medium">
                                     {model.label}
                                   </span>
-                                  <span className="text-[0.7rem] text-[#52706a]">
+                                  <span className="text-[0.7rem] text-mute">
                                     {model.description}
                                   </span>
                                 </button>
@@ -990,7 +1056,7 @@ export function StudioChatApp() {
                         setModelPickerOpen((open) => !open);
                         setImagePickerOpen(false);
                       }}
-                      className="inline-flex max-w-[14rem] items-center gap-1 rounded-lg px-2 py-1.5 text-sm text-[#0b1f1c] transition hover:bg-[#0b1f1c]/5"
+                      className="inline-flex max-w-[14rem] items-center gap-1 px-2 py-1.5 text-sm text-ink transition hover:bg-ink/5"
                       aria-label="Choose chat model"
                       aria-expanded={modelPickerOpen}
                     >
@@ -1007,10 +1073,10 @@ export function StudioChatApp() {
                       onClick={handleVoiceToggle}
                       disabled={busy}
                       className={cn(
-                        "grid size-8 place-items-center rounded-lg transition",
+                        "grid size-8 place-items-center transition",
                         isListening
-                          ? "bg-[#0b1f1c] text-white"
-                          : "text-[#52706a] hover:bg-[#0b1f1c]/5 hover:text-[#0b1f1c]",
+                          ? "bg-ink text-bone"
+                          : "text-mute hover:bg-ink/5 hover:text-ink",
                       )}
                     >
                       <AudioLines size={16} strokeWidth={2} />
@@ -1019,7 +1085,7 @@ export function StudioChatApp() {
                       type="submit"
                       aria-label="Send prompt"
                       disabled={busy || !chatInput.trim()}
-                      className="grid size-8 place-items-center rounded-lg bg-[#0b1f1c] text-white transition hover:bg-[#14322d] disabled:cursor-not-allowed disabled:opacity-35"
+                      className="grid size-9 place-items-center bg-ink text-bone transition-colors hover:bg-lime hover:text-ink disabled:cursor-not-allowed disabled:opacity-35"
                     >
                       <Send size={16} strokeWidth={2} />
                     </button>
@@ -1038,7 +1104,7 @@ export function StudioChatApp() {
           deleteTarget ? (
             <>
               This permanently deletes{" "}
-              <span className="text-[#0b1f1c]">
+              <span className="text-ink">
                 {deleteTarget.title || "Untitled chat"}
               </span>{" "}
               and its messages. This cannot be undone.
@@ -1056,6 +1122,31 @@ export function StudioChatApp() {
           if (!deleting) setDeleteTarget(null);
         }}
       />
+    </div>
+  );
+}
+
+/** Placeholder conversation while a chat's messages load. */
+function ChatSkeleton() {
+  return (
+    <div role="status" aria-busy="true" aria-label="Loading chat" className="mx-auto flex max-w-2xl flex-col gap-6">
+      <span className="sr-only">Loading chat…</span>
+      <div className="flex flex-col items-end gap-1.5">
+        <Bone className="h-2.5 w-8" />
+        <Bone className="h-14 w-[min(70%,22rem)] bg-lime/40" />
+      </div>
+      <div className="flex flex-col items-start gap-1.5">
+        <Bone className="h-2.5 w-14" />
+        <div className="w-[min(85%,30rem)] space-y-2 border-l-2 border-ink/15 pl-4">
+          <Bone className="h-3.5 w-full" />
+          <Bone className="h-3.5 w-11/12" />
+          <Bone className="h-3.5 w-2/3" />
+        </div>
+      </div>
+      <div className="flex flex-col items-end gap-1.5">
+        <Bone className="h-2.5 w-8" />
+        <Bone className="h-10 w-[min(55%,16rem)] bg-lime/40" />
+      </div>
     </div>
   );
 }
