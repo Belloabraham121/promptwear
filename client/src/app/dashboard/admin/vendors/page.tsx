@@ -48,34 +48,34 @@ export default function AdminVendorsPage() {
 
       <form
         onSubmit={handleAdd}
-        className="mb-8 grid gap-3 rounded-2xl border border-[#0b1f1c]/12 bg-white p-4 shadow-[0_1px_2px_rgba(11,31,28,0.05)] sm:grid-cols-[1fr_1fr_auto]"
+        className="mb-8 grid gap-3 border border-ink/12 bg-paper p-4 sm:grid-cols-[1fr_1fr_auto]"
       >
         <label className="block">
-          <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+          <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
             Vendor name
           </span>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#d6ff3c]"
+            className="mt-2 w-full border border-ink/15 bg-paper px-3 py-2.5 text-sm outline-none focus:border-lime"
             placeholder="Print house"
           />
         </label>
         <label className="block">
-          <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+          <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
             Location
           </span>
           <input
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#d6ff3c]"
+            className="mt-2 w-full border border-ink/15 bg-paper px-3 py-2.5 text-sm outline-none focus:border-lime"
             placeholder="City"
           />
         </label>
         <div className="flex items-end">
           <button
             type="submit"
-            className="w-full bg-[#d6ff3c] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.06em] text-[#070807] hover:bg-[#e2ff6a] sm:w-auto"
+            className="w-full bg-lime px-4 py-2.5 text-xs font-bold uppercase tracking-[0.06em] text-ink hover:bg-lime/80 sm:w-auto"
           >
             Add vendor
           </button>
@@ -92,16 +92,16 @@ export default function AdminVendorsPage() {
           {vendors.map((v) => (
             <article
               key={v.id}
-              className="rounded-2xl border border-[#0b1f1c]/12 bg-white p-5 shadow-[0_1px_2px_rgba(11,31,28,0.05)]"
+              className="border border-ink/12 bg-paper p-5"
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h3 className="font-[family-name:var(--font-display)] text-lg font-bold">
+                  <h3 className="font-heading text-lg font-bold">
                     {v.name}
                   </h3>
-                  <p className="mt-1 text-sm text-[#52706a]">{v.location}</p>
+                  <p className="mt-1 text-sm text-mute">{v.location}</p>
                   {v.notes ? (
-                    <p className="mt-2 max-w-xl text-xs text-[#52706a]">
+                    <p className="mt-2 max-w-xl text-xs text-mute">
                       {v.notes}
                     </p>
                   ) : null}
@@ -110,16 +110,16 @@ export default function AdminVendorsPage() {
                       className={cn(
                         "inline-flex px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.1em]",
                         v.active
-                          ? "bg-[#d6ff3c]/15 text-[#3f4d0e]"
-                          : "bg-[#0b1f1c]/8 text-[#52706a]",
+                          ? "bg-lime/15 text-olive"
+                          : "bg-ink/8 text-mute",
                       )}
                     >
                       {v.active ? "Active" : "Paused"}
                     </span>
-                    <span className="inline-flex bg-[#0b1f1c]/8 px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.1em] text-[#52706a]">
+                    <span className="inline-flex bg-ink/8 px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.1em] text-mute">
                       SLA {v.deliverySlaDays}d · prod {v.estimatedProductionDays}d
                     </span>
-                    <span className="inline-flex bg-[#0b1f1c]/8 px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.1em] text-[#52706a]">
+                    <span className="inline-flex bg-ink/8 px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.1em] text-mute">
                       {v.printMethods.join(" · ")}
                     </span>
                   </div>
@@ -130,14 +130,14 @@ export default function AdminVendorsPage() {
                     onClick={() =>
                       void updateVendor(v.id, { active: !v.active })
                     }
-                    className="border border-[#0b1f1c]/20 px-2.5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em] hover:border-[#d6ff3c] hover:text-[#3f4d0e]"
+                    className="border border-ink/20 px-2.5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em] hover:border-lime hover:text-olive"
                   >
                     {v.active ? "Pause" : "Activate"}
                   </button>
                   <button
                     type="button"
                     onClick={() => void removeVendor(v.id)}
-                    className="border border-[#0b1f1c]/20 px-2.5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em] hover:border-red-700 hover:text-red-700"
+                    className="border border-ink/20 px-2.5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em] hover:border-red-700 hover:text-red-700"
                   >
                     Remove
                   </button>
@@ -146,7 +146,7 @@ export default function AdminVendorsPage() {
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <label className="block">
-                  <span className="text-[0.6rem] uppercase tracking-[0.12em] text-[#52706a]">
+                  <span className="text-[0.6rem] uppercase tracking-[0.12em] text-mute">
                     Quality score
                   </span>
                   <input
@@ -160,11 +160,11 @@ export default function AdminVendorsPage() {
                         qualityRating: Number(e.target.value),
                       })
                     }
-                    className="mt-1.5 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-2 py-1.5 text-sm outline-none focus:border-[#d6ff3c]"
+                    className="mt-1.5 w-full border border-ink/15 bg-paper px-2 py-1.5 text-sm outline-none focus:border-lime"
                   />
                 </label>
                 <label className="block">
-                  <span className="text-[0.6rem] uppercase tracking-[0.12em] text-[#52706a]">
+                  <span className="text-[0.6rem] uppercase tracking-[0.12em] text-mute">
                     Customer rating
                   </span>
                   <input
@@ -178,11 +178,11 @@ export default function AdminVendorsPage() {
                         customerRating: Number(e.target.value),
                       })
                     }
-                    className="mt-1.5 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-2 py-1.5 text-sm outline-none focus:border-[#d6ff3c]"
+                    className="mt-1.5 w-full border border-ink/15 bg-paper px-2 py-1.5 text-sm outline-none focus:border-lime"
                   />
                 </label>
                 <label className="block">
-                  <span className="text-[0.6rem] uppercase tracking-[0.12em] text-[#52706a]">
+                  <span className="text-[0.6rem] uppercase tracking-[0.12em] text-mute">
                     Capacity / wk
                   </span>
                   <input
@@ -195,11 +195,11 @@ export default function AdminVendorsPage() {
                         capacityPerWeek: Number(e.target.value),
                       })
                     }
-                    className="mt-1.5 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-2 py-1.5 text-sm outline-none focus:border-[#d6ff3c]"
+                    className="mt-1.5 w-full border border-ink/15 bg-paper px-2 py-1.5 text-sm outline-none focus:border-lime"
                   />
                 </label>
                 <label className="block">
-                  <span className="text-[0.6rem] uppercase tracking-[0.12em] text-[#52706a]">
+                  <span className="text-[0.6rem] uppercase tracking-[0.12em] text-mute">
                     Price index
                   </span>
                   <input
@@ -213,11 +213,11 @@ export default function AdminVendorsPage() {
                         priceIndex: Number(e.target.value),
                       })
                     }
-                    className="mt-1.5 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-2 py-1.5 text-sm outline-none focus:border-[#d6ff3c]"
+                    className="mt-1.5 w-full border border-ink/15 bg-paper px-2 py-1.5 text-sm outline-none focus:border-lime"
                   />
                 </label>
                 <label className="block">
-                  <span className="text-[0.6rem] uppercase tracking-[0.12em] text-[#52706a]">
+                  <span className="text-[0.6rem] uppercase tracking-[0.12em] text-mute">
                     On-time rate
                   </span>
                   <input
@@ -231,11 +231,11 @@ export default function AdminVendorsPage() {
                         onTimeRate: Number(e.target.value),
                       })
                     }
-                    className="mt-1.5 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-2 py-1.5 text-sm outline-none focus:border-[#d6ff3c]"
+                    className="mt-1.5 w-full border border-ink/15 bg-paper px-2 py-1.5 text-sm outline-none focus:border-lime"
                   />
                 </label>
                 <label className="block">
-                  <span className="text-[0.6rem] uppercase tracking-[0.12em] text-[#52706a]">
+                  <span className="text-[0.6rem] uppercase tracking-[0.12em] text-mute">
                     Prod days
                   </span>
                   <input
@@ -248,11 +248,11 @@ export default function AdminVendorsPage() {
                         estimatedProductionDays: Number(e.target.value),
                       })
                     }
-                    className="mt-1.5 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-2 py-1.5 text-sm outline-none focus:border-[#d6ff3c]"
+                    className="mt-1.5 w-full border border-ink/15 bg-paper px-2 py-1.5 text-sm outline-none focus:border-lime"
                   />
                 </label>
                 <label className="block">
-                  <span className="text-[0.6rem] uppercase tracking-[0.12em] text-[#52706a]">
+                  <span className="text-[0.6rem] uppercase tracking-[0.12em] text-mute">
                     Delivery SLA days
                   </span>
                   <input
@@ -265,11 +265,11 @@ export default function AdminVendorsPage() {
                         deliverySlaDays: Number(e.target.value),
                       })
                     }
-                    className="mt-1.5 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-2 py-1.5 text-sm outline-none focus:border-[#d6ff3c]"
+                    className="mt-1.5 w-full border border-ink/15 bg-paper px-2 py-1.5 text-sm outline-none focus:border-lime"
                   />
                 </label>
                 <label className="block">
-                  <span className="text-[0.6rem] uppercase tracking-[0.12em] text-[#52706a]">
+                  <span className="text-[0.6rem] uppercase tracking-[0.12em] text-mute">
                     Ship base
                   </span>
                   <input
@@ -282,15 +282,15 @@ export default function AdminVendorsPage() {
                         shippingCostBase: Number(e.target.value),
                       })
                     }
-                    className="mt-1.5 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-2 py-1.5 text-sm outline-none focus:border-[#d6ff3c]"
+                    className="mt-1.5 w-full border border-ink/15 bg-paper px-2 py-1.5 text-sm outline-none focus:border-lime"
                   />
                 </label>
               </div>
 
-              <div className="mt-4 grid gap-3 text-xs text-[#52706a] sm:grid-cols-3">
+              <div className="mt-4 grid gap-3 text-xs text-mute sm:grid-cols-3">
                 <p>
                   Garment std / prem / heavy:{" "}
-                  <span className="text-[#0b1f1c]">
+                  <span className="text-ink">
                     {formatNaira(v.garmentCostByQuality.standard)} /{" "}
                     {formatNaira(v.garmentCostByQuality.premium)} /{" "}
                     {formatNaira(v.garmentCostByQuality.heavy)}
@@ -298,19 +298,19 @@ export default function AdminVendorsPage() {
                 </p>
                 <p>
                   Print DTF / screen:{" "}
-                  <span className="text-[#0b1f1c]">
+                  <span className="text-ink">
                     {formatNaira(v.printingCostByMethod.dtf)} /{" "}
                     {formatNaira(v.printingCostByMethod.screen)}
                   </span>
                 </p>
                 <p>
                   Materials:{" "}
-                  <span className="text-[#0b1f1c]">
+                  <span className="text-ink">
                     {v.materialAvailable.join(", ")}
                   </span>
                   <br />
                   Regions:{" "}
-                  <span className="text-[#0b1f1c]">
+                  <span className="text-ink">
                     {v.deliveryRegions.join(", ")}
                   </span>
                 </p>

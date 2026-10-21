@@ -87,6 +87,18 @@ export function isSmartQuote(
   return "vendor" in q && "candidates" in q;
 }
 
+/** Short form for big numbers: 950 → "950", 3_400 → "3.4K", 7_217_459 → "7.2M". */
+export function formatCompact(value: number): string {
+  if (Math.abs(value) < 1000) return new Intl.NumberFormat("en-NG").format(value);
+  return new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(value);
+}
+
+/** Short naira for tight spaces: "₦7.2M". Pair with formatNaira for the exact amount. */
+export function formatNairaCompact(amount: number): string {
+  const sign = amount < 0 ? "-" : "";
+  return `${sign}₦${formatCompact(Math.abs(amount))}`;
+}
+
 export function formatNaira(amount: number): string {
   return new Intl.NumberFormat("en-NG", {
     style: "currency",

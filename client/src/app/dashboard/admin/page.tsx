@@ -13,7 +13,7 @@ import {
 } from "@/components/dashboard/ui";
 import { getAnalyticsSnapshot } from "@/lib/api/analytics";
 import { queryKeys } from "@/lib/api/query-keys";
-import { formatNaira } from "@/lib/dashboard/pricing";
+import { formatNaira, formatNairaCompact } from "@/lib/dashboard/pricing";
 import { useAuth } from "@/providers/AuthProvider";
 
 const LINKS = [
@@ -83,12 +83,17 @@ export default function AdminOverviewPage() {
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <StatCard
           label="Revenue"
           value={
-            analyticsQuery.isPending ? "…" : (analytics?.revenueLabel ?? "—")
+            analyticsQuery.isPending
+              ? "…"
+              : analytics
+                ? formatNairaCompact(analytics.revenue)
+                : "—"
           }
+          exact={analytics?.revenueLabel}
           hint="Paid orders, all time"
         />
         <StatCard
@@ -116,42 +121,42 @@ export default function AdminOverviewPage() {
           <Link
             key={link.href}
             href={link.href}
-            className="group border border-[#0b1f1c]/12 bg-white rounded-2xl shadow-[0_1px_2px_rgba(11,31,28,0.05)] p-5 transition hover:border-[#d6ff3c]/40"
+            className="group border border-ink/12 bg-paper p-5 transition hover:border-lime/40"
           >
             <div className="flex items-start justify-between gap-3">
-              <h2 className="font-[family-name:var(--font-display)] text-xl font-bold tracking-[-0.03em]">
+              <h2 className="font-heading text-xl font-bold tracking-[-0.03em]">
                 {link.title}
               </h2>
               <ArrowUpRight
                 size={16}
-                className="mt-1 text-[#52706a] transition group-hover:text-[#3f4d0e]"
+                className="mt-1 text-mute transition group-hover:text-olive"
               />
             </div>
-            <p className="mt-2 text-sm text-[#52706a]">{link.body}</p>
+            <p className="mt-2 text-sm text-mute">{link.body}</p>
           </Link>
         ))}
       </section>
 
       <section className="mt-10">
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="font-[family-name:var(--font-display)] text-xl font-bold tracking-[-0.03em]">
+          <h2 className="font-heading text-xl font-bold tracking-[-0.03em]">
             Recent orders
           </h2>
           <GhostLink href="/dashboard/admin/orders">Manage all</GhostLink>
         </div>
         {recent.length === 0 ? (
-          <p className="text-sm text-[#52706a]">No orders yet.</p>
+          <p className="text-sm text-mute">No orders yet.</p>
         ) : (
-          <div className="divide-y divide-[#0b1f1c]/10 rounded-2xl border border-[#0b1f1c]/12 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
+          <div className="divide-y divide-ink/10 border border-ink/12 bg-paper">
             {recent.map((order) => (
               <Link
                 key={order.id}
                 href={`/dashboard/admin/orders/${order.id}`}
-                className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 transition hover:bg-[#0b1f1c]/4"
+                className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 transition hover:bg-ink/4"
               >
                 <div>
                   <p className="font-medium">{order.line.designTitle}</p>
-                  <p className="mt-1 text-xs text-[#52706a]">
+                  <p className="mt-1 text-xs text-mute">
                     {order.id} · {formatNaira(order.total)}
                   </p>
                 </div>

@@ -121,14 +121,14 @@ export default function AdminProfitPage() {
 
       <form
         onSubmit={savePricing}
-        className="mb-10 space-y-4 rounded-2xl border border-[#0b1f1c]/12 bg-white p-5 shadow-[0_1px_2px_rgba(11,31,28,0.05)]"
+        className="mb-10 space-y-4 border border-ink/12 bg-paper p-5"
       >
-        <h2 className="font-[family-name:var(--font-display)] text-xl font-bold tracking-[-0.03em]">
+        <h2 className="font-heading text-xl font-bold tracking-[-0.03em]">
           Smart pricing controls
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <label className="block">
-            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
               Default margin %
             </span>
             <input
@@ -137,11 +137,11 @@ export default function AdminProfitPage() {
               max={90}
               value={margin}
               onChange={(e) => setMargin(Number(e.target.value))}
-              className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#d6ff3c]"
+              className="mt-2 w-full border border-ink/15 bg-paper px-3 py-2.5 text-sm outline-none focus:border-lime"
             />
           </label>
           <label className="block">
-            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
               Rush margin %
             </span>
             <input
@@ -150,11 +150,11 @@ export default function AdminProfitPage() {
               max={90}
               value={rush}
               onChange={(e) => setRush(Number(e.target.value))}
-              className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#d6ff3c]"
+              className="mt-2 w-full border border-ink/15 bg-paper px-3 py-2.5 text-sm outline-none focus:border-lime"
             />
           </label>
           <label className="block">
-            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
               Min margin %
             </span>
             <input
@@ -163,11 +163,11 @@ export default function AdminProfitPage() {
               max={90}
               value={minMargin}
               onChange={(e) => setMinMargin(Number(e.target.value))}
-              className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#d6ff3c]"
+              className="mt-2 w-full border border-ink/15 bg-paper px-3 py-2.5 text-sm outline-none focus:border-lime"
             />
           </label>
           <label className="block">
-            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
               Max margin %
             </span>
             <input
@@ -176,14 +176,14 @@ export default function AdminProfitPage() {
               max={90}
               value={maxMargin}
               onChange={(e) => setMaxMargin(Number(e.target.value))}
-              className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#d6ff3c]"
+              className="mt-2 w-full border border-ink/15 bg-paper px-3 py-2.5 text-sm outline-none focus:border-lime"
             />
           </label>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <fieldset>
-            <legend className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+            <legend className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
               Prioritize
             </legend>
             <div className="mt-3 grid gap-2">
@@ -195,8 +195,8 @@ export default function AdminProfitPage() {
                   className={cn(
                     "border px-3 py-2.5 text-left text-sm",
                     strategy === key
-                      ? "border-[#d6ff3c] bg-[#d6ff3c]/10"
-                      : "border-[#0b1f1c]/15 hover:border-[#0b1f1c]/35",
+                      ? "border-lime bg-lime/10"
+                      : "border-ink/15 hover:border-ink/35",
                   )}
                 >
                   {SELECTION_STRATEGY_LABELS[key]}
@@ -206,13 +206,13 @@ export default function AdminProfitPage() {
           </fieldset>
 
           <label className="block">
-            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
               Override vendor (optional)
             </span>
             <select
               value={overrideVendorId}
               onChange={(e) => setOverrideVendorId(e.target.value)}
-              className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#d6ff3c]"
+              className="mt-2 w-full border border-ink/15 bg-paper px-3 py-2.5 text-sm outline-none focus:border-lime"
             >
               <option value="">Automatic selection</option>
               {vendors
@@ -223,17 +223,17 @@ export default function AdminProfitPage() {
                   </option>
                 ))}
             </select>
-            <p className="mt-2 text-xs text-[#52706a]">
+            <p className="mt-2 text-xs text-mute">
               Forces this vendor when eligible, ignoring the strategy.
             </p>
           </label>
         </div>
 
         <div>
-          <p className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+          <p className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
             Temporarily exclude vendors
           </p>
-          <ul className="mt-3 divide-y divide-[#0b1f1c]/10 border border-[#0b1f1c]/12">
+          <ul className="mt-3 divide-y divide-ink/10 border border-ink/12">
             {vendors.map((v) => {
               const excluded = profit.excludedVendorIds.includes(v.id);
               return (
@@ -243,7 +243,7 @@ export default function AdminProfitPage() {
                 >
                   <div>
                     <p className="text-sm font-medium">{v.name}</p>
-                    <p className="text-xs text-[#52706a]">{v.location}</p>
+                    <p className="text-xs text-mute">{v.location}</p>
                   </div>
                   <button
                     type="button"
@@ -252,7 +252,7 @@ export default function AdminProfitPage() {
                       "px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em]",
                       excluded
                         ? "bg-red-600/10 text-red-700"
-                        : "bg-[#0b1f1c]/8 text-[#52706a]",
+                        : "bg-ink/8 text-mute",
                     )}
                   >
                     {excluded ? "Excluded" : "Include"}
@@ -265,40 +265,40 @@ export default function AdminProfitPage() {
 
         <button
           type="submit"
-          className="bg-[#d6ff3c] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.06em] text-[#070807] hover:bg-[#e2ff6a]"
+          className="bg-lime px-4 py-2.5 text-xs font-bold uppercase tracking-[0.06em] text-ink hover:bg-lime/80"
         >
           Save pricing rules
         </button>
       </form>
 
       <section className="mb-10">
-        <h2 className="mb-4 font-[family-name:var(--font-display)] text-xl font-bold tracking-[-0.03em]">
+        <h2 className="mb-4 font-heading text-xl font-bold tracking-[-0.03em]">
           Promotions
         </h2>
         <form
           onSubmit={handlePromo}
-          className="mb-4 grid gap-3 rounded-2xl border border-[#0b1f1c]/12 bg-white p-4 shadow-[0_1px_2px_rgba(11,31,28,0.05)] sm:grid-cols-[1fr_1.4fr_auto]"
+          className="mb-4 grid gap-3 border border-ink/12 bg-paper p-4 sm:grid-cols-[1fr_1.4fr_auto]"
         >
           <input
             value={promoName}
             onChange={(e) => setPromoName(e.target.value)}
             placeholder="Name"
-            className="border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#d6ff3c]"
+            className="border border-ink/15 bg-paper px-3 py-2.5 text-sm outline-none focus:border-lime"
           />
           <input
             value={promoDesc}
             onChange={(e) => setPromoDesc(e.target.value)}
             placeholder="Description"
-            className="border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#d6ff3c]"
+            className="border border-ink/15 bg-paper px-3 py-2.5 text-sm outline-none focus:border-lime"
           />
           <button
             type="submit"
-            className="border border-[#0b1f1c]/20 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.08em] hover:border-[#d6ff3c] hover:text-[#3f4d0e]"
+            className="border border-ink/20 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.08em] hover:border-lime hover:text-olive"
           >
             Add
           </button>
         </form>
-        <ul className="divide-y divide-[#0b1f1c]/10 rounded-2xl border border-[#0b1f1c]/12 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
+        <ul className="divide-y divide-ink/10 border border-ink/12 bg-paper">
           {profit.promotions.map((p) => (
             <li
               key={p.id}
@@ -306,7 +306,7 @@ export default function AdminProfitPage() {
             >
               <div>
                 <p className="font-medium">{p.name}</p>
-                <p className="mt-1 text-sm text-[#52706a]">{p.description}</p>
+                <p className="mt-1 text-sm text-mute">{p.description}</p>
               </div>
               <button
                 type="button"
@@ -314,8 +314,8 @@ export default function AdminProfitPage() {
                 className={cn(
                   "px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em]",
                   p.active
-                    ? "bg-[#d6ff3c]/15 text-[#3f4d0e]"
-                    : "bg-[#0b1f1c]/8 text-[#52706a]",
+                    ? "bg-lime/15 text-olive"
+                    : "bg-ink/8 text-mute",
                 )}
               >
                 {p.active ? "Live" : "Off"}
@@ -326,7 +326,7 @@ export default function AdminProfitPage() {
       </section>
 
       <section className="mb-10">
-        <h2 className="mb-4 font-[family-name:var(--font-display)] text-xl font-bold tracking-[-0.03em]">
+        <h2 className="mb-4 font-heading text-xl font-bold tracking-[-0.03em]">
           Volume discounts
         </h2>
         <div className="mb-4 flex flex-wrap gap-2">
@@ -340,12 +340,12 @@ export default function AdminProfitPage() {
                 minQty: 10,
               })
             }
-            className="border border-[#0b1f1c]/20 px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.08em] hover:border-[#d6ff3c] hover:text-[#3f4d0e]"
+            className="border border-ink/20 px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.08em] hover:border-lime hover:text-olive"
           >
             Add 5% @ 10 pcs
           </button>
         </div>
-        <ul className="divide-y divide-[#0b1f1c]/10 rounded-2xl border border-[#0b1f1c]/12 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
+        <ul className="divide-y divide-ink/10 border border-ink/12 bg-paper">
           {profit.discounts.map((d) => (
             <li
               key={d.id}
@@ -353,7 +353,7 @@ export default function AdminProfitPage() {
             >
               <div>
                 <p className="font-medium">{d.name}</p>
-                <p className="mt-1 text-sm text-[#52706a]">
+                <p className="mt-1 text-sm text-mute">
                   {d.type === "percent" ? `${d.value}%` : formatNaira(d.value)}{" "}
                   off · min {d.minQty} pcs
                 </p>
@@ -364,8 +364,8 @@ export default function AdminProfitPage() {
                 className={cn(
                   "px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em]",
                   d.active
-                    ? "bg-[#d6ff3c]/15 text-[#3f4d0e]"
-                    : "bg-[#0b1f1c]/8 text-[#52706a]",
+                    ? "bg-lime/15 text-olive"
+                    : "bg-ink/8 text-mute",
                 )}
               >
                 {d.active ? "Active" : "Off"}
@@ -376,18 +376,18 @@ export default function AdminProfitPage() {
       </section>
 
       <section>
-        <h2 className="mb-4 font-[family-name:var(--font-display)] text-xl font-bold tracking-[-0.03em]">
+        <h2 className="mb-4 font-heading text-xl font-bold tracking-[-0.03em]">
           Coupons
         </h2>
         <form
           onSubmit={handleCoupon}
-          className="mb-4 grid gap-3 rounded-2xl border border-[#0b1f1c]/12 bg-white p-4 shadow-[0_1px_2px_rgba(11,31,28,0.05)] sm:grid-cols-[1fr_8rem_auto]"
+          className="mb-4 grid gap-3 border border-ink/12 bg-paper p-4 sm:grid-cols-[1fr_8rem_auto]"
         >
           <input
             value={couponCode}
             onChange={(e) => setCouponCode(e.target.value)}
             placeholder="CODE"
-            className="border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-2.5 text-sm uppercase outline-none focus:border-[#d6ff3c]"
+            className="border border-ink/15 bg-paper px-3 py-2.5 text-sm uppercase outline-none focus:border-lime"
           />
           <input
             type="number"
@@ -395,16 +395,16 @@ export default function AdminProfitPage() {
             max={50}
             value={couponValue}
             onChange={(e) => setCouponValue(Number(e.target.value))}
-            className="border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-2.5 text-sm outline-none focus:border-[#d6ff3c]"
+            className="border border-ink/15 bg-paper px-3 py-2.5 text-sm outline-none focus:border-lime"
           />
           <button
             type="submit"
-            className="border border-[#0b1f1c]/20 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.08em] hover:border-[#d6ff3c] hover:text-[#3f4d0e]"
+            className="border border-ink/20 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.08em] hover:border-lime hover:text-olive"
           >
             Add % coupon
           </button>
         </form>
-        <ul className="divide-y divide-[#0b1f1c]/10 rounded-2xl border border-[#0b1f1c]/12 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
+        <ul className="divide-y divide-ink/10 border border-ink/12 bg-paper">
           {profit.coupons.map((c) => (
             <li
               key={c.id}
@@ -414,7 +414,7 @@ export default function AdminProfitPage() {
                 <p className="font-mono text-sm font-medium tracking-wide">
                   {c.code}
                 </p>
-                <p className="mt-1 text-sm text-[#52706a]">
+                <p className="mt-1 text-sm text-mute">
                   {c.type === "percent" ? `${c.value}%` : formatNaira(c.value)}{" "}
                   · {c.redemptions}/{c.maxRedemptions} used
                 </p>
@@ -426,8 +426,8 @@ export default function AdminProfitPage() {
                   className={cn(
                     "px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em]",
                     c.active
-                      ? "bg-[#d6ff3c]/15 text-[#3f4d0e]"
-                      : "bg-[#0b1f1c]/8 text-[#52706a]",
+                      ? "bg-lime/15 text-olive"
+                      : "bg-ink/8 text-mute",
                   )}
                 >
                   {c.active ? "Active" : "Off"}
@@ -435,7 +435,7 @@ export default function AdminProfitPage() {
                 <button
                   type="button"
                   onClick={() => void removeCoupon(c.id)}
-                  className="border border-[#0b1f1c]/20 px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em] hover:border-red-700 hover:text-red-700"
+                  className="border border-ink/20 px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.08em] hover:border-red-700 hover:text-red-700"
                 >
                   Remove
                 </button>

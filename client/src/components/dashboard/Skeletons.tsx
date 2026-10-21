@@ -6,10 +6,11 @@ import { cn } from "@/lib/utils";
  */
 
 /** One placeholder block. Square, ink-tinted, pulses unless motion is reduced. */
-export function Bone({ className }: { className?: string }) {
+export function Bone({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
     <div
       aria-hidden
+      style={style}
       className={cn("animate-pulse bg-ink/8 motion-reduce:animate-none", className)}
     />
   );
