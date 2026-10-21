@@ -7,6 +7,7 @@ import { useState } from "react";
 import { BrandLogo, BrandMark } from "@/components/brand/BrandLogo";
 import { Kicker } from "@/components/brand/ui";
 import { Bone } from "@/components/dashboard/Skeletons";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 
@@ -47,6 +48,8 @@ export function AppShell({
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Logging out always asks first; the dialog runs onLogout on confirm.
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href;
@@ -174,7 +177,7 @@ export function AppShell({
             <button
               type="button"
               disabled={isLoggingOut}
-              onClick={onLogout}
+              onClick={() => setConfirmLogout(true)}
               title={collapsed ? "Log out" : undefined}
               className={cn(
                 "inline-flex items-center gap-1.5 text-[0.66rem] font-semibold tracking-[0.18em] whitespace-nowrap text-mute uppercase transition-colors hover:text-ink disabled:opacity-50",
@@ -235,7 +238,7 @@ export function AppShell({
                   disabled={isLoggingOut}
                   onClick={() => {
                     setMobileOpen(false);
-                    onLogout();
+                    setConfirmLogout(true);
                   }}
                   className="px-4 py-3.5 text-left text-[0.7rem] font-semibold tracking-[0.18em] text-mute uppercase disabled:opacity-50"
                 >
@@ -254,6 +257,27 @@ export function AppShell({
           <main className="min-w-0 flex-1 px-4 py-8 md:px-6 md:py-10 lg:px-10">{children}</main>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmLogout}
+        kicker="Account"
+        title="Log out?"
+        description={
+          userEmail ? (
+            <>
+              You’re signed in as <span className="font-semibold text-ink">{userEmail}</span>. You’ll
+              need to log in again to continue.
+            </>
+          ) : (
+            "You’ll need to log in again to continue."
+          )
+        }
+        cancelLabel="Stay signed in"
+        confirmLabel="Log out"
+        confirming={isLoggingOut}
+        onConfirm={onLogout}
+        onCancel={() => setConfirmLogout(false)}
+      />
     </div>
   );
 }
