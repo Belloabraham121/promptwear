@@ -61,3 +61,45 @@ export function BrandLogo({
     </Link>
   );
 }
+
+/**
+ * Compact icon mark: the wordmark's "d." on an ink tile with a lime drip.
+ * Used where the full wordmark doesn't fit, e.g. the collapsed sidebar.
+ */
+export function BrandMark({
+  href = "/",
+  label = "Driplab home",
+  className,
+}: {
+  href?: string | null;
+  label?: string;
+  className?: string;
+}) {
+  const tile = (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "grid size-10 place-items-center bg-ink font-heading text-[1.45rem] leading-none font-extrabold tracking-[-0.06em] text-bone lowercase",
+        className,
+      )}
+    >
+      <span className="-mt-0.5">
+        d<span className="text-lime">.</span>
+      </span>
+    </span>
+  );
+
+  if (href == null || href === "") {
+    return (
+      <span aria-label={label} className="inline-flex">
+        {tile}
+      </span>
+    );
+  }
+
+  return (
+    <Link href={href} aria-label={label} className="inline-flex transition-opacity hover:opacity-85">
+      {tile}
+    </Link>
+  );
+}

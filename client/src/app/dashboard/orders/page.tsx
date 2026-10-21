@@ -9,6 +9,7 @@ import {
   PrimaryLink,
   StatusPill,
 } from "@/components/dashboard/ui";
+import { OrdersSkeleton } from "@/components/dashboard/Skeletons";
 import { listOrders } from "@/lib/api/orders";
 import { ApiError } from "@/lib/api/errors";
 import { formatNaira, totalQuantity } from "@/lib/dashboard/pricing";
@@ -41,12 +42,13 @@ export default function OrdersPage() {
   }, [ready]);
 
   if (!ready || loading) {
-    return <p className="text-sm text-[#52706a]">Loading orders…</p>;
+    return <OrdersSkeleton />;
   }
 
   return (
     <div>
       <PageHeader
+        kicker="Tracking"
         title="Orders"
         description="Checkout, production tracking, and delivery — every order you place from a saved design."
         action={
@@ -67,9 +69,9 @@ export default function OrdersPage() {
           }
         />
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-[#0b1f1c]/12 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
+        <div className="overflow-x-auto border border-ink/12 bg-paper">
           <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="border-b border-[#0b1f1c]/12 bg-[#0b1f1c]/[0.03] text-[0.65rem] uppercase tracking-[0.12em] text-[#52706a]">
+            <thead className="border-b border-ink/12 bg-ink/[0.03] text-[0.65rem] uppercase tracking-[0.12em] text-mute">
               <tr>
                 <th className="px-4 py-3 font-medium">Order</th>
                 <th className="px-4 py-3 font-medium">Design</th>
@@ -78,17 +80,17 @@ export default function OrdersPage() {
                 <th className="px-4 py-3 font-medium">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#0b1f1c]/10">
+            <tbody className="divide-y divide-ink/10">
               {orders.map((order) => (
-                <tr key={order.id} className="hover:bg-[#0b1f1c]/4">
+                <tr key={order.id} className="hover:bg-ink/4">
                   <td className="px-4 py-4">
                     <Link
                       href={`/dashboard/orders/${order.id}`}
-                      className="font-medium text-[#3f4d0e] hover:underline"
+                      className="font-medium text-olive hover:underline"
                     >
                       {order.id}
                     </Link>
-                    <p className="mt-1 text-xs text-[#52706a]">
+                    <p className="mt-1 text-xs text-mute">
                       {new Date(order.createdAt).toLocaleDateString("en-NG")}
                     </p>
                   </td>

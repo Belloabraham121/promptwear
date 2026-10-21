@@ -4,7 +4,7 @@ function Bone({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "animate-pulse rounded-md bg-[#0b1f1c]/8",
+        "animate-pulse bg-ink/8 motion-reduce:animate-none",
         className,
       )}
     />
@@ -14,8 +14,8 @@ function Bone({ className }: { className?: string }) {
 /** Full-page gate skeleton (auth / admin access). */
 export function AdminGateSkeleton() {
   return (
-    <div className="flex min-h-dvh bg-[#f3f0e8] text-[#0b1f1c]">
-      <aside className="hidden w-60 shrink-0 border-r border-[#0b1f1c]/10 p-6 md:block">
+    <div className="flex min-h-dvh bg-bone text-ink">
+      <aside className="hidden w-60 shrink-0 border-r border-ink/12 p-6 md:block">
         <Bone className="h-6 w-24" />
         <Bone className="mt-2 h-3 w-14" />
         <div className="mt-8 space-y-2">

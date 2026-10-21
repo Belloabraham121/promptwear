@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/dashboard/ui";
+import { InlineListSkeleton, TeamSkeleton } from "@/components/dashboard/Skeletons";
 import { authClient } from "@/lib/api/auth-client";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -186,23 +187,24 @@ export default function TeamPage() {
   }
 
   const inputCls =
-    "mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-3 text-sm outline-none focus:border-[#d6ff3c]";
+    "mt-2 w-full border border-ink/15 bg-paper px-3 py-3 text-sm outline-none focus:border-lime";
   const btnCls =
-    "bg-[#d6ff3c] px-5 py-3 text-xs font-bold uppercase tracking-[0.06em] text-[#070807] hover:bg-[#e2ff6a] disabled:opacity-50";
+    "bg-lime px-5 py-3 text-xs font-bold uppercase tracking-[0.06em] text-ink hover:bg-lime/80 disabled:opacity-50";
 
   return (
     <div>
       <PageHeader
+        kicker="Workspace"
         title="Team"
         description="Workspaces, members, and email invitations."
       />
 
       {orgsLoading ? (
-        <p className="text-sm text-[#52706a]">Loading workspaces…</p>
+        <TeamSkeleton />
       ) : (
         <div className="grid gap-8 lg:grid-cols-[minmax(0,22rem)_1fr]">
           <div className="space-y-6">
-            <section className="rounded-2xl border border-[#0b1f1c]/12 bg-white p-5">
+            <section className="border border-ink/12 bg-paper p-5">
               <h2 className="font-[family-name:var(--font-display)] text-lg font-bold">
                 Workspaces
               </h2>
@@ -214,8 +216,8 @@ export default function TeamPage() {
                       onClick={() => setSelectedId(org.id)}
                       className={`flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-left text-sm transition-colors ${
                         effectiveId === org.id
-                          ? "border-[#0b1f1c] bg-[#0b1f1c] text-[#f3f0e8]"
-                          : "border-[#0b1f1c]/15 bg-white hover:border-[#0b1f1c]/40"
+                          ? "border-ink bg-ink text-bone"
+                          : "border-ink/15 bg-paper hover:border-ink/40"
                       }`}
                     >
                       <span className="font-semibold">{org.name}</span>
@@ -228,7 +230,7 @@ export default function TeamPage() {
                   </li>
                 ))}
                 {(orgs ?? []).length === 0 ? (
-                  <li className="text-sm text-[#52706a]">
+                  <li className="text-sm text-mute">
                     No workspaces yet — create one below.
                   </li>
                 ) : null}
@@ -237,14 +239,14 @@ export default function TeamPage() {
                 <button
                   type="button"
                   onClick={() => void handleSetActive(effectiveId)}
-                  className="mt-4 w-full rounded-xl border border-[#0b1f1c]/15 px-3 py-2.5 text-xs font-bold uppercase tracking-[0.06em] hover:border-[#0b1f1c]/40"
+                  className="mt-4 w-full border border-ink/15 px-3 py-2.5 text-xs font-bold uppercase tracking-[0.06em] hover:border-ink/40"
                 >
                   Switch to this workspace
                 </button>
               ) : null}
             </section>
 
-            <section className="rounded-2xl border border-[#0b1f1c]/12 bg-white p-5">
+            <section className="border border-ink/12 bg-paper p-5">
               <h2 className="font-[family-name:var(--font-display)] text-lg font-bold">
                 New workspace
               </h2>
@@ -263,28 +265,28 @@ export default function TeamPage() {
           </div>
 
           <div className="space-y-6">
-            <section className="rounded-2xl border border-[#0b1f1c]/12 bg-white p-5">
+            <section className="border border-ink/12 bg-paper p-5">
               <h2 className="font-[family-name:var(--font-display)] text-lg font-bold">
                 Members
                 {full ? (
-                  <span className="text-[#52706a]"> · {full.name}</span>
+                  <span className="text-mute"> · {full.name}</span>
                 ) : null}
               </h2>
               {fullLoading ? (
-                <p className="mt-4 text-sm text-[#52706a]">Loading…</p>
+                <InlineListSkeleton />
               ) : full ? (
-                <ul className="mt-4 divide-y divide-[#0b1f1c]/10">
+                <ul className="mt-4 divide-y divide-ink/10">
                   {full.members.map((member) => (
                     <li
                       key={member.id}
                       className="flex items-center justify-between gap-3 py-2.5 text-sm"
                     >
                       <div>
-                        <p className="font-semibold text-[#0b1f1c]">
+                        <p className="font-semibold text-ink">
                           {member.user.name}
                           {member.userId === session?.id ? " (you)" : ""}
                         </p>
-                        <p className="text-[#52706a]">
+                        <p className="text-mute">
                           {member.user.email} · {member.role}
                         </p>
                       </div>
@@ -301,13 +303,13 @@ export default function TeamPage() {
                   ))}
                 </ul>
               ) : (
-                <p className="mt-4 text-sm text-[#52706a]">
+                <p className="mt-4 text-sm text-mute">
                   Select a workspace to see members.
                 </p>
               )}
             </section>
 
-            <section className="rounded-2xl border border-[#0b1f1c]/12 bg-white p-5">
+            <section className="border border-ink/12 bg-paper p-5">
               <h2 className="font-[family-name:var(--font-display)] text-lg font-bold">
                 Invite by email
               </h2>
@@ -343,13 +345,13 @@ export default function TeamPage() {
                   {inviting ? "Sending…" : "Invite"}
                 </button>
               </form>
-              <p className="mt-3 text-xs text-[#52706a]">
+              <p className="mt-3 text-xs text-mute">
                 They get an email with an accept link. New people sign up
                 first, then open the link.
               </p>
 
               {full && full.invitations.filter((i) => i.status === "pending").length > 0 ? (
-                <ul className="mt-4 divide-y divide-[#0b1f1c]/10">
+                <ul className="mt-4 divide-y divide-ink/10">
                   {full.invitations
                     .filter((i) => i.status === "pending")
                     .map((inv) => (
@@ -357,9 +359,9 @@ export default function TeamPage() {
                         key={inv.id}
                         className="flex items-center justify-between gap-3 py-2.5 text-sm"
                       >
-                        <p className="text-[#0b1f1c]">
+                        <p className="text-ink">
                           {inv.email}{" "}
-                          <span className="text-[#52706a]">
+                          <span className="text-mute">
                             · {inv.role ?? "member"} · pending
                           </span>
                         </p>

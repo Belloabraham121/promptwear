@@ -44,7 +44,7 @@ function Base({
       aria-label={`${label} line art`}
       className="h-full w-full"
       fill="none"
-      stroke="#0b1f1c"
+      stroke="#070807"
       strokeWidth={3.5}
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -128,26 +128,27 @@ export function ChatGarmentCard({
 }) {
   const kind = detectGarment(`${title} ${text}`);
   return (
-    <div
-      className={cn(
-        "overflow-hidden rounded-2xl border border-[#0b1f1c]/10 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]",
-        className,
-      )}
-    >
-      <div className="relative grid aspect-[4/3] place-items-center bg-[#f3f0e8] p-6">
-        <span className="absolute top-3 left-3 rounded-full bg-[#0b1f1c] px-2.5 py-1 text-[0.6rem] font-bold tracking-[0.12em] text-white uppercase">
+    <div className={cn("group text-ink", className)}>
+      <div className="relative grid aspect-[4/5] place-items-center overflow-hidden bg-sand p-8">
+        <span className="absolute top-3 left-3 bg-ink px-2 py-1 text-[0.6rem] font-semibold tracking-[0.18em] text-bone uppercase">
           {LABEL[kind]}
         </span>
-        <GarmentArt kind={kind} className="h-full max-h-36 w-auto" />
+        <GarmentArt
+          kind={kind}
+          className="h-full max-h-44 w-auto transition-transform duration-700 group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+        />
       </div>
-      <div className="space-y-1 p-4">
-        <p className="truncate text-sm font-semibold text-[#0b1f1c]">
+      <div className="mt-3 flex items-baseline justify-between gap-3">
+        <p className="m-0 truncate font-heading text-[1.05rem] font-bold tracking-[-0.03em]">
           {title || "Untitled chat"}
         </p>
-        <p className="text-xs text-[#52706a]">
-          {method} · {messageCount} {messageCount === 1 ? "message" : "messages"}
-        </p>
       </div>
+      <p className="mt-1 mb-0 flex justify-between gap-3 text-[0.78rem] text-mute">
+        <span className="capitalize">{method}</span>
+        <span>
+          {messageCount} {messageCount === 1 ? "message" : "messages"}
+        </span>
+      </p>
     </div>
   );
 }
