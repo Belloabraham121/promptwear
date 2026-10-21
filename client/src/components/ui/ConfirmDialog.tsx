@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
+import { Kicker } from "@/components/brand/ui";
 import { cn } from "@/lib/utils";
 
 type ConfirmDialogProps = {
@@ -11,6 +12,8 @@ type ConfirmDialogProps = {
   cancelLabel?: string;
   confirming?: boolean;
   tone?: "danger" | "default";
+  /** Small masthead label above the title, e.g. "Account". */
+  kicker?: string;
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -23,9 +26,17 @@ export function ConfirmDialog({
   cancelLabel = "Cancel",
   confirming = false,
   tone = "default",
+  kicker,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const cancelRef = useRef<HTMLButtonElement>(null);
+
+  // Start on the safe choice so Enter/Space never confirms by accident.
+  useEffect(() => {
+    if (open) cancelRef.current?.focus();
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
 
@@ -48,14 +59,12 @@ export function ConfirmDialog({
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      role="presentation"
-    >
+    <div className="fixed inset-0 z-[70] flex items-end justify-center p-0 sm:items-center sm:p-4" role="presentation">
       <button
         type="button"
         aria-label="Dismiss"
-        className="absolute inset-0 bg-black/70"
+        tabIndex={-1}
+        className="absolute inset-0 bg-ink/70 motion-safe:animate-[nf-fade-up_0.2s_ease-out_both]"
         disabled={confirming}
         onClick={() => {
           if (!confirming) onCancel();
@@ -66,26 +75,33 @@ export function ConfirmDialog({
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-description"
-        className="relative z-10 w-full max-w-md rounded-2xl border border-[#0b1f1c]/10 bg-white p-5 text-[#0b1f1c] shadow-[0_24px_80px_rgba(11,31,28,0.2)]"
+        className="relative z-10 w-full max-w-md border-t-4 border-ink bg-paper p-6 text-ink motion-safe:animate-[nf-fade-up_0.25s_ease-out_both] sm:border sm:border-t-4 sm:border-ink/15 sm:border-t-ink sm:p-7"
       >
+        {kicker ? (
+          <Kicker className={tone === "danger" ? "text-red-700" : "text-olive"}>{kicker}</Kicker>
+        ) : null}
         <h2
           id="confirm-dialog-title"
-          className="font-[family-name:var(--font-display)] text-lg font-bold tracking-[-0.03em]"
+          className={cn(
+            "m-0 font-heading text-[1.9rem] leading-[0.95] font-extrabold tracking-[-0.05em]",
+            kicker && "mt-4",
+          )}
         >
           {title}
         </h2>
         <div
           id="confirm-dialog-description"
-          className="mt-3 text-sm leading-relaxed text-[#52706a]"
+          className="mt-3 text-[0.95rem] leading-relaxed text-mute"
         >
           {description}
         </div>
-        <div className="mt-6 flex flex-wrap justify-end gap-2">
+        <div className="mt-7 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button
+            ref={cancelRef}
             type="button"
             disabled={confirming}
             onClick={onCancel}
-            className="rounded-full border border-[#0b1f1c]/15 px-3.5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-[#52706a] transition hover:border-[#0b1f1c]/30 hover:text-[#0b1f1c] disabled:opacity-50"
+            className="border border-ink/20 px-5 py-3 text-[0.7rem] font-bold tracking-[0.16em] text-ink uppercase transition-colors hover:border-ink disabled:opacity-50"
           >
             {cancelLabel}
           </button>
@@ -94,10 +110,10 @@ export function ConfirmDialog({
             disabled={confirming}
             onClick={onConfirm}
             className={cn(
-              "rounded-full px-3.5 py-2 text-[0.65rem] font-bold uppercase tracking-[0.08em] transition disabled:opacity-50",
+              "px-5 py-3 text-[0.7rem] font-bold tracking-[0.16em] uppercase transition-colors disabled:opacity-50",
               tone === "danger"
                 ? "bg-red-600 text-white hover:bg-red-700"
-                : "bg-[#0b1f1c] text-white hover:bg-[#14322d]",
+                : "bg-ink text-bone hover:bg-lime hover:text-ink",
             )}
           >
             {confirming ? "Working…" : confirmLabel}
