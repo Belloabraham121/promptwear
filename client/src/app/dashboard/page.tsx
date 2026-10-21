@@ -15,7 +15,7 @@ import {
 } from "@/components/dashboard/ui";
 import { ChatGarmentCard } from "@/components/dashboard/GarmentArt";
 import { OverviewSkeleton } from "@/components/dashboard/Skeletons";
-import { formatNaira, totalQuantity } from "@/lib/dashboard/pricing";
+import { formatNaira, formatNairaCompact, totalQuantity } from "@/lib/dashboard/pricing";
 
 export default function DashboardOverviewPage() {
   const { ready, designs, orders, user } = useDashboard();
@@ -49,7 +49,8 @@ export default function DashboardOverviewPage() {
         <StatCard label="All orders" value={orders.length} hint="Lifetime total" />
         <StatCard
           label="Last quote"
-          value={orders[0] ? formatNaira(orders[0].total) : "—"}
+          value={orders[0] ? formatNairaCompact(orders[0].total) : "—"}
+          exact={orders[0] ? formatNaira(orders[0].total) : undefined}
           hint={orders[0] ? orders[0].line.designTitle : "Place your first order"}
         />
       </div>

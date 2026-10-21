@@ -13,7 +13,7 @@ import {
 } from "@/components/dashboard/ui";
 import { getAnalyticsSnapshot } from "@/lib/api/analytics";
 import { queryKeys } from "@/lib/api/query-keys";
-import { formatNaira } from "@/lib/dashboard/pricing";
+import { formatNaira, formatNairaCompact } from "@/lib/dashboard/pricing";
 import { useAuth } from "@/providers/AuthProvider";
 
 const LINKS = [
@@ -87,8 +87,13 @@ export default function AdminOverviewPage() {
         <StatCard
           label="Revenue"
           value={
-            analyticsQuery.isPending ? "…" : (analytics?.revenueLabel ?? "—")
+            analyticsQuery.isPending
+              ? "…"
+              : analytics
+                ? formatNairaCompact(analytics.revenue)
+                : "—"
           }
+          exact={analytics?.revenueLabel}
           hint="Paid orders, all time"
         />
         <StatCard

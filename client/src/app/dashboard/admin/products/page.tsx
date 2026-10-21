@@ -58,7 +58,7 @@ export default function AdminProductsPage() {
         <h2 className="mb-4 font-heading text-xl font-bold tracking-[-0.03em]">
           Materials
         </h2>
-        <div className="overflow-x-auto border border-ink/12 bg-paper">
+        <div className="relative overflow-x-auto border border-ink/12 bg-paper">
           <table className="w-full min-w-[640px] text-left text-sm">
             <thead className="border-b border-ink/12 bg-ink/[0.03] text-[0.65rem] uppercase tracking-[0.12em] text-mute">
               <tr>
@@ -97,7 +97,7 @@ export default function AdminProductsPage() {
         <h2 className="mb-4 font-heading text-xl font-bold tracking-[-0.03em]">
           Garments
         </h2>
-        <div className="overflow-x-auto border border-ink/12 bg-paper">
+        <div className="relative overflow-x-auto border border-ink/12 bg-paper">
           <table className="w-full min-w-[640px] text-left text-sm">
             <thead className="border-b border-ink/12 bg-ink/[0.03] text-[0.65rem] uppercase tracking-[0.12em] text-mute">
               <tr>

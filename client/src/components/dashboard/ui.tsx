@@ -52,12 +52,12 @@ export function SectionHeading({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="mb-6 flex items-end justify-between gap-4 border-b border-ink/12 pb-4 [&>a]:whitespace-nowrap">
-      <div className="flex items-baseline gap-4">
+    <div className="mb-6 flex items-end justify-between gap-3 border-b border-ink/12 pb-4 [&>a]:shrink-0 [&>a]:whitespace-nowrap">
+      <div className="flex min-w-0 items-baseline gap-3 sm:gap-4">
         <span className="text-[0.68rem] font-semibold tracking-[0.22em] text-olive tabular-nums">
           {index}
         </span>
-        <h2 className="m-0 font-heading text-[1.3rem] leading-none font-extrabold tracking-[-0.04em] whitespace-nowrap text-ink sm:text-[1.6rem]">
+        <h2 className="m-0 min-w-0 font-heading text-[1.15rem] leading-none font-extrabold tracking-[-0.04em] text-ink sm:text-[1.6rem]">
           {title}
         </h2>
       </div>
@@ -66,31 +66,7 @@ export function SectionHeading({
   );
 }
 
-export function StatCard({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: string | number;
-  hint?: string;
-}) {
-  return (
-    <article className="border border-ink/12 bg-paper p-5">
-      <Kicker className="text-mute">{label}</Kicker>
-      <p
-        className={cn(
-          "mt-4 mb-0 font-heading leading-none font-extrabold tracking-[-0.05em] whitespace-nowrap text-ink tabular-nums",
-          // Long values (e.g. "₦7,217,459") step down so they stay on one line.
-          String(value).length > 7 ? "text-[clamp(1.15rem,1.55vw,1.75rem)]" : "text-[2.6rem]",
-        )}
-      >
-        {value}
-      </p>
-      {hint ? <p className="mt-3 mb-0 text-xs text-mute">{hint}</p> : null}
-    </article>
-  );
-}
+export { StatCard } from "@/components/dashboard/StatCard";
 
 export function StatusPill({ status }: { status: OrderStatus }) {
   const tone =

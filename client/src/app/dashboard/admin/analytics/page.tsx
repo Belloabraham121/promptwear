@@ -25,7 +25,7 @@ import {
   getRevenueSeries,
 } from "@/lib/api/analytics";
 import { queryKeys } from "@/lib/api/query-keys";
-import { formatNaira } from "@/lib/dashboard/pricing";
+import { formatNaira, formatNairaCompact } from "@/lib/dashboard/pricing";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -107,7 +107,7 @@ function chartTooltipProps() {
 }
 
 function moneyTick(value: number): string {
-  return value >= 1000 ? `${Math.round(value / 1000)}k` : String(value);
+  return formatNairaCompact(value);
 }
 
 /** Bar-shaped placeholder while a chart's series loads. */
@@ -235,7 +235,8 @@ export default function AdminAnalyticsPage() {
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-3 2xl:grid-cols-6">
         <StatCard
           label="Revenue"
-          value={a.revenueLabel}
+          value={formatNairaCompact(a.revenue)}
+          exact={a.revenueLabel}
           hint="All-time paid / open orders"
         />
         <StatCard
@@ -268,7 +269,8 @@ export default function AdminAnalyticsPage() {
       <div className="mt-3 grid grid-cols-2 gap-3">
         <StatCard
           label={`Revenue · ${range}`}
-          value={formatNaira(rangeRevenue)}
+          value={formatNairaCompact(rangeRevenue)}
+          exact={formatNaira(rangeRevenue)}
           hint={`${bounds.from} → ${bounds.to}`}
         />
         <StatCard
@@ -502,7 +504,7 @@ export default function AdminAnalyticsPage() {
         <h2 className="mb-4 font-heading text-xl font-bold tracking-[-0.03em]">
           Best-selling designs
         </h2>
-        <div className="overflow-x-auto border border-ink/12 bg-paper">
+        <div className="relative overflow-x-auto border border-ink/12 bg-paper">
           <table className="w-full min-w-[480px] text-left text-sm">
             <thead className="border-b border-ink/12 bg-paper text-[0.65rem] uppercase tracking-[0.12em] text-mute">
               <tr>
@@ -559,7 +561,7 @@ export default function AdminAnalyticsPage() {
         <h2 className="mb-4 font-heading text-xl font-bold tracking-[-0.03em]">
           Vendors
         </h2>
-        <div className="overflow-x-auto border border-ink/12 bg-paper">
+        <div className="relative overflow-x-auto border border-ink/12 bg-paper">
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead className="border-b border-ink/12 bg-paper text-[0.65rem] uppercase tracking-[0.12em] text-mute">
               <tr>

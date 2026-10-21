@@ -76,7 +76,7 @@ export default function AdminOrdersPage() {
           body="Orders placed from the creator dashboard will show up here."
         />
       ) : (
-        <div className="overflow-x-auto border border-ink/12 bg-paper">
+        <div className="relative overflow-x-auto border border-ink/12 bg-paper">
           <table className="w-full min-w-[860px] text-left text-sm">
             <thead className="border-b border-ink/12 bg-ink/[0.03] text-[0.65rem] uppercase tracking-[0.12em] text-mute">
               <tr>
