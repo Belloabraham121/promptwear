@@ -37,7 +37,7 @@ function DropCard({
           fill
           sizes={sizes}
           className={cn(
-            "object-cover transition-[opacity,scale] duration-700 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:scale-[1.04]",
+            "object-cover transition-[opacity,scale] duration-700 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100",
             drop.worn && "group-hover:opacity-0",
           )}
         />
@@ -47,7 +47,7 @@ function DropCard({
             alt=""
             fill
             sizes={sizes}
-            className="scale-[1.04] object-cover opacity-0 transition-[opacity,scale] duration-700 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:scale-100 group-hover:opacity-100"
+            className="scale-[1.04] object-cover opacity-0 transition-[opacity,scale] duration-700 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:scale-100 group-hover:opacity-100 motion-reduce:scale-100 motion-reduce:transition-none"
           />
         ) : null}
 
@@ -58,7 +58,7 @@ function DropCard({
           ) : null}
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 hidden translate-y-full items-center justify-between bg-[#070807] px-4 py-3 text-[0.68rem] font-bold tracking-[0.2em] text-[#f3f0e8] uppercase transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:translate-y-0 md:flex">
+        <div className="absolute inset-x-0 bottom-0 hidden translate-y-full items-center justify-between bg-[#070807] px-4 py-3 text-[0.68rem] font-bold tracking-[0.2em] text-[#f3f0e8] uppercase transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:translate-y-0 md:flex motion-reduce:translate-y-0 motion-reduce:opacity-0 motion-reduce:transition-none motion-reduce:group-hover:opacity-100">
           Remix this design
           <ArrowUpRight size={14} strokeWidth={2.5} className="text-[#d6ff3c]" />
         </div>
