@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowUpRight, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { FormEvent, Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { BrandLogo } from "@/components/brand/BrandLogo";
+import { AuthLayout } from "@/components/auth/AuthLayout";
+import { BrandButton, FieldLabel, Kicker, Rule, TextInput } from "@/components/brand/ui";
 import { authClient } from "@/lib/api/auth-client";
 import { ApiError } from "@/lib/api/errors";
 import { useAuth } from "@/providers/AuthProvider";
+import { cn } from "@/lib/utils";
 
 type Mode = "signin" | "signup";
 
@@ -142,197 +144,162 @@ function AuthPageInner({ initialMode = "signin" }: { initialMode?: Mode }) {
 
   if (authLoading || isAuthenticated) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-[#f3f0e8] text-[#52706a]">
-        <p className="text-sm tracking-[0.08em] uppercase">Loading…</p>
+      <div className="flex min-h-dvh items-center justify-center bg-bone text-mute">
+        <p className="text-[0.7rem] font-semibold tracking-[0.2em] uppercase">Loading…</p>
       </div>
     );
   }
 
   return (
-    <div className="relative flex min-h-dvh flex-col overflow-x-clip bg-[#f3f0e8] text-[#0b1f1c]">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_65%_50%_at_80%_20%,rgba(214,255,60,0.28),transparent_55%),radial-gradient(ellipse_45%_40%_at_10%_85%,rgba(90,138,127,0.2),transparent_50%),linear-gradient(165deg,#faf8f3_0%,#f3f0e8_48%,#e9e4d6_100%)]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-[12%] top-[5%] h-[52vmin] w-[52vmin] rounded-full bg-[radial-gradient(circle,rgba(214,255,60,0.14),transparent_68%)] blur-3xl motion-safe:animate-[nf-glow_8s_ease-in-out_infinite]"
-      />
+    <AuthLayout panel={isSignup ? "street" : "studio"}>
+      <section aria-label={isSignup ? "Sign up" : "Log in"}>
+        <Kicker index={isSignup ? "02" : "01"} className="text-olive">
+          {isSignup ? "Join the community" : "Members"}
+        </Kicker>
+        <h1 className="mt-5 mb-0 font-heading text-[clamp(2.4rem,6vw,3.4rem)] leading-[0.92] font-extrabold tracking-[-0.055em]">
+          {isSignup ? "Join Driplab." : "Welcome back."}
+        </h1>
+        <p className="mt-4 mb-0 max-w-[36ch] text-[0.95rem] leading-[1.55] text-mute">
+          {isSignup
+            ? "Save your designs, track your orders and earn when the community wears your work."
+            : "Pick up where you left off — your designs and orders are waiting."}
+        </p>
 
-      <header className="relative z-20 flex items-center justify-between px-[clamp(1.1rem,3vw,2.4rem)] py-5">
-        <BrandLogo href="/" size="sm" />
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-1.5 border-b border-current pb-0.5 text-[0.78rem] tracking-[0.06em] uppercase transition-opacity hover:opacity-80"
+        <div
+          role="tablist"
+          aria-label="Authentication mode"
+          className="mt-8 mb-7 flex gap-7 border-b border-ink/12"
         >
-          Continue as guest
-          <ArrowUpRight size={15} strokeWidth={2.25} />
-        </Link>
-      </header>
+          {(
+            [
+              ["signin", "Log in"],
+              ["signup", "Sign up"],
+            ] as const
+          ).map(([value, label]) => {
+            const active = mode === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => switchMode(value)}
+                className={cn(
+                  "relative pb-3 text-[0.72rem] font-bold tracking-[0.2em] uppercase transition-colors",
+                  active ? "text-ink" : "text-mute hover:text-ink",
+                )}
+              >
+                {label}
+                {active ? <span className="absolute inset-x-0 -bottom-px h-0.5 bg-ink" /> : null}
+              </button>
+            );
+          })}
+        </div>
 
-      <main className="relative z-10 flex flex-1 items-center justify-center px-[clamp(1.1rem,3vw,2.4rem)] py-8">
-        <section
-          aria-label={isSignup ? "Sign up" : "Log in"}
-          className="relative w-full max-w-[26rem] rounded-2xl border border-[#0b1f1c]/10 bg-white p-6 shadow-[0_24px_80px_rgba(11,31,28,0.12)] sm:p-8 motion-safe:animate-[nf-fade-up_0.85s_ease-out_both]"
+        <button
+          type="button"
+          onClick={handleGoogle}
+          disabled={loading !== null}
+          className="flex w-full items-center justify-center gap-3 border border-ink/15 bg-paper px-4 py-4 text-[0.75rem] font-bold tracking-[0.16em] uppercase transition-colors hover:border-ink disabled:opacity-55"
         >
-          <h1 className="sr-only">
-            {isSignup ? "Create your Driplab account" : "Log in to Driplab"}
-          </h1>
+          <GoogleIcon className="size-[1.1rem]" />
+          {loading === "google"
+            ? "Connecting…"
+            : isSignup
+              ? "Sign up with Google"
+              : "Continue with Google"}
+        </button>
 
-          <div
-            role="tablist"
-            aria-label="Authentication mode"
-            className="mb-7 flex gap-6 border-b border-[#0b1f1c]/10"
-          >
-            {(
-              [
-                ["signin", "Log in"],
-                ["signup", "Sign up"],
-              ] as const
-            ).map(([value, label]) => {
-              const active = mode === value;
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => switchMode(value)}
-                  className={`relative pb-3 font-heading text-[0.78rem] font-bold tracking-[0.12em] uppercase transition-colors ${
-                    active
-                      ? "text-[#0b1f1c]"
-                      : "text-[#52706a] hover:text-[#0b1f1c]"
-                  }`}
-                >
-                  {label}
-                  {active ? (
-                    <span className="absolute inset-x-0 -bottom-px h-0.5 bg-[#d6ff3c]" />
-                  ) : null}
-                </button>
-              );
-            })}
+        <Rule label="or with email" className="my-7" />
+
+        <form onSubmit={handleEmailSubmit} className="grid gap-5" noValidate>
+          {isSignup ? (
+            <div className="grid gap-2">
+              <FieldLabel htmlFor="auth-name">Name</FieldLabel>
+              <TextInput
+                id="auth-name"
+                type="text"
+                name="name"
+                autoComplete="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+              />
+            </div>
+          ) : null}
+
+          <div className="grid gap-2">
+            <FieldLabel htmlFor="auth-email">Email</FieldLabel>
+            <TextInput
+              id="auth-email"
+              type="email"
+              name="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@email.com"
+            />
           </div>
 
+          <div className="grid gap-2">
+            <div className="flex items-center justify-between">
+              <FieldLabel htmlFor="auth-password">Password</FieldLabel>
+              {!isSignup ? (
+                <Link
+                  href="/forgot-password"
+                  className="text-[0.66rem] font-semibold tracking-[0.16em] text-mute uppercase transition-colors hover:text-ink"
+                >
+                  Forgot?
+                </Link>
+              ) : null}
+            </div>
+            <div className="relative">
+              <TextInput
+                id="auth-password"
+                type={showPassword ? "text" : "password"}
+                name="password"
+                autoComplete={isSignup ? "new-password" : "current-password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={isSignup ? "At least 8 characters" : "Your password"}
+                className="pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute top-1/2 right-3 -translate-y-1/2 p-1 text-mute transition-colors hover:text-ink"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff size={18} strokeWidth={1.75} />
+                ) : (
+                  <Eye size={18} strokeWidth={1.75} />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <BrandButton
+            type="submit"
+            disabled={loading !== null}
+            arrow={loading !== "email"}
+            className="mt-2 w-full"
+          >
+            {loading === "email" ? "Working…" : isSignup ? "Create account" : "Log in"}
+          </BrandButton>
+        </form>
+
+        <p className="mt-8 mb-0 text-[0.9rem] text-mute">
+          {isSignup ? "Already have an account? " : "New to Driplab? "}
           <button
             type="button"
-            onClick={handleGoogle}
-            disabled={loading !== null}
-            className="flex w-full items-center justify-center gap-3 border border-[#0b1f1c]/15 px-4 py-3.5 text-[0.82rem] font-bold tracking-[0.04em] uppercase transition-[border-color,background,transform] duration-200 hover:border-[#0b1f1c]/30 hover:bg-[#0b1f1c]/5 disabled:opacity-55"
+            onClick={() => switchMode(isSignup ? "signin" : "signup")}
+            className="font-semibold text-ink underline decoration-ink/30 underline-offset-4 transition-colors hover:decoration-ink"
           >
-            <GoogleIcon className="size-[1.15rem]" />
-            {loading === "google"
-              ? "Connecting…"
-              : isSignup
-                ? "Sign up with Google"
-                : "Continue with Google"}
+            {isSignup ? "Log in" : "Create an account"}
           </button>
-
-          <div className="my-6 flex items-center gap-3 text-[0.68rem] tracking-[0.14em] text-[#52706a] uppercase">
-            <span className="h-px flex-1 bg-[#0b1f1c]/10" />
-            or with email
-            <span className="h-px flex-1 bg-[#0b1f1c]/10" />
-          </div>
-
-          <form onSubmit={handleEmailSubmit} className="grid gap-5" noValidate>
-            {isSignup ? (
-              <label className="grid gap-2">
-                <span className="text-[0.68rem] tracking-[0.14em] text-[#52706a] uppercase">
-                  Name
-                </span>
-                <input
-                  type="text"
-                  name="name"
-                  autoComplete="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name"
-                  className="w-full border border-[#0b1f1c]/15 bg-white px-3.5 py-3 text-[1rem] text-[#0b1f1c] outline-none transition-colors placeholder:text-[#52706a]/60 focus:border-[#0b1f1c]"
-                />
-              </label>
-            ) : null}
-
-            <label className="grid gap-2">
-              <span className="text-[0.68rem] tracking-[0.14em] text-[#52706a] uppercase">
-                Email
-              </span>
-              <input
-                type="email"
-                name="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@email.com"
-                className="w-full border border-[#0b1f1c]/15 bg-white px-3.5 py-3 text-[1rem] text-[#0b1f1c] outline-none transition-colors placeholder:text-[#52706a]/60 focus:border-[#0b1f1c]"
-              />
-            </label>
-
-            <div className="grid gap-2">
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="auth-password"
-                  className="text-[0.68rem] tracking-[0.14em] text-[#52706a] uppercase"
-                >
-                  Password
-                </label>
-                {!isSignup ? (
-                  <button
-                    type="button"
-                    className="text-[0.68rem] tracking-[0.08em] text-[#52706a] transition-colors hover:text-[#0b1f1c]"
-                    onClick={() => router.push("/forgot-password")}
-                  >
-                    Forgot?
-                  </button>
-                ) : null}
-              </div>
-              <div className="relative">
-                <input
-                  id="auth-password"
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  autoComplete={isSignup ? "new-password" : "current-password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={
-                    isSignup ? "At least 8 characters" : "Your password"
-                  }
-                  className="w-full border border-[#0b1f1c]/15 bg-white px-3.5 py-3 pr-11 text-[1rem] text-[#0b1f1c] outline-none transition-colors placeholder:text-[#52706a]/60 focus:border-[#0b1f1c]"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute top-1/2 right-2.5 -translate-y-1/2 p-1 text-[#52706a] transition-colors hover:text-[#0b1f1c]"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <EyeOff size={18} strokeWidth={1.75} />
-                  ) : (
-                    <Eye size={18} strokeWidth={1.75} />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading !== null}
-              className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#d6ff3c] px-5 py-3.5 text-[0.82rem] font-bold tracking-[0.04em] text-[#070807] uppercase transition-[transform,background] duration-200 hover:-translate-y-px hover:bg-[#e2ff6a] disabled:translate-y-0 disabled:opacity-55"
-            >
-              {loading === "email"
-                ? "Working…"
-                : isSignup
-                  ? "Create account"
-                  : "Log in"}
-              {loading !== "email" ? (
-                <ArrowUpRight size={16} strokeWidth={2.25} />
-              ) : null}
-            </button>
-          </form>
-        </section>
-      </main>
-
-      <footer className="relative z-10 px-[clamp(1.1rem,3vw,2.4rem)] py-5 text-right text-[0.85rem] text-[#52706a]">
-        <small className="opacity-65">© 2026 Driplab</small>
-      </footer>
-    </div>
+        </p>
+      </section>
+    </AuthLayout>
   );
 }
