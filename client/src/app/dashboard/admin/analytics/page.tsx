@@ -19,6 +19,7 @@ import {
 } from "recharts";
 import { AdminPageSkeleton } from "@/components/admin/AdminSkeleton";
 import { PageHeader, StatCard } from "@/components/dashboard/ui";
+import { Bone } from "@/components/dashboard/Skeletons";
 import {
   getAnalyticsSnapshot,
   getRevenueSeries,
@@ -36,11 +37,14 @@ const RANGES: { key: RangeKey; label: string; days: number }[] = [
   { key: "90d", label: "90 days", days: 90 },
 ];
 
-const CHART_LIME = "#5a8a7f";
-const CHART_BONE = "#0b1f1c";
-const CHART_MUTED = "#52706a";
-const CHART_GRID = "rgba(11,31,28,0.12)";
-const PIE_COLORS = ["#5a8a7f", "#7ec8e3", "#e8a87c", "#52706a"];
+// Brand chart palette: ink leads, olive second, lime only as the accent fill.
+const CHART_PRIMARY = "#070807";
+const CHART_SECONDARY = "#5a6b14";
+const CHART_ACCENT = "#d6ff3c";
+const CHART_BONE = "#070807";
+const CHART_MUTED = "#5a574f";
+const CHART_GRID = "rgba(7,8,7,0.1)";
+const PIE_COLORS = ["#070807", "#5a6b14", "#d6ff3c", "#c8c4b8"];
 
 function toDateKey(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -72,15 +76,15 @@ function ChartCard({
   return (
     <section
       className={cn(
-        "border border-[#0b1f1c]/12 bg-white rounded-2xl shadow-[0_1px_2px_rgba(11,31,28,0.05)] p-4 md:p-5",
+        "border border-ink/12 bg-paper p-4 md:p-5",
         className,
       )}
     >
       <div className="mb-4">
-        <h2 className="font-[family-name:var(--font-display)] text-lg font-bold tracking-[-0.03em]">
+        <h2 className="font-heading text-lg font-bold tracking-[-0.03em]">
           {title}
         </h2>
-        {hint ? <p className="mt-1 text-xs text-[#52706a]">{hint}</p> : null}
+        {hint ? <p className="mt-1 text-xs text-mute">{hint}</p> : null}
       </div>
       {children}
     </section>
@@ -90,15 +94,15 @@ function ChartCard({
 function chartTooltipProps() {
   return {
     contentStyle: {
-      background: "#ffffff",
-      border: "1px solid rgba(11,31,28,0.14)",
+      background: "#faf8f3",
+      border: "1px solid rgba(7,8,7,0.14)",
       borderRadius: 0,
       color: CHART_BONE,
       boxShadow: "none",
     } satisfies React.CSSProperties,
     labelStyle: { color: CHART_BONE } satisfies React.CSSProperties,
     itemStyle: { color: CHART_BONE } satisfies React.CSSProperties,
-    cursor: { fill: "rgba(11,31,28,0.06)" },
+    cursor: { fill: "rgba(7,8,7,0.06)" },
   };
 }
 
@@ -106,9 +110,22 @@ function moneyTick(value: number): string {
   return value >= 1000 ? `${Math.round(value / 1000)}k` : String(value);
 }
 
+/** Bar-shaped placeholder while a chart's series loads. */
+function ChartSkeleton({ label }: { label: string }) {
+  const heights = [38, 52, 44, 66, 58, 74, 49, 82, 63, 71, 55, 88];
+  return (
+    <div role="status" aria-busy="true" aria-label={label} className="flex h-64 items-end gap-2 border-b border-ink/12 px-1">
+      <span className="sr-only">{label}</span>
+      {heights.map((h, i) => (
+        <Bone key={i} className="flex-1" style={{ height: `${h}%` }} />
+      ))}
+    </div>
+  );
+}
+
 function EmptyChart({ label }: { label: string }) {
   return (
-    <div className="flex h-64 items-center justify-center text-sm text-[#52706a]">
+    <div className="flex h-64 items-center justify-center text-sm text-mute">
       {label}
     </div>
   );
@@ -141,7 +158,7 @@ export default function AdminAnalyticsPage() {
 
   if (analyticsQuery.isError || !analyticsQuery.data) {
     return (
-      <p className="text-sm text-[#52706a]">
+      <p className="text-sm text-mute">
         Could not load analytics. Try refreshing the page.
       </p>
     );
@@ -195,7 +212,7 @@ export default function AdminAnalyticsPage() {
         title="Analytics"
         description="Revenue, orders, users, and vendor performance."
         action={
-          <div className="flex gap-1 border border-[#0b1f1c]/15 p-1">
+          <div className="flex gap-1 border border-ink/15 p-1">
             {RANGES.map((option) => (
               <button
                 key={option.key}
@@ -204,8 +221,8 @@ export default function AdminAnalyticsPage() {
                 className={cn(
                   "px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em] transition",
                   range === option.key
-                    ? "bg-[#d6ff3c] text-[#070807]"
-                    : "text-[#52706a] hover:text-[#0b1f1c]",
+                    ? "bg-lime text-ink"
+                    : "text-mute hover:text-ink",
                 )}
               >
                 {option.label}
@@ -215,7 +232,7 @@ export default function AdminAnalyticsPage() {
         }
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-3 2xl:grid-cols-6">
         <StatCard
           label="Revenue"
           value={a.revenueLabel}
@@ -248,7 +265,7 @@ export default function AdminAnalyticsPage() {
         />
       </div>
 
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+      <div className="mt-3 grid grid-cols-2 gap-3">
         <StatCard
           label={`Revenue · ${range}`}
           value={formatNaira(rangeRevenue)}
@@ -267,7 +284,7 @@ export default function AdminAnalyticsPage() {
           hint="Daily revenue in the selected range"
         >
           {revenueQuery.isPending ? (
-            <EmptyChart label="Loading revenue chart…" />
+            <ChartSkeleton label="Loading revenue chart…" />
           ) : !hasSeries ? (
             <EmptyChart label="No revenue in this range yet." />
           ) : (
@@ -276,8 +293,8 @@ export default function AdminAnalyticsPage() {
                 <AreaChart data={chartSeries}>
                   <defs>
                     <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={CHART_LIME} stopOpacity={0.35} />
-                      <stop offset="100%" stopColor={CHART_LIME} stopOpacity={0} />
+                      <stop offset="0%" stopColor={CHART_ACCENT} stopOpacity={0.55} />
+                      <stop offset="100%" stopColor={CHART_ACCENT} stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid stroke={CHART_GRID} vertical={false} />
@@ -305,7 +322,7 @@ export default function AdminAnalyticsPage() {
                   <Area
                     type="monotone"
                     dataKey="revenue"
-                    stroke={CHART_LIME}
+                    stroke={CHART_PRIMARY}
                     fill="url(#revenueFill)"
                     strokeWidth={2}
                     name="Revenue"
@@ -321,7 +338,7 @@ export default function AdminAnalyticsPage() {
           hint="Daily order count in the selected range"
         >
           {revenueQuery.isPending ? (
-            <EmptyChart label="Loading orders chart…" />
+            <ChartSkeleton label="Loading orders chart…" />
           ) : !hasSeries ? (
             <EmptyChart label="No orders in this range yet." />
           ) : (
@@ -349,7 +366,7 @@ export default function AdminAnalyticsPage() {
                   />
                   <Bar
                     dataKey="orderCount"
-                    fill={CHART_LIME}
+                    fill={CHART_PRIMARY}
                     radius={[2, 2, 0, 0]}
                     name="Orders"
                   />
@@ -397,7 +414,7 @@ export default function AdminAnalyticsPage() {
                   />
                   <Bar
                     dataKey="units"
-                    fill={CHART_LIME}
+                    fill={CHART_PRIMARY}
                     radius={[0, 2, 2, 0]}
                     name="Units"
                   />
@@ -473,8 +490,8 @@ export default function AdminAnalyticsPage() {
                 />
                 <Tooltip {...chartTooltipProps()} />
                 <Legend wrapperStyle={{ color: CHART_MUTED, fontSize: 12 }} />
-                <Bar dataKey="quality" name="Quality (1–5)" fill={CHART_LIME} />
-                <Bar dataKey="onTime" name="On-time %" fill="#7ec8e3" />
+                <Bar dataKey="quality" name="Quality (1–5)" fill={CHART_PRIMARY} />
+                <Bar dataKey="onTime" name="On-time %" fill={CHART_SECONDARY} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -482,12 +499,12 @@ export default function AdminAnalyticsPage() {
       </ChartCard>
 
       <section className="mt-10">
-        <h2 className="mb-4 font-[family-name:var(--font-display)] text-xl font-bold tracking-[-0.03em]">
+        <h2 className="mb-4 font-heading text-xl font-bold tracking-[-0.03em]">
           Best-selling designs
         </h2>
-        <div className="overflow-x-auto rounded-2xl border border-[#0b1f1c]/12 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
+        <div className="overflow-x-auto border border-ink/12 bg-paper">
           <table className="w-full min-w-[480px] text-left text-sm">
-            <thead className="border-b border-[#0b1f1c]/12 bg-white rounded-2xl shadow-[0_1px_2px_rgba(11,31,28,0.05)] text-[0.65rem] uppercase tracking-[0.12em] text-[#52706a]">
+            <thead className="border-b border-ink/12 bg-paper text-[0.65rem] uppercase tracking-[0.12em] text-mute">
               <tr>
                 <th className="px-4 py-3 font-medium">#</th>
                 <th className="px-4 py-3 font-medium">Design</th>
@@ -496,12 +513,12 @@ export default function AdminAnalyticsPage() {
                 <th className="px-4 py-3 font-medium">Share</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#0b1f1c]/10">
+            <tbody className="divide-y divide-ink/10">
               {a.bestSelling.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-4 py-6 text-center text-[#52706a]"
+                    className="px-4 py-6 text-center text-mute"
                   >
                     No bestsellers yet.
                   </td>
@@ -513,20 +530,20 @@ export default function AdminAnalyticsPage() {
                       ? Math.round((row.revenue / a.revenue) * 100)
                       : 0;
                   return (
-                    <tr key={`${row.title}-${index}`} className="hover:bg-[#0b1f1c]/4">
-                      <td className="px-4 py-3 text-[#52706a]">{index + 1}</td>
+                    <tr key={`${row.title}-${index}`} className="hover:bg-ink/4">
+                      <td className="px-4 py-3 text-mute">{index + 1}</td>
                       <td className="px-4 py-3 font-medium">{row.title}</td>
                       <td className="px-4 py-3">{row.units}</td>
                       <td className="px-4 py-3">{formatNaira(row.revenue)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <div className="h-1.5 w-20 overflow-hidden bg-[#0b1f1c]/10">
+                          <div className="h-1.5 w-20 overflow-hidden bg-ink/10">
                             <div
-                              className="h-full bg-[#d6ff3c]"
+                              className="h-full bg-lime"
                               style={{ width: `${share}%` }}
                             />
                           </div>
-                          <span className="text-xs text-[#52706a]">{share}%</span>
+                          <span className="text-xs text-mute">{share}%</span>
                         </div>
                       </td>
                     </tr>
@@ -539,12 +556,12 @@ export default function AdminAnalyticsPage() {
       </section>
 
       <section className="mt-10">
-        <h2 className="mb-4 font-[family-name:var(--font-display)] text-xl font-bold tracking-[-0.03em]">
+        <h2 className="mb-4 font-heading text-xl font-bold tracking-[-0.03em]">
           Vendors
         </h2>
-        <div className="overflow-x-auto rounded-2xl border border-[#0b1f1c]/12 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
+        <div className="overflow-x-auto border border-ink/12 bg-paper">
           <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="border-b border-[#0b1f1c]/12 bg-white rounded-2xl shadow-[0_1px_2px_rgba(11,31,28,0.05)] text-[0.65rem] uppercase tracking-[0.12em] text-[#52706a]">
+            <thead className="border-b border-ink/12 bg-paper text-[0.65rem] uppercase tracking-[0.12em] text-mute">
               <tr>
                 <th className="px-4 py-3 font-medium">Vendor</th>
                 <th className="px-4 py-3 font-medium">Quality</th>
@@ -554,25 +571,25 @@ export default function AdminAnalyticsPage() {
                 <th className="px-4 py-3 font-medium">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#0b1f1c]/10">
+            <tbody className="divide-y divide-ink/10">
               {a.vendorPerformance.length === 0 ? (
                 <tr>
                   <td
                     colSpan={6}
-                    className="px-4 py-6 text-center text-[#52706a]"
+                    className="px-4 py-6 text-center text-mute"
                   >
                     No vendors yet.
                   </td>
                 </tr>
               ) : (
                 a.vendorPerformance.map((v) => (
-                  <tr key={v.id} className="hover:bg-[#0b1f1c]/4">
+                  <tr key={v.id} className="hover:bg-ink/4">
                     <td className="px-4 py-3 font-medium">{v.name}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-16 overflow-hidden bg-[#0b1f1c]/10">
+                        <div className="h-1.5 w-16 overflow-hidden bg-ink/10">
                           <div
-                            className="h-full bg-[#d6ff3c]"
+                            className="h-full bg-lime"
                             style={{
                               width: `${Math.min(100, (v.qualityRating / 5) * 100)}%`,
                             }}
@@ -583,9 +600,9 @@ export default function AdminAnalyticsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-16 overflow-hidden bg-[#0b1f1c]/10">
+                        <div className="h-1.5 w-16 overflow-hidden bg-ink/10">
                           <div
-                            className="h-full bg-[#7ec8e3]"
+                            className="h-full bg-olive"
                             style={{
                               width: `${Math.round(v.onTimeRate * 100)}%`,
                             }}
@@ -601,8 +618,8 @@ export default function AdminAnalyticsPage() {
                         className={cn(
                           "inline-flex px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.1em]",
                           v.active
-                            ? "bg-[#d6ff3c]/15 text-[#3f4d0e]"
-                            : "bg-[#0b1f1c]/8 text-[#52706a]",
+                            ? "bg-lime/15 text-olive"
+                            : "bg-ink/8 text-mute",
                         )}
                       >
                         {v.active ? "Active" : "Paused"}

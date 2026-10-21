@@ -76,9 +76,9 @@ export default function AdminOrdersPage() {
           body="Orders placed from the creator dashboard will show up here."
         />
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-[#0b1f1c]/12 bg-white shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
+        <div className="overflow-x-auto border border-ink/12 bg-paper">
           <table className="w-full min-w-[860px] text-left text-sm">
-            <thead className="border-b border-[#0b1f1c]/12 bg-[#0b1f1c]/[0.03] text-[0.65rem] uppercase tracking-[0.12em] text-[#52706a]">
+            <thead className="border-b border-ink/12 bg-ink/[0.03] text-[0.65rem] uppercase tracking-[0.12em] text-mute">
               <tr>
                 <th className="px-4 py-3 font-medium">Order</th>
                 <th className="px-4 py-3 font-medium">Design</th>
@@ -89,19 +89,19 @@ export default function AdminOrdersPage() {
                 <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#0b1f1c]/10">
+            <tbody className="divide-y divide-ink/10">
               {orders.map((order) => {
                 const next = NEXT_TRACKING_STATUS[order.status];
                 return (
-                  <tr key={order.id} className="align-top hover:bg-[#0b1f1c]/4">
+                  <tr key={order.id} className="align-top hover:bg-ink/4">
                     <td className="px-4 py-4">
-                      <p className="font-medium text-[#3f4d0e]">{order.id}</p>
-                      <p className="mt-1 text-xs text-[#52706a]">
+                      <p className="font-medium text-olive">{order.id}</p>
+                      <p className="mt-1 text-xs text-mute">
                         {new Date(order.createdAt).toLocaleDateString("en-NG")}
                       </p>
                     </td>
                     <td className="px-4 py-4">{order.line.designTitle}</td>
-                    <td className="px-4 py-4 text-xs text-[#52706a]">
+                    <td className="px-4 py-4 text-xs text-mute">
                       {order.pricing?.vendorName ?? "—"}
                     </td>
                     <td className="px-4 py-4">
@@ -120,7 +120,7 @@ export default function AdminOrdersPage() {
                               e.target.value as OrderStatus,
                             )
                           }
-                          className="mt-2 w-full max-w-[12rem] border border-[#0b1f1c]/15 bg-white rounded-xl px-2 py-1.5 text-xs outline-none focus:border-[#d6ff3c]"
+                          className="mt-2 w-full max-w-[12rem] border border-ink/15 bg-paper px-2 py-1.5 text-xs outline-none focus:border-lime"
                         >
                           {ADMIN_FULFILLMENT_STATUSES.map((status) => (
                             <option key={status} value={status}>
@@ -141,14 +141,14 @@ export default function AdminOrdersPage() {
                             onClick={() =>
                               void updateOrderStatus(order.id, next)
                             }
-                            className="border border-[#d6ff3c]/40 px-2.5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-[#3f4d0e] hover:bg-[#d6ff3c]/10"
+                            className="border border-lime/40 px-2.5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em] text-olive hover:bg-lime/10"
                           >
                             Advance
                           </button>
                         ) : null}
                         <Link
                           href={`/dashboard/admin/orders/${order.id}`}
-                          className="border border-[#0b1f1c]/20 px-2.5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em] hover:border-[#d6ff3c] hover:text-[#3f4d0e]"
+                          className="border border-ink/20 px-2.5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em] hover:border-lime hover:text-olive"
                         >
                           View
                         </Link>
@@ -160,7 +160,7 @@ export default function AdminOrdersPage() {
                           }
                           onClick={() => void cancelOrder(order.id)}
                           className={cn(
-                            "border border-[#0b1f1c]/20 px-2.5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em]",
+                            "border border-ink/20 px-2.5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em]",
                             order.status === "cancelled" ||
                               order.status === "refunded"
                               ? "opacity-40"
@@ -178,12 +178,12 @@ export default function AdminOrdersPage() {
                           }
                           onClick={() => setRefundOrderId(order.id)}
                           className={cn(
-                            "border border-[#0b1f1c]/20 px-2.5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em]",
+                            "border border-ink/20 px-2.5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.08em]",
                             order.status === "refunded" ||
                               order.status === "draft" ||
                               order.status === "quoted"
                               ? "opacity-40"
-                              : "hover:border-[#d6ff3c] hover:text-[#3f4d0e]",
+                              : "hover:border-lime hover:text-olive",
                           )}
                         >
                           Refund
@@ -205,7 +205,7 @@ export default function AdminOrdersPage() {
           pendingRefund ? (
             <>
               This will mark{" "}
-              <span className="text-[#0b1f1c]">{pendingRefund.id}</span> (
+              <span className="text-ink">{pendingRefund.id}</span> (
               {pendingRefund.line.designTitle},{" "}
               {formatNaira(pendingRefund.total)}) as refunded. This cannot be
               undone from the admin UI.

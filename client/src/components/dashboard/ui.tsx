@@ -21,7 +21,15 @@ export function PageHeader({
     <div className="mb-10 flex flex-wrap items-end justify-between gap-6 border-b border-ink pb-6">
       <div>
         {kicker ? <Kicker className="mb-4 text-olive">{kicker}</Kicker> : null}
-        <h1 className="m-0 font-heading text-[clamp(2.4rem,5vw,4rem)] leading-[0.92] font-extrabold tracking-[-0.055em] text-ink">
+        <h1
+          className={cn(
+            "m-0 font-heading leading-[0.92] font-extrabold tracking-[-0.055em] text-ink",
+            // IDs and other long single tokens (order IDs) get a smaller size and may break.
+            !title.includes(" ") && title.length > 14
+              ? "text-[clamp(1.4rem,2.6vw,2.2rem)] break-all"
+              : "text-[clamp(2.4rem,5vw,4rem)]",
+          )}
+        >
           {title}
         </h1>
         {description ? (
@@ -70,7 +78,13 @@ export function StatCard({
   return (
     <article className="border border-ink/12 bg-paper p-5">
       <Kicker className="text-mute">{label}</Kicker>
-      <p className="mt-4 mb-0 font-heading text-[2.6rem] leading-none font-extrabold tracking-[-0.05em] text-ink tabular-nums">
+      <p
+        className={cn(
+          "mt-4 mb-0 font-heading leading-none font-extrabold tracking-[-0.05em] whitespace-nowrap text-ink tabular-nums",
+          // Long values (e.g. "₦7,217,459") step down so they stay on one line.
+          String(value).length > 7 ? "text-[clamp(1.15rem,1.55vw,1.75rem)]" : "text-[2.6rem]",
+        )}
+      >
         {value}
       </p>
       {hint ? <p className="mt-3 mb-0 text-xs text-mute">{hint}</p> : null}
