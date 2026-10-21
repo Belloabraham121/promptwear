@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 import { useState } from "react";
-import { BrandLogo } from "@/components/brand/BrandLogo";
+import { BrandLogo, BrandMark } from "@/components/brand/BrandLogo";
+import { Kicker } from "@/components/brand/ui";
+import { Bone } from "@/components/dashboard/Skeletons";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 
@@ -54,124 +56,177 @@ export function AppShell({
   const initial = (userName.trim()[0] || "•").toUpperCase();
 
   return (
-    <div className="min-h-dvh bg-[#f3f0e8] font-[family-name:var(--font-body)] text-[#0b1f1c]">
+    <div className="min-h-dvh bg-bone font-sans text-ink">
       <div className="flex min-h-dvh w-full items-start">
-        {/* Detached desktop sidebar */}
-        {!collapsed ? (
-          <aside className="sticky top-3 ml-3 hidden h-[calc(100dvh-1.5rem)] w-[17rem] shrink-0 flex-col rounded-2xl border border-[#0b1f1c]/10 bg-white p-4 shadow-[0_8px_30px_rgba(11,31,28,0.07)] md:flex">
-            <div className="flex items-center justify-between gap-2">
-              <BrandLogo href={brandHref} size="sm" label={brandLabel} />
-              <button
-                type="button"
-                onClick={() => setCollapsed(true)}
-                aria-label="Collapse sidebar"
-                title="Collapse sidebar"
-                className="grid size-9 shrink-0 place-items-center rounded-xl text-[#52706a] transition hover:bg-[#0b1f1c]/5 hover:text-[#0b1f1c]"
-              >
+        {/*
+          Desktop sidebar. Collapsing animates the width down to an icon rail:
+          the wordmark becomes the "d." mark and labels hide but stay readable
+          to screen readers.
+        */}
+        <aside
+          data-collapsed={collapsed || undefined}
+          className={cn(
+            "sticky top-0 hidden h-dvh shrink-0 flex-col overflow-hidden border-r border-ink/12 bg-paper transition-[width] duration-300 ease-[cubic-bezier(.2,.8,.2,1)] motion-reduce:transition-none md:flex",
+            collapsed ? "w-[4.5rem]" : "w-[16.5rem]",
+          )}
+        >
+          <div
+            className={cn(
+              "flex gap-2 pt-5",
+              collapsed ? "flex-col items-center px-0" : "items-center justify-between px-5",
+            )}
+          >
+            {collapsed ? (
+              <BrandMark href={brandHref} label={brandLabel} />
+            ) : (
+              <BrandLogo href={brandHref} size="md" label={brandLabel} />
+            )}
+            <button
+              type="button"
+              onClick={() => setCollapsed((v) => !v)}
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-expanded={!collapsed}
+              title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              className={cn(
+                "grid size-9 shrink-0 place-items-center text-mute transition-colors hover:bg-ink/5 hover:text-ink",
+                collapsed && "mt-2",
+              )}
+            >
+              {collapsed ? (
+                <PanelLeftOpen size={18} strokeWidth={2} />
+              ) : (
                 <PanelLeftClose size={18} strokeWidth={2} />
-              </button>
-            </div>
-            <p className="mt-1 px-2 text-[0.65rem] tracking-[0.16em] text-[#52706a] uppercase">
-              {eyebrow}
-            </p>
+              )}
+            </button>
+          </div>
+          <Kicker
+            className={cn(
+              "mt-3 px-5 whitespace-nowrap text-olive transition-opacity duration-200",
+              collapsed && "pointer-events-none h-0 opacity-0",
+            )}
+          >
+            {eyebrow}
+          </Kicker>
 
-            <nav className="mt-6 flex flex-1 flex-col gap-1" aria-label="Dashboard">
-              {nav.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.href, item.exact);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    aria-current={active ? "page" : undefined}
+          <nav
+            className={cn("flex flex-1 flex-col border-t border-ink/12", collapsed ? "mt-4" : "mt-8")}
+            aria-label="Dashboard"
+          >
+            {nav.map((item, i) => {
+              const Icon = item.icon;
+              const active = isActive(item.href, item.exact);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  title={collapsed ? item.label : undefined}
+                  className={cn(
+                    "group flex items-center gap-3 border-b border-ink/12 py-3.5 text-[0.74rem] font-semibold tracking-[0.16em] whitespace-nowrap uppercase transition-colors",
+                    collapsed ? "justify-center px-0" : "px-5",
+                    active ? "bg-ink text-bone" : "text-ink hover:bg-ink/5",
+                  )}
+                >
+                  <span
                     className={cn(
-                      "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-colors",
-                      active
-                        ? "bg-[#0b1f1c] font-semibold text-white"
-                        : "text-[#3d5450] hover:bg-[#0b1f1c]/5 hover:text-[#0b1f1c]",
+                      "w-5 text-[0.66rem] tabular-nums",
+                      active ? "text-lime" : "text-mute group-hover:text-ink",
+                      collapsed && "sr-only",
                     )}
                   >
-                    <Icon size={17} strokeWidth={2.25} />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className={cn("flex-1", collapsed && "sr-only")}>{item.label}</span>
+                  <Icon
+                    size={collapsed ? 18 : 16}
+                    strokeWidth={2}
+                    aria-hidden
+                    className={active ? "text-lime" : "text-mute group-hover:text-ink"}
+                  />
+                </Link>
+              );
+            })}
+          </nav>
 
-            <div className="mt-auto rounded-xl border border-[#0b1f1c]/10 bg-[#f3f0e8] p-3">
-              <div className="flex items-center gap-2.5">
-                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#0b1f1c] text-sm font-bold text-white">
+          <div className={cn("border-t border-ink/12", collapsed ? "flex flex-col items-center gap-3 py-5" : "p-5")}>
+            {userName ? (
+              <div className="flex items-center gap-3" title={collapsed ? `${userName} · ${userEmail}` : undefined}>
+                <span className="grid size-10 shrink-0 place-items-center bg-ink font-heading text-sm font-extrabold text-lime">
                   {initial}
                 </span>
-                <div className="min-w-0 flex-1">
+                <div className={cn("min-w-0 flex-1", collapsed && "sr-only")}>
                   <p className="truncate text-sm font-semibold">{userName}</p>
-                  <p className="truncate text-xs text-[#52706a]">{userEmail}</p>
+                  <p className="truncate text-xs text-mute">{userEmail}</p>
                 </div>
               </div>
-              {userMeta ? (
-                <p className="mt-2 px-1 text-[0.65rem] tracking-[0.12em] text-[#52706a] uppercase">
-                  {userMeta}
-                </p>
-              ) : null}
-              <button
-                type="button"
-                disabled={isLoggingOut}
-                onClick={onLogout}
-                className="mt-2 inline-flex items-center gap-1.5 px-1 text-xs font-semibold tracking-[0.08em] text-[#52706a] uppercase transition hover:text-[#0b1f1c] disabled:opacity-50"
-              >
-                <LogOut size={13} strokeWidth={2.25} />
+            ) : (
+              <div className="flex items-center gap-3" aria-hidden>
+                <Bone className="size-10" />
+                {collapsed ? null : (
+                  <div className="flex-1">
+                    <Bone className="h-3.5 w-24" />
+                    <Bone className="mt-1.5 h-3 w-32" />
+                  </div>
+                )}
+              </div>
+            )}
+            {userMeta && !collapsed ? <Kicker className="mt-3 text-olive">{userMeta}</Kicker> : null}
+            <button
+              type="button"
+              disabled={isLoggingOut}
+              onClick={onLogout}
+              title={collapsed ? "Log out" : undefined}
+              className={cn(
+                "inline-flex items-center gap-1.5 text-[0.66rem] font-semibold tracking-[0.18em] whitespace-nowrap text-mute uppercase transition-colors hover:text-ink disabled:opacity-50",
+                collapsed ? "grid size-9 place-items-center hover:bg-ink/5" : "mt-4 border-b border-current pb-0.5",
+              )}
+            >
+              <LogOut size={collapsed ? 16 : 13} strokeWidth={2.25} aria-hidden />
+              <span className={cn(collapsed && "sr-only")}>
                 {isLoggingOut ? "Signing out…" : "Log out"}
-              </button>
-            </div>
-          </aside>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setCollapsed(false)}
-            aria-label="Expand sidebar"
-            title="Expand sidebar"
-            className="sticky top-3 mt-3 ml-3 hidden size-11 shrink-0 place-items-center rounded-2xl border border-[#0b1f1c]/10 bg-white text-[#52706a] shadow-[0_8px_30px_rgba(11,31,28,0.07)] transition hover:text-[#0b1f1c] md:grid"
-          >
-            <PanelLeftOpen size={19} strokeWidth={2} />
-          </button>
-        )}
+              </span>
+            </button>
+          </div>
+        </aside>
 
         {/* Main column */}
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Mobile top bar */}
-          <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-[#0b1f1c]/10 bg-[#f3f0e8]/92 px-4 py-3 backdrop-blur md:hidden">
+          <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-ink/12 bg-bone/92 px-4 py-3 backdrop-blur md:hidden">
             <BrandLogo href={brandHref} size="sm" label={brandLabel} />
             <button
               type="button"
               onClick={() => setMobileOpen((v) => !v)}
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
-              className="grid size-10 place-items-center rounded-xl border border-[#0b1f1c]/15 bg-white text-[#0b1f1c]"
+              className="grid size-10 place-items-center border border-ink/20 text-ink"
             >
-              <PanelLeftOpen size={18} strokeWidth={2} />
+              {mobileOpen ? <X size={18} strokeWidth={2} /> : <Menu size={18} strokeWidth={2} />}
             </button>
           </header>
 
           {mobileOpen ? (
-            <div className="border-b border-[#0b1f1c]/10 bg-white px-3 py-3 md:hidden">
-              <nav className="flex flex-col gap-1" aria-label="Mobile dashboard">
-                {nav.map((item) => {
-                  const Icon = item.icon;
+            <div className="border-b border-ink/12 bg-paper md:hidden">
+              <nav className="flex flex-col" aria-label="Mobile dashboard">
+                {nav.map((item, i) => {
                   const active = isActive(item.href, item.exact);
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
                       onClick={() => setMobileOpen(false)}
+                      aria-current={active ? "page" : undefined}
                       className={cn(
-                        "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm",
-                        active
-                          ? "bg-[#0b1f1c] font-semibold text-white"
-                          : "text-[#3d5450]",
+                        "flex items-baseline gap-4 border-b border-ink/10 px-4 py-3.5",
+                        active ? "bg-ink text-bone" : "text-ink",
                       )}
                     >
-                      <Icon size={16} />
-                      {item.label}
+                      <span className={cn("text-[0.66rem] font-semibold tabular-nums", active ? "text-lime" : "text-mute")}>
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="font-heading text-xl font-extrabold tracking-[-0.03em]">
+                        {item.label}
+                      </span>
                     </Link>
                   );
                 })}
@@ -182,7 +237,7 @@ export function AppShell({
                     setMobileOpen(false);
                     onLogout();
                   }}
-                  className="px-3 py-2.5 text-left text-sm text-[#52706a] disabled:opacity-50"
+                  className="px-4 py-3.5 text-left text-[0.7rem] font-semibold tracking-[0.18em] text-mute uppercase disabled:opacity-50"
                 >
                   {isLoggingOut ? "Signing out…" : "Log out"}
                 </button>
@@ -191,16 +246,12 @@ export function AppShell({
           ) : null}
 
           {/* Desktop meta bar */}
-          <div className="hidden items-center justify-between gap-3 px-6 pt-5 md:flex lg:px-8">
-            <p className="text-xs tracking-[0.14em] text-[#52706a] uppercase">
-              {headerMeta}
-            </p>
+          <div className="hidden items-center justify-between gap-3 border-b border-ink/12 px-6 py-4 md:flex lg:px-10">
+            <Kicker className="text-mute">{headerMeta}</Kicker>
             {headerAction}
           </div>
 
-          <main className="min-w-0 flex-1 px-4 py-5 md:px-6 md:py-6 lg:px-8">
-            {children}
-          </main>
+          <main className="min-w-0 flex-1 px-4 py-8 md:px-6 md:py-10 lg:px-10">{children}</main>
         </div>
       </div>
     </div>

@@ -39,7 +39,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   if (isStudioRoute) {
     return (
-      <div className="min-h-dvh bg-[#070807] font-[family-name:var(--font-body)] text-[#f3f0e8]">
+      <div className="min-h-dvh bg-ink font-sans text-bone">
         {children}
       </div>
     );
@@ -63,13 +63,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       headerAction={
         <Link
           href="/dashboard/studio"
-          className="inline-flex items-center gap-1.5 rounded-full bg-[#d6ff3c] px-4 py-2 text-xs font-bold tracking-[0.06em] text-[#070807] uppercase transition hover:bg-[#e2ff6a]"
+          className="inline-flex items-center gap-1.5 bg-lime px-4 py-2.5 text-[0.7rem] font-bold tracking-[0.16em] text-ink uppercase transition-colors hover:bg-ink hover:text-lime"
         >
           <Plus size={14} strokeWidth={2.5} />
           New design
         </Link>
       }
-      userName={ready ? user.name : "…"}
+      userName={ready ? user.name : ""}
       userEmail={ready ? user.email : ""}
       onLogout={() => void logout().then(() => window.location.assign("/login"))}
       isLoggingOut={isLoggingOut}

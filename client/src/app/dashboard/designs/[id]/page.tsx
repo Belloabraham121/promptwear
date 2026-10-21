@@ -9,6 +9,7 @@ import {
   PrimaryLink,
 } from "@/components/dashboard/ui";
 import { ChatGarmentCard } from "@/components/dashboard/GarmentArt";
+import { DesignDetailSkeleton } from "@/components/dashboard/Skeletons";
 
 export default function DesignDetailPage() {
   const params = useParams<{ id: string }>();
@@ -17,7 +18,7 @@ export default function DesignDetailPage() {
   const design = designs.find((d) => d.id === params.id);
 
   if (!ready) {
-    return <p className="text-sm text-[#52706a]">Loading design…</p>;
+    return <DesignDetailSkeleton />;
   }
 
   if (!design) {
@@ -32,6 +33,7 @@ export default function DesignDetailPage() {
   return (
     <div>
       <PageHeader
+        kicker="Design"
         title={design.title}
         description="Saved from the studio. Order it with sizes, cloth quality and print method."
         action={
@@ -51,19 +53,19 @@ export default function DesignDetailPage() {
 
         <div className="space-y-6">
           <dl className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-[#0b1f1c]/12 bg-white p-4 shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
-              <dt className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+            <div className="border border-ink/12 bg-paper p-4">
+              <dt className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
                 Method
               </dt>
               <dd className="mt-2 capitalize">{design.method}</dd>
             </div>
-            <div className="rounded-2xl border border-[#0b1f1c]/12 bg-white p-4 shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
-              <dt className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+            <div className="border border-ink/12 bg-paper p-4">
+              <dt className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
                 Colour
               </dt>
               <dd className="mt-2 flex items-center gap-2">
                 <span
-                  className="inline-block size-4 border border-[#0b1f1c]/30"
+                  className="inline-block size-4 border border-ink/30"
                   style={{ backgroundColor: design.color }}
                 />
                 {design.color}
@@ -71,11 +73,11 @@ export default function DesignDetailPage() {
             </div>
           </dl>
 
-          <div className="rounded-2xl border border-[#0b1f1c]/12 bg-white p-4 shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
-            <p className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+          <div className="border border-ink/12 bg-paper p-4">
+            <p className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
               Prompt / notes
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-[#0b1f1c]">
+            <p className="mt-3 text-sm leading-relaxed text-ink">
               {design.prompt || "—"}
             </p>
           </div>
@@ -83,13 +85,13 @@ export default function DesignDetailPage() {
           <div className="flex flex-wrap gap-4">
             <Link
               href={`/dashboard/studio/${design.id}`}
-              className="text-xs font-semibold uppercase tracking-[0.08em] text-[#3f4d0e] underline-offset-4 hover:underline"
+              className="text-xs font-semibold uppercase tracking-[0.08em] text-olive underline-offset-4 hover:underline"
             >
               Open in studio
             </Link>
             <Link
               href="/dashboard/studio"
-              className="text-xs font-semibold uppercase tracking-[0.08em] text-[#52706a] underline-offset-4 hover:text-[#0b1f1c] hover:underline"
+              className="text-xs font-semibold uppercase tracking-[0.08em] text-mute underline-offset-4 hover:text-ink hover:underline"
             >
               Studio hub
             </Link>

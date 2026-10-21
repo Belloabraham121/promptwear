@@ -10,6 +10,7 @@ import {
   PrimaryLink,
   StatusPill,
 } from "@/components/dashboard/ui";
+import { OrderDetailSkeleton } from "@/components/dashboard/Skeletons";
 import { getOrder } from "@/lib/api/orders";
 import { updateAdminOrderStatus } from "@/lib/api/admin";
 import { ApiError } from "@/lib/api/errors";
@@ -67,7 +68,7 @@ export default function OrderDetailPage() {
   }, [ready, params.id]);
 
   if (!ready || loading) {
-    return <p className="text-sm text-[#52706a]">Loading order…</p>;
+    return <OrderDetailSkeleton />;
   }
 
   if (!order) {
@@ -91,6 +92,7 @@ export default function OrderDetailPage() {
   return (
     <div>
       <PageHeader
+        kicker="Order"
         title={order.id}
         description={order.line.designTitle}
         action={
@@ -116,7 +118,7 @@ export default function OrderDetailPage() {
                   }
                 })();
               }}
-              className="bg-[#d6ff3c] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.06em] text-[#070807] hover:bg-[#e2ff6a] disabled:opacity-50"
+              className="bg-lime px-4 py-2.5 text-xs font-bold uppercase tracking-[0.06em] text-ink hover:bg-lime/80 disabled:opacity-50"
             >
               {advancing ? "Updating…" : `Advance to ${STATUS_LABELS[next]}`}
             </button>
@@ -129,23 +131,23 @@ export default function OrderDetailPage() {
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <StatusPill status={order.status} />
         {order.pricing ? (
-          <span className="text-xs text-[#52706a]">
+          <span className="text-xs text-mute">
             Est. {order.pricing.deliveryDays} days
           </span>
         ) : null}
       </div>
 
-      <section className="mb-8 rounded-2xl border border-[#0b1f1c]/12 bg-white p-5 shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
+      <section className="mb-8 border border-ink/12 bg-paper p-5">
         <h2 className="font-[family-name:var(--font-display)] text-lg font-bold">
           Tracking
         </h2>
         {order.status === "cancelled" || order.status === "refunded" ? (
-          <p className="mt-3 text-sm text-[#52706a]">
+          <p className="mt-3 text-sm text-mute">
             This order is {STATUS_LABELS[order.status].toLowerCase()}. Tracking
             stopped.
           </p>
         ) : order.status === "quoted" || order.status === "draft" ? (
-          <p className="mt-3 text-sm text-[#52706a]">
+          <p className="mt-3 text-sm text-mute">
             Awaiting checkout confirmation.
           </p>
         ) : (
@@ -161,15 +163,15 @@ export default function OrderDetailPage() {
                       className={cn(
                         "flex h-3 w-3 shrink-0 rounded-full",
                         done || current
-                          ? "bg-[#d6ff3c]"
-                          : "bg-[#0b1f1c]/20",
+                          ? "bg-lime"
+                          : "bg-ink/20",
                       )}
                     />
                     {index < TRACKING_STATUSES.length - 1 ? (
                       <span
                         className={cn(
                           "min-h-8 w-px flex-1",
-                          done ? "bg-[#d6ff3c]/50" : "bg-[#0b1f1c]/15",
+                          done ? "bg-lime/50" : "bg-ink/15",
                         )}
                       />
                     ) : null}
@@ -179,20 +181,20 @@ export default function OrderDetailPage() {
                       className={cn(
                         "text-sm font-medium",
                         current
-                          ? "text-[#3f4d0e]"
+                          ? "text-olive"
                           : done
-                            ? "text-[#0b1f1c]"
-                            : "text-[#52706a]",
+                            ? "text-ink"
+                            : "text-mute",
                       )}
                     >
                       {STATUS_LABELS[status]}
                     </p>
                     {event ? (
-                      <p className="mt-1 text-xs text-[#52706a]">
+                      <p className="mt-1 text-xs text-mute">
                         {new Date(event.at).toLocaleString("en-NG")}
                       </p>
                     ) : current ? (
-                      <p className="mt-1 text-xs text-[#52706a]">In progress</p>
+                      <p className="mt-1 text-xs text-mute">In progress</p>
                     ) : null}
                   </div>
                 </li>
@@ -203,36 +205,36 @@ export default function OrderDetailPage() {
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="space-y-4 rounded-2xl border border-[#0b1f1c]/12 bg-white p-5 shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
+        <section className="space-y-4 border border-ink/12 bg-paper p-5">
           <h2 className="font-[family-name:var(--font-display)] text-lg font-bold">
             Configuration
           </h2>
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between gap-4">
-              <dt className="text-[#52706a]">Cloth quality</dt>
+              <dt className="text-mute">Cloth quality</dt>
               <dd>{QUALITY_LABELS[order.line.quality]}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-[#52706a]">Print</dt>
+              <dt className="text-mute">Print</dt>
               <dd>{PRINT_LABELS[order.line.print]}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-[#52706a]">Pieces</dt>
+              <dt className="text-mute">Pieces</dt>
               <dd>{qty}</dd>
             </div>
           </dl>
 
           <div>
-            <p className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+            <p className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
               Size breakdown
             </p>
             <ul className="mt-3 grid grid-cols-5 gap-2">
               {SIZES.map((size) => (
                 <li
                   key={size}
-                  className="rounded-xl border border-[#0b1f1c]/12 bg-white px-2 py-3 text-center"
+                  className="border border-ink/12 bg-paper px-2 py-3 text-center"
                 >
-                  <p className="text-[0.65rem] text-[#52706a]">{size}</p>
+                  <p className="text-[0.65rem] text-mute">{size}</p>
                   <p className="mt-1 font-semibold">{order.line.sizes[size]}</p>
                 </li>
               ))}
@@ -240,59 +242,59 @@ export default function OrderDetailPage() {
           </div>
 
           {order.note ? (
-            <p className="text-sm text-[#52706a]">Note: {order.note}</p>
+            <p className="text-sm text-mute">Note: {order.note}</p>
           ) : null}
         </section>
 
-        <section className="space-y-4 rounded-2xl border border-[#0b1f1c]/12 bg-white p-5 shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
+        <section className="space-y-4 border border-ink/12 bg-paper p-5">
           <h2 className="font-[family-name:var(--font-display)] text-lg font-bold">
             Price
           </h2>
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between gap-4">
-              <dt className="text-[#52706a]">Subtotal</dt>
+              <dt className="text-mute">Subtotal</dt>
               <dd>{formatNaira(order.subtotal)}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-[#52706a]">Delivery (NG)</dt>
+              <dt className="text-mute">Delivery (NG)</dt>
               <dd>{formatNaira(order.delivery)}</dd>
             </div>
-            <div className="flex justify-between gap-4 border-t border-[#0b1f1c]/12 pt-3 text-base font-semibold">
+            <div className="flex justify-between gap-4 border-t border-ink/12 pt-3 text-base font-semibold">
               <dt>Total</dt>
-              <dd className="text-[#3f4d0e]">{formatNaira(order.total)}</dd>
+              <dd className="text-olive">{formatNaira(order.total)}</dd>
             </div>
           </dl>
 
           {order.checkout ? (
-            <div className="border-t border-[#0b1f1c]/10 pt-4 text-sm">
-              <p className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+            <div className="border-t border-ink/10 pt-4 text-sm">
+              <p className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
                 Checkout
               </p>
               <p className="mt-2">{order.checkout.contact.fullName}</p>
-              <p className="text-[#52706a]">{order.checkout.contact.email}</p>
-              <p className="text-[#52706a]">{order.checkout.contact.phone}</p>
-              <p className="mt-3 text-[#52706a]">
+              <p className="text-mute">{order.checkout.contact.email}</p>
+              <p className="text-mute">{order.checkout.contact.phone}</p>
+              <p className="mt-3 text-mute">
                 {order.checkout.address.line1}
                 {order.checkout.address.line2
                   ? `, ${order.checkout.address.line2}`
                   : ""}
               </p>
-              <p className="text-[#52706a]">
+              <p className="text-mute">
                 {order.checkout.address.city}, {order.checkout.address.state}
               </p>
               <p className="mt-3">
                 Payment: {PAYMENT_LABELS[order.checkout.paymentMethod]}{" "}
-                <span className="text-xs text-[#52706a]">(offline)</span>
+                <span className="text-xs text-mute">(offline)</span>
               </p>
             </div>
           ) : null}
 
           {isAdmin && order.pricing ? (
-            <div className="border-t border-[#0b1f1c]/10 pt-4 text-xs text-[#52706a]">
+            <div className="border-t border-ink/10 pt-4 text-xs text-mute">
               <p className="text-[0.65rem] uppercase tracking-[0.14em]">
                 Vendor assignment
               </p>
-              <p className="mt-2 text-sm text-[#0b1f1c]">
+              <p className="mt-2 text-sm text-ink">
                 {order.pricing.vendorName}
               </p>
               <p className="mt-1">

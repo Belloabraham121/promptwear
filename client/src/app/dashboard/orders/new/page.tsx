@@ -8,6 +8,7 @@ import {
   PageHeader,
   PrimaryLink,
 } from "@/components/dashboard/ui";
+import { CheckoutSkeleton } from "@/components/dashboard/Skeletons";
 import { validateCoupon } from "@/lib/api/coupons";
 import { postQuote, type QuoteResponse } from "@/lib/api/orders";
 import { ApiError } from "@/lib/api/errors";
@@ -228,13 +229,13 @@ function NewOrderForm() {
   }
 
   if (!ready) {
-    return <p className="text-sm text-[#52706a]">Loading…</p>;
+    return <CheckoutSkeleton />;
   }
 
   if (designs.length === 0) {
     return (
       <div>
-        <PageHeader title="New order" />
+        <PageHeader kicker="Checkout" title="New order" />
         <EmptyState
           title="Save a design first"
           body="Orders start from a design in your studio. Create one, then come back to quote sizes and quality."
@@ -256,6 +257,7 @@ function NewOrderForm() {
   return (
     <div>
       <PageHeader
+        kicker="New order"
         title="Checkout"
         description="Configure your run, enter delivery details, and get a single transparent price from the server pricing engine."
       />
@@ -271,13 +273,13 @@ function NewOrderForm() {
             </h2>
 
             <label className="block">
-              <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+              <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
                 Design
               </span>
               <select
                 value={design?.id ?? ""}
                 onChange={(e) => setDesignId(e.target.value)}
-                className="mt-2 w-full rounded-xl border border-[#0b1f1c]/15 bg-white px-3 py-3 text-sm outline-none focus:border-[#d6ff3c]"
+                className="mt-2 w-full border border-ink/15 bg-paper px-3 py-3 text-sm outline-none focus:border-lime"
               >
                 {designs.map((d) => (
                   <option key={d.id} value={d.id}>
@@ -288,13 +290,13 @@ function NewOrderForm() {
             </label>
 
             <fieldset>
-              <legend className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+              <legend className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
                 Sizes & quantities
               </legend>
               <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
                 {SIZES.map((size) => (
-                  <label key={size} className="rounded-xl border border-[#0b1f1c]/12 bg-white p-3">
-                    <span className="block text-xs text-[#52706a]">{size}</span>
+                  <label key={size} className="border border-ink/12 bg-paper p-3">
+                    <span className="block text-xs text-mute">{size}</span>
                     <input
                       type="number"
                       min={0}
@@ -308,16 +310,16 @@ function NewOrderForm() {
                   </label>
                 ))}
               </div>
-              <p className="mt-2 text-sm text-[#0b1f1c]">
+              <p className="mt-2 text-sm text-ink">
                 Total pieces:{" "}
-                <span className="font-semibold text-[#3f4d0e]">
+                <span className="font-semibold text-olive">
                   {totalQuantity(sizes)}
                 </span>
               </p>
             </fieldset>
 
             <fieldset>
-              <legend className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+              <legend className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
                 Cloth quality
               </legend>
               <div className="mt-3 grid gap-2">
@@ -327,10 +329,10 @@ function NewOrderForm() {
                     type="button"
                     onClick={() => setQuality(key)}
                     className={cn(
-                      "rounded-xl border bg-white px-3 py-3 text-left text-sm transition",
+                      "border bg-paper px-3 py-3 text-left text-sm transition",
                       quality === key
-                        ? "border-[#d6ff3c] bg-[#d6ff3c]/10"
-                        : "border-[#0b1f1c]/15 hover:border-[#0b1f1c]/35",
+                        ? "border-lime bg-lime/10"
+                        : "border-ink/15 hover:border-ink/35",
                     )}
                   >
                     {QUALITY_LABELS[key]}
@@ -340,7 +342,7 @@ function NewOrderForm() {
             </fieldset>
 
             <fieldset>
-              <legend className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+              <legend className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
                 Print method
               </legend>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -350,14 +352,14 @@ function NewOrderForm() {
                     type="button"
                     onClick={() => setPrint(key)}
                     className={cn(
-                      "rounded-xl border bg-white px-3 py-3 text-left text-sm transition",
+                      "border bg-paper px-3 py-3 text-left text-sm transition",
                       print === key
-                        ? "border-[#d6ff3c] bg-[#d6ff3c]/10"
-                        : "border-[#0b1f1c]/15 hover:border-[#0b1f1c]/35",
+                        ? "border-lime bg-lime/10"
+                        : "border-ink/15 hover:border-ink/35",
                     )}
                   >
                     <span className="font-semibold">{PRINT_LABELS[key]}</span>
-                    <span className="mt-1 block text-xs text-[#52706a]">
+                    <span className="mt-1 block text-xs text-mute">
                       {key === "screen"
                         ? "Best for bulk (setup under 12 pcs)"
                         : "Great for 1–50 pieces"}
@@ -368,21 +370,21 @@ function NewOrderForm() {
             </fieldset>
 
             <label className="block">
-              <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+              <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
                 Coupon code (optional)
               </span>
               <input
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                 placeholder="e.g. WELCOME10"
-                className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-3 text-sm uppercase outline-none focus:border-[#d6ff3c]"
+                className="mt-2 w-full border border-ink/15 bg-paper px-3 py-3 text-sm uppercase outline-none focus:border-lime"
               />
               {couponMessage ? (
                 <p
                   className={cn(
                     "mt-2 text-xs",
                     couponMessage.startsWith("Coupon applied")
-                      ? "text-[#3f4d0e]"
+                      ? "text-olive"
                       : "text-red-700",
                   )}
                 >
@@ -392,24 +394,24 @@ function NewOrderForm() {
             </label>
           </section>
 
-          <section className="space-y-4 border-t border-[#0b1f1c]/10 pt-8">
+          <section className="space-y-4 border-t border-ink/10 pt-8">
             <h2 className="font-[family-name:var(--font-display)] text-lg font-bold tracking-[-0.03em]">
               Delivery & contact
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block sm:col-span-2">
-                <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+                <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
                   Full name
                 </span>
                 <input
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-3 text-sm outline-none focus:border-[#d6ff3c]"
+                  className="mt-2 w-full border border-ink/15 bg-paper px-3 py-3 text-sm outline-none focus:border-lime"
                 />
               </label>
               <label className="block">
-                <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+                <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
                   Email
                 </span>
                 <input
@@ -417,11 +419,11 @@ function NewOrderForm() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-3 text-sm outline-none focus:border-[#d6ff3c]"
+                  className="mt-2 w-full border border-ink/15 bg-paper px-3 py-3 text-sm outline-none focus:border-lime"
                 />
               </label>
               <label className="block">
-                <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+                <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
                   Phone
                 </span>
                 <input
@@ -429,66 +431,66 @@ function NewOrderForm() {
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-3 text-sm outline-none focus:border-[#d6ff3c]"
+                  className="mt-2 w-full border border-ink/15 bg-paper px-3 py-3 text-sm outline-none focus:border-lime"
                 />
               </label>
               <label className="block sm:col-span-2">
-                <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+                <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
                   Address line 1
                 </span>
                 <input
                   required
                   value={line1}
                   onChange={(e) => setLine1(e.target.value)}
-                  className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-3 text-sm outline-none focus:border-[#d6ff3c]"
+                  className="mt-2 w-full border border-ink/15 bg-paper px-3 py-3 text-sm outline-none focus:border-lime"
                 />
               </label>
               <label className="block sm:col-span-2">
-                <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+                <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
                   Address line 2
                 </span>
                 <input
                   value={line2}
                   onChange={(e) => setLine2(e.target.value)}
-                  className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-3 text-sm outline-none focus:border-[#d6ff3c]"
+                  className="mt-2 w-full border border-ink/15 bg-paper px-3 py-3 text-sm outline-none focus:border-lime"
                 />
               </label>
               <label className="block">
-                <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+                <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
                   City
                 </span>
                 <input
                   required
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-3 text-sm outline-none focus:border-[#d6ff3c]"
+                  className="mt-2 w-full border border-ink/15 bg-paper px-3 py-3 text-sm outline-none focus:border-lime"
                 />
               </label>
               <label className="block">
-                <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+                <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
                   State
                 </span>
                 <input
                   required
                   value={state}
                   onChange={(e) => setState(e.target.value)}
-                  className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-3 text-sm outline-none focus:border-[#d6ff3c]"
+                  className="mt-2 w-full border border-ink/15 bg-paper px-3 py-3 text-sm outline-none focus:border-lime"
                 />
               </label>
               <label className="block">
-                <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+                <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
                   Postal code
                 </span>
                 <input
                   value={postalCode}
                   onChange={(e) => setPostalCode(e.target.value)}
-                  className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-3 text-sm outline-none focus:border-[#d6ff3c]"
+                  className="mt-2 w-full border border-ink/15 bg-paper px-3 py-3 text-sm outline-none focus:border-lime"
                 />
               </label>
             </div>
           </section>
 
-          <section className="space-y-4 border-t border-[#0b1f1c]/10 pt-8">
+          <section className="space-y-4 border-t border-ink/10 pt-8">
             <h2 className="font-[family-name:var(--font-display)] text-lg font-bold tracking-[-0.03em]">
               Payment
             </h2>
@@ -502,16 +504,16 @@ function NewOrderForm() {
                     disabled={disabled}
                     onClick={() => setPaymentMethod(key)}
                     className={cn(
-                      "rounded-xl border bg-white px-3 py-3 text-left text-sm transition",
+                      "border bg-paper px-3 py-3 text-left text-sm transition",
                       disabled
-                        ? "cursor-not-allowed border-[#0b1f1c]/8 opacity-45"
+                        ? "cursor-not-allowed border-ink/8 opacity-45"
                         : paymentMethod === key
-                          ? "border-[#d6ff3c] bg-[#d6ff3c]/10"
-                          : "border-[#0b1f1c]/15 hover:border-[#0b1f1c]/35",
+                          ? "border-lime bg-lime/10"
+                          : "border-ink/15 hover:border-ink/35",
                     )}
                   >
                     <span className="font-semibold">{PAYMENT_LABELS[key]}</span>
-                    <span className="mt-1 block text-xs text-[#52706a]">
+                    <span className="mt-1 block text-xs text-mute">
                       {disabled
                         ? "Coming soon"
                         : key === "card"
@@ -525,7 +527,7 @@ function NewOrderForm() {
           </section>
 
           <label className="block">
-            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
               Order note (optional)
             </span>
             <textarea
@@ -533,16 +535,16 @@ function NewOrderForm() {
               onChange={(e) => setNote(e.target.value)}
               rows={3}
               placeholder="Delivery notes, event date, packing prefs…"
-              className="mt-2 w-full resize-y border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-3 text-sm outline-none focus:border-[#d6ff3c]"
+              className="mt-2 w-full resize-y border border-ink/15 bg-paper px-3 py-3 text-sm outline-none focus:border-lime"
             />
           </label>
         </div>
 
-        <aside className="h-fit rounded-2xl border border-[#0b1f1c]/12 bg-white p-5 shadow-[0_1px_2px_rgba(11,31,28,0.05)] lg:sticky lg:top-24">
-          <p className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+        <aside className="h-fit border border-ink/12 bg-paper p-5 lg:sticky lg:top-24">
+          <p className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
             Your price
           </p>
-          <p className="mt-3 font-[family-name:var(--font-display)] text-3xl font-bold tracking-[-0.04em] text-[#3f4d0e]">
+          <p className="mt-3 font-[family-name:var(--font-display)] text-3xl font-bold tracking-[-0.04em] text-olive">
             {quoteLoading
               ? "…"
               : quote.qty > 0
@@ -551,15 +553,15 @@ function NewOrderForm() {
           </p>
           <dl className="mt-4 space-y-2 text-sm">
             <div className="flex justify-between gap-3">
-              <dt className="text-[#52706a]">Subtotal</dt>
+              <dt className="text-mute">Subtotal</dt>
               <dd>{formatNaira(quote.subtotal)}</dd>
             </div>
             <div className="flex justify-between gap-3">
-              <dt className="text-[#52706a]">Delivery</dt>
+              <dt className="text-mute">Delivery</dt>
               <dd>{formatNaira(quote.delivery)}</dd>
             </div>
             {quote.discountAmount > 0 ? (
-              <div className="flex justify-between gap-3 text-[#3f4d0e]">
+              <div className="flex justify-between gap-3 text-olive">
                 <dt>Discount</dt>
                 <dd>-{formatNaira(quote.discountAmount)}</dd>
               </div>
@@ -567,19 +569,19 @@ function NewOrderForm() {
           </dl>
 
           {quote.vendor ? (
-            <div className="mt-4 space-y-1 border-t border-[#0b1f1c]/10 pt-4 text-xs text-[#52706a]">
+            <div className="mt-4 space-y-1 border-t border-ink/10 pt-4 text-xs text-mute">
               <p>
                 Est.{" "}
-                <span className="text-[#0b1f1c]">
+                <span className="text-ink">
                   {quote.deliveryDays} days
                 </span>{" "}
                 · rule{" "}
-                <span className="text-[#0b1f1c]">
+                <span className="text-ink">
                   {SELECTION_STRATEGY_LABELS[quote.strategy]}
                 </span>
               </p>
               {quote.overridden ? (
-                <p className="text-[#3f4d0e]">Admin vendor override active</p>
+                <p className="text-olive">Admin vendor override active</p>
               ) : null}
             </div>
           ) : quote.qty > 0 && !quote.vendor ? (
@@ -602,11 +604,11 @@ function NewOrderForm() {
               !checkoutReady ||
               !quote.vendor
             }
-            className="mt-6 w-full bg-[#d6ff3c] px-4 py-3 text-xs font-bold uppercase tracking-[0.06em] text-[#070807] transition hover:bg-[#e2ff6a] disabled:cursor-not-allowed disabled:opacity-40"
+            className="mt-6 w-full bg-lime px-4 py-3 text-xs font-bold uppercase tracking-[0.06em] text-ink transition hover:bg-lime/80 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {submitting ? "Placing…" : "Place order"}
           </button>
-          <p className="mt-3 text-[0.65rem] leading-relaxed text-[#52706a]">
+          <p className="mt-3 text-[0.65rem] leading-relaxed text-mute">
             Payment is collected offline — no card or transfer is processed in
             this release.
           </p>
@@ -618,7 +620,7 @@ function NewOrderForm() {
 
 export default function NewOrderPage() {
   return (
-    <Suspense fallback={<p className="text-sm text-[#52706a]">Loading…</p>}>
+    <Suspense fallback={<CheckoutSkeleton />}>
       <NewOrderForm />
     </Suspense>
   );

@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FormEvent, useEffect, useState } from "react";
 import { useDashboard } from "@/components/dashboard/DashboardProvider";
 import { PageHeader } from "@/components/dashboard/ui";
+import { AccountSkeleton } from "@/components/dashboard/Skeletons";
 import { queryKeys } from "@/lib/api/query-keys";
 import { updateMe } from "@/lib/api/users";
 import { useAuth } from "@/providers/AuthProvider";
@@ -47,12 +48,13 @@ export default function AccountPage() {
   }
 
   if (!ready) {
-    return <p className="text-sm text-[#52706a]">Loading account…</p>;
+    return <AccountSkeleton />;
   }
 
   return (
     <div>
       <PageHeader
+        kicker="Profile"
         title="Account"
         description="Profile details for quotes and delivery."
       />
@@ -60,24 +62,24 @@ export default function AccountPage() {
       <div className="grid gap-8 lg:grid-cols-[minmax(0,28rem)_1fr]">
         <form onSubmit={handleSave} className="space-y-4">
           <label className="block">
-            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
               Name
             </span>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-3 text-sm outline-none focus:border-[#d6ff3c]"
+              className="mt-2 w-full border border-ink/15 bg-paper px-3 py-3 text-sm outline-none focus:border-lime"
             />
           </label>
           <label className="block">
-            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-[#52706a]">
+            <span className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
               Email
             </span>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-2 w-full border border-[#0b1f1c]/15 bg-white rounded-xl px-3 py-3 text-sm outline-none focus:border-[#d6ff3c]"
+              className="mt-2 w-full border border-ink/15 bg-paper px-3 py-3 text-sm outline-none focus:border-lime"
             />
           </label>
           {error ? (
@@ -86,7 +88,7 @@ export default function AccountPage() {
           <button
             type="submit"
             disabled={saveMutation.isPending}
-            className="bg-[#d6ff3c] px-5 py-3 text-xs font-bold uppercase tracking-[0.06em] text-[#070807] hover:bg-[#e2ff6a] disabled:opacity-50"
+            className="bg-lime px-5 py-3 text-xs font-bold uppercase tracking-[0.06em] text-ink hover:bg-lime/80 disabled:opacity-50"
           >
             {saveMutation.isPending
               ? "Saving…"
@@ -96,33 +98,33 @@ export default function AccountPage() {
           </button>
         </form>
 
-        <aside className="rounded-2xl border border-[#0b1f1c]/12 bg-white p-5 shadow-[0_1px_2px_rgba(11,31,28,0.05)]">
+        <aside className="border border-ink/12 bg-paper p-5">
           <h2 className="font-[family-name:var(--font-display)] text-lg font-bold">
             Snapshot
           </h2>
-          <ul className="mt-4 space-y-2 text-sm text-[#52706a]">
+          <ul className="mt-4 space-y-2 text-sm text-mute">
             <li>
               Account:{" "}
-              <span className="text-[#0b1f1c]">
+              <span className="text-ink">
                 {session?.guest ? "Guest" : "Registered"}
               </span>
             </li>
             <li>
               Role:{" "}
-              <span className="text-[#0b1f1c]">
+              <span className="text-ink">
                 {session?.role === "admin" ? "Admin" : "Customer"}
               </span>
             </li>
             <li>
               Designs saved:{" "}
-              <span className="text-[#0b1f1c]">{designs.length}</span>
+              <span className="text-ink">{designs.length}</span>
             </li>
             <li>
               Orders placed:{" "}
-              <span className="text-[#0b1f1c]">{orders.length}</span>
+              <span className="text-ink">{orders.length}</span>
             </li>
           </ul>
-          <p className="mt-6 text-xs text-[#52706a]">
+          <p className="mt-6 text-xs text-mute">
             Designs, orders, and assets are synced to your account.
           </p>
         </aside>
