@@ -82,7 +82,8 @@ export function Trending() {
   const nudge = (direction: 1 | -1) => {
     const el = rail.current;
     if (!el) return;
-    el.scrollBy({ left: direction * el.clientWidth * 0.8, behavior: "smooth" });
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollBy({ left: direction * el.clientWidth * 0.8, behavior: reduce ? "auto" : "smooth" });
   };
 
   return (

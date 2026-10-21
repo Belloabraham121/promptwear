@@ -202,8 +202,15 @@ function Cursor() {
       const target = (event.target as Element | null)?.closest<HTMLElement>("[data-cursor]");
       setLabel(target?.dataset.cursor ?? null);
     };
+    // Hide the disc when the pointer leaves the window while over a card.
+    const onLeave = () => setLabel(null);
+    const doc = document.documentElement;
     window.addEventListener("pointermove", onMove);
-    return () => window.removeEventListener("pointermove", onMove);
+    doc.addEventListener("pointerleave", onLeave);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      doc.removeEventListener("pointerleave", onLeave);
+    };
   }, []);
 
   return (

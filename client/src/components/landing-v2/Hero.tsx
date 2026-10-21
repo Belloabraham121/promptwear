@@ -122,7 +122,7 @@ export function Hero() {
                 {/* Pose stays on its own element so GSAP never folds it into a pixel transform. */}
                 <div style={{ rotate: `${pose.rotate}deg`, translate: `0 ${pose.lift}vw` }}>
                   <div data-hero-card>
-                    <div className="transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-4 hover:scale-[1.06] hover:rotate-[-2deg]">
+                    <div className="transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-4 hover:scale-[1.06] hover:rotate-[-2deg] motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100 motion-reduce:hover:rotate-0">
                       <Image
                         src={v2Image(cutout.file)}
                         alt={cutout.alt}

@@ -20,8 +20,9 @@ import { cn } from "@/lib/utils";
 export function Marquee() {
   const row = [...marqueeItems, ...marqueeItems];
   return (
-    <div className="overflow-hidden bg-[#070807] py-4 text-[#f3f0e8]" aria-hidden>
-      <div className="pw-marquee-track flex w-max">
+    <div className="overflow-hidden bg-[#070807] py-4 text-[#f3f0e8]">
+      <p className="sr-only">{marqueeItems.join(". ")}.</p>
+      <div className="pw-marquee-track flex w-max" aria-hidden>
         {[0, 1].map((copy) => (
           <div key={copy} className="flex shrink-0 items-center">
             {row.map((item, i) => (
@@ -190,9 +191,9 @@ export function CreatorSpotlight() {
           <div className="mt-10 md:mt-auto md:pt-10">
             <p className="m-0 mb-3 text-[0.68rem] tracking-[0.22em] text-[#c8c4b8] uppercase">In this drop</p>
             <ul className="m-0 grid max-w-[30rem] list-none grid-cols-3 gap-3 p-0">
-              {featuredCreator.designs.map((file) => (
-                <li key={file} data-reveal className="relative aspect-[3/4] overflow-hidden bg-[#ece8de]">
-                  <Image src={v2Image(file)} alt="" fill sizes="(min-width: 768px) 10rem, 30vw" className="object-cover" />
+              {featuredCreator.designs.map((design) => (
+                <li key={design.file} data-reveal className="relative aspect-[3/4] overflow-hidden bg-[#ece8de]">
+                  <Image src={v2Image(design.file)} alt={design.alt} fill sizes="(min-width: 768px) 10rem, 30vw" className="object-cover" />
                 </li>
               ))}
             </ul>
@@ -329,7 +330,7 @@ export function Lookbook() {
           >
             <Image
               src={v2Image(look.file)}
-              alt=""
+              alt={look.alt}
               fill
               sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
               className="object-cover transition-transform duration-700 group-hover:scale-105"

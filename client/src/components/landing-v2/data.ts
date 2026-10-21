@@ -49,7 +49,11 @@ export const featuredCreator = {
   image: "creator-01.jpg",
   quote:
     "I sketch on the bus, publish at night, and wake up to someone in Ibadan wearing it.",
-  designs: ["drop-05.jpg", "drop-09.jpg", "drop-03.jpg"],
+  designs: [
+    { file: "drop-05.jpg", alt: "Adire Code: bone crewneck with a black adire-inspired pattern" },
+    { file: "drop-09.jpg", alt: "Two Faces: stone tee with a black cubist portrait" },
+    { file: "drop-03.jpg", alt: "North Star: stone grey hoodie with a black four-point star" },
+  ],
 };
 
 export const otherCreators = [
@@ -64,14 +68,14 @@ export const processSteps = [
 ];
 
 export const looks = [
-  { file: "look-01.jpg", aspect: "aspect-[4/5]", tag: "@zainab.fits" },
-  { file: "look-02.jpg", aspect: "aspect-square", tag: "Balogun Market" },
-  { file: "look-03.jpg", aspect: "aspect-[3/4]", tag: "@ballislife.lag" },
-  { file: "look-04.jpg", aspect: "aspect-square", tag: "Launch night" },
-  { file: "look-05.jpg", aspect: "aspect-[4/5]", tag: "Lekki, 5:40pm" },
-  { file: "look-06.jpg", aspect: "aspect-[3/4]", tag: "Fresh cut" },
-  { file: "look-07.jpg", aspect: "aspect-square", tag: "Elegushi" },
-  { file: "look-08.jpg", aspect: "aspect-[4/5]", tag: "Class of '26" },
+  { file: "look-01.jpg", aspect: "aspect-[4/5]", tag: "@zainab.fits", alt: "Mirror selfie in a bone graphic tee" },
+  { file: "look-02.jpg", aspect: "aspect-square", tag: "Balogun Market", alt: "Two friends back to back at a street market in black graphic tees" },
+  { file: "look-03.jpg", aspect: "aspect-[3/4]", tag: "@ballislife.lag", alt: "Basketball player resting on a court fence in a stone grey hoodie" },
+  { file: "look-04.jpg", aspect: "aspect-square", tag: "Launch night", alt: "Coworkers laughing at a launch party in matching black event tees" },
+  { file: "look-05.jpg", aspect: "aspect-[4/5]", tag: "Lekki, 5:40pm", alt: "Woman riding a scooter through traffic in a black tee with a lime graphic" },
+  { file: "look-06.jpg", aspect: "aspect-[3/4]", tag: "Fresh cut", alt: "Barber and client in a barbershop, both in bone graphic tees" },
+  { file: "look-07.jpg", aspect: "aspect-square", tag: "Elegushi", alt: "Friends on a beach at sunset in oversized black tees" },
+  { file: "look-08.jpg", aspect: "aspect-[4/5]", tag: "Class of '26", alt: "Graduate in an open gown over a bone campus tee, family behind" },
 ];
 
 export const marqueeItems = [
